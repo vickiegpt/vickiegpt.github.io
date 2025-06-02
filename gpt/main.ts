@@ -1,77 +1,90 @@
-// src/main.ts
-import { Wllama } from '../node_modules/@wllama/wllama/esm/index.js';
+// Claude API integration
+interface ClaudeMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
 
+interface ClaudeCompletionOptions {
+    max_tokens: number;
+    temperature: number;
+    top_p: number;
+    top_k: number;
+}
 
-// 定义接口
-interface WllamaProgress {
+interface ClaudeProgress {
     loaded: number;
     total: number;
 }
 
-interface CompletionOptions {
-    nPredict: number;
-    sampling: {
-        temp: number;
-        top_k: number;
-        top_p: number;
-    };
+// Claude API configuration
+const CHAT_API_URL = '/api/chat';
+let CLAUDE_API_KEY = '';
+
+// 设置API密钥
+export function setClaudeApiKey(apiKey: string): void {
+    CLAUDE_API_KEY = apiKey;
 }
 
-// Wllama实例
-let wllamaInstance: Wllama | null = null;
-
-// 配置路径
-const CONFIG_PATHS = {
-    'single-thread/wllama.wasm': '/gpt/wllama/single-thread/wllama.wasm',
-    'multi-thread/wllama.wasm': '/gpt/wllama/multi-thread/wllama.wasm',
-};
-
-// 初始化Wllama
-export async function initWllama(): Promise<Wllama> {
-    wllamaInstance = new Wllama(CONFIG_PATHS);
-    wllamaInstance.useMultiThread = true;
-    wllamaInstance.nbThreads = 4;
-    wllamaInstance.useEmbeddings = false;
-    return wllamaInstance;
-}
-
-// 加载模型
-export async function loadModel(
-    progressCallback: (progress: WllamaProgress) => void
-): Promise<void> {
-    if (!wllamaInstance) {
-        throw new Error("Wllama未初始化");
+// 初始化Claude（模拟原来的初始化过程）
+export async function initClaude(): Promise<boolean> {
+    // 检查API密钥是否设置
+    if (!CLAUDE_API_KEY) {
+        throw new Error("请先设置Claude API密钥");
     }
-    
-    await wllamaInstance.loadModelFromHF(
-        'mradermacher/DeepSeek-R1-Distill-Qwen-1.5B-Abliterated-dpo-GGUF',
-        'DeepSeek-R1-Distill-Qwen-1.5B-Abliterated-dpo.Q2_K.gguf',
-        { progressCallback }
-    );
+    return true;
 }
 
-// 生成文本
+// 模拟模型加载（实际上Claude API不需要加载模型）
+export async function loadModel(
+    progressCallback: (progress: ClaudeProgress) => void
+): Promise<void> {
+    // 模拟加载进度
+    const steps = 10;
+    for (let i = 0; i <= steps; i++) {
+        progressCallback({ loaded: i, total: steps });
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+// 使用后端API生成文本
 export async function generateText(
     prompt: string,
-    options: CompletionOptions = {
-        nPredict: 50,
-        sampling: {
-            temp: 0.5,
-            top_k: 40,
-            top_p: 0.9,
-        }
+    options: ClaudeCompletionOptions = {
+        max_tokens: 1000,
+        temperature: 0.5,
+        top_p: 0.9,
+        top_k: 40
     }
 ): Promise<string> {
-    if (!wllamaInstance) {
-        throw new Error("模型未加载");
+    try {
+        const response = await fetch(CHAT_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: prompt,
+                options: options
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Chat API错误: ${response.status} - ${errorData.error || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        return data.reply || '';
+    } catch (error) {
+        throw error;
     }
-    
-    return await wllamaInstance.createCompletion(prompt, options);
 }
 
 // 初始化UI事件
 export function initUI(): void {
     // 获取DOM元素
+    const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
+    const setApiKeyBtn = document.getElementById('setApiKey') as HTMLButtonElement;
     const loadModelBtn = document.getElementById('loadModel') as HTMLButtonElement;
     const generateBtn = document.getElementById('generate') as HTMLButtonElement;
     const progressElem = document.getElementById('progress') as HTMLDivElement;
@@ -79,29 +92,43 @@ export function initUI(): void {
     const outputElem = document.getElementById('output') as HTMLDivElement;
     
     // 检查元素是否存在
-    if (!loadModelBtn || !generateBtn || !progressElem || !inputElem || !outputElem) {
+    if (!apiKeyInput || !setApiKeyBtn || !loadModelBtn || !generateBtn || !progressElem || !inputElem || !outputElem) {
         console.error("找不到必要的DOM元素");
         return;
     }
+    
+    // 设置API密钥按钮事件
+    setApiKeyBtn.addEventListener('click', () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+            progressElem.textContent = '请输入有效的API密钥！';
+            return;
+        }
+        
+        setClaudeApiKey(apiKey);
+        progressElem.textContent = 'API密钥已设置，可以加载模型了';
+        loadModelBtn.disabled = false;
+        apiKeyInput.value = ''; // 清空输入框以保护密钥
+    });
     
     // 加载模型按钮事件
     loadModelBtn.addEventListener('click', async () => {
         try {
             loadModelBtn.disabled = true;
-            progressElem.textContent = '初始化中...';
+            progressElem.textContent = '初始化Claude...';
             
-            // 初始化Wllama
-            await initWllama();
+            // 初始化Claude
+            await initClaude();
             
-            progressElem.textContent = '开始下载模型...';
+            progressElem.textContent = '正在连接Claude API...';
             
-            // 加载模型
+            // 模拟加载过程
             await loadModel(({ loaded, total }) => {
                 const progressPercentage = Math.round((loaded / total) * 100);
-                progressElem.textContent = `下载中... ${progressPercentage}%`;
+                progressElem.textContent = `连接中... ${progressPercentage}%`;
             });
             
-            progressElem.textContent = '模型加载完成！';
+            progressElem.textContent = 'Claude API已准备就绪！';
             generateBtn.disabled = false;
         } catch (error) {
             progressElem.textContent = `错误: ${error instanceof Error ? error.message : String(error)}`;
@@ -135,4 +162,4 @@ export function initUI(): void {
 }
 
 // 在DOM加载完成后初始化UI
-document.addEventListener('DOMContentLoaded', initWllama);
+document.addEventListener('DOMContentLoaded', initUI);

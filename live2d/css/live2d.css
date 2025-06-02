@@ -34,17 +34,18 @@
     position: fixed; 
     right: 30px;
     bottom: 0;
-    /* z-index: 10000; */
-    /* font-size: 0; */
-    /* transition: all .3s ease-in-out; */
-     width: 1560px;
-    height: 3500px; 
-    /* width: 320px;
-    height: 380px; */
-    /* width: 100% !important;
-    height: 100% !important;  */
-    /* margin: 0 auto; */
-    /* background-color: #1E1E1E; */
+    z-index: 100;
+    width: 320px;
+    height: 380px;
+    pointer-events: none;
+}
+
+#landlord .live2d {
+    pointer-events: auto;
+}
+
+#open-chat, #claude-chat-panel {
+    pointer-events: auto !important;
 }
 
 

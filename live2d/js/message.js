@@ -2,6 +2,14 @@ let messages = {
     "body": ["大坏蛋！你都多久没理人家了呀，嘤嘤嘤～", "嗨～快来逗我玩吧！", "拿小拳拳锤你胸口！", "不要动手动脚的！快把手拿开~~", "真…真的是不知羞耻！", "Hentai！", "再摸的话我可要报警了！⌇●﹏●⌇", "110吗，这里有个变态一直在摸我(ó﹏ò｡)"]
 }
 
+// Claude API 配置 (暂时禁用 - CORS 限制)
+const CLAUDE_CONFIG = {
+    apiKey: '',
+    apiUrl: '',
+    model: '',
+    maxTokens: 0
+}
+
 
 remind = (function () {
     let text;
@@ -124,7 +132,178 @@ window.adjustSize = (width, height) => {
 }
 adjustSize(320, 380)
 
+// Claude API 调用函数
+async function callClaudeAPI(userMessage) {
+    if (!CLAUDE_CONFIG.apiKey) {
+        throw new Error('Claude API key not set. Please set your API key first.');
+    }
+
+    try {
+        const response = await fetch(CLAUDE_CONFIG.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': CLAUDE_CONFIG.apiKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: CLAUDE_CONFIG.model,
+                max_tokens: CLAUDE_CONFIG.maxTokens,
+                messages: [
+                    {
+                        role: 'user',
+                        content: userMessage
+                    }
+                ],
+                system: '你是一个可爱的Live2D虚拟角色，请用可爱、友好的语气回复用户。回复要简洁有趣，符合二次元角色的说话风格。'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.content[0].text;
+    } catch (error) {
+        console.error('Claude API Error:', error);
+        throw error;
+    }
+}
+
+// 设置 Claude API Key
+function setClaudeApiKey(apiKey) {
+    localStorage.setItem('claude_api_key', apiKey);
+    CLAUDE_CONFIG.apiKey = apiKey;
+    showMessage('API Key 设置成功！现在可以和我聊天了～', 2000);
+}
+
+// GPT-SoVITS 语音合成配置
+const VOICE_CONFIG = {
+    voices: {
+        paimon: {
+            baseUrl: 'http://127.0.0.1:9880',
+            ref_audio_path: 'samples/Paimon/疑问—哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？.wav',
+            prompt_text: '哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？',
+            prompt_language: 'zh',
+            text_language: 'zh'
+        },
+        linyi: {
+            baseUrl: 'http://127.0.0.1:9881',
+            ref_audio_path: 'samples/linyi/【愤怒】你这问题太弱智了，我都不知道该从哪开始骂你。.WAV',
+            prompt_text: '你这问题太弱智了，我都不知道该从哪开始骂你。',
+            prompt_language: 'zh',
+            text_language: 'zh'
+        }
+    }
+};
+
+// 语音合成函数
+async function synthesizeVoice(text, voiceType = 'paimon') {
+    try {
+        const voiceSettings = VOICE_CONFIG.voices[voiceType];
+        if (!voiceSettings) {
+            console.error('未知的语音类型:', voiceType);
+            return;
+        }
+
+        const response = await fetch(`${voiceSettings.baseUrl}/tts`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: text,
+                text_language: voiceSettings.text_language,
+                ref_audio_path: voiceSettings.ref_audio_path,
+                prompt_text: voiceSettings.prompt_text,
+                prompt_language: voiceSettings.prompt_language,
+                top_k: 5,
+                top_p: 1,
+                temperature: 1,
+                cut_punc: '，。'
+            })
+        });
+
+        if (response.ok) {
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            audio.play().catch(error => {
+                console.error('音频播放失败:', error);
+            });
+        } else {
+            console.error('语音合成失败:', response.status, response.statusText);
+        }
+    } catch (error) {
+        console.error('语音合成错误:', error);
+    }
+}
+
+// 与 Claude 聊天 (模拟回复 - 避免 CORS 错误)
+async function chatWithClaude(userMessage) {
+    const selectedVoice = $('#voice-select').val() || 'paimon';
+
+    const responses = {
+        paimon: {
+            messages: [
+                '旅行者，这个问题yyw也不太懂呢～',
+                '哇！听起来好有趣的样子！yyw想知道更多！',
+                '唔...让yyw想想...应该是这样的吧！',
+                '旅行者真厉害！yyw都要学不过来了～',
+                '这个yyw知道！就像是...嗯...那个...算了，yyw忘了～',
+                '哇哦！旅行者说的话yyw都听懂了呢！',
+                'yyw觉得旅行者说得很对！就是这样的！',
+                '嘿嘿，旅行者又在逗yyw开心了～'
+            ],
+            thinking: '让yyw想想...',
+            name: 'yyw'
+        },
+        linyi: {
+            messages: [
+                '切，这种问题你也要问我？',
+                '啧，真是麻烦死了...',
+                '你这脑子是怎么长的？',
+                '算了算了，我告诉你吧...',
+                '这么简单的事情都不懂吗？',
+                '真是服了你了，听好了...',
+                '下次别问这种弱智问题',
+                '我就勉强回答你一下吧'
+            ],
+            thinking: '让我想想怎么骂你...',
+            name: '林忆'
+        }
+    };
+
+    const currentChar = responses[selectedVoice];
+    showMessage(currentChar.thinking, 1000);
+
+    setTimeout(async () => {
+        const randomResponse = currentChar.messages[Math.floor(Math.random() * currentChar.messages.length)];
+        showMessage(randomResponse, 4000);
+
+        // 合成并播放语音
+        await synthesizeVoice(randomResponse, selectedVoice);
+
+        // 在聊天记录中添加回复
+        const chatMessages = $('#chat-messages');
+        if (chatMessages.length > 0) {
+            chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${currentChar.name}:</strong> ${randomResponse}</div>`);
+            chatMessages.scrollTop(chatMessages[0].scrollHeight);
+        }
+    }, 1500);
+}
+
 // 信息框
 window.receiveMsg = (msg, duration = 2000) => {
     showMessage(msg, duration)
 }
+
+// 暴露给全局使用的函数
+window.setClaudeApiKey = setClaudeApiKey;
+window.chatWithClaude = chatWithClaude;

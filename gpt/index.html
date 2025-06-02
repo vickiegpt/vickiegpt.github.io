@@ -3,68 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wllama 文本生成器</title>
+    <title>Claude 文本生成器</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
         .container {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-key-section {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        input[type="password"], textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input[type="password"] {
+            height: 45px;
+            margin-bottom: 10px;
         }
         textarea {
-            width: 100%;
-            height: 100px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
         }
         button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
+            padding: 12px 20px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         button:disabled {
-            background-color: #cccccc;
+            background-color: #6c757d;
             cursor: not-allowed;
         }
         .progress {
-            margin-top: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
             font-size: 14px;
+            font-weight: 500;
         }
         .output {
             margin-top: 20px;
-            padding: 15px;
+            padding: 20px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            min-height: 100px;
+            border-radius: 8px;
+            min-height: 150px;
             white-space: pre-wrap;
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .warning {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .input-group input {
+            flex: 1;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            margin-right: 8px;
+        }
+        .status-indicator.ready {
+            background-color: #28a745;
         }
     </style>
-</head>
+<script defer src="bundle.js"></script></head>
 <body>
     <div class="container">
-        <h1>Wllama 文本生成器</h1>
+        <h1>🤖 Claude 文本生成器</h1>
         
-        <div>
-            <button id="loadModel">加载模型</button>
-            <div id="progress" class="progress">请点击上方按钮加载模型</div>
+        <div class="api-key-section">
+            <div class="section-title">API 配置</div>
+            <div class="input-group">
+                <input type="password" id="apiKey" placeholder="请输入您的 Claude API 密钥...">
+                <button id="setApiKey">设置密钥</button>
+            </div>
+            <div class="warning">
+                💡 您的API密钥将仅在本地使用，不会被保存或上传
+            </div>
         </div>
         
         <div>
-            <textarea id="inputText" placeholder="输入提示文本..."></textarea>
-            <button id="generate" disabled>生成文本</button>
+            <div class="section-title">模型初始化</div>
+            <button id="loadModel" disabled>
+                <span class="status-indicator"></span>
+                初始化 Claude
+            </button>
+            <div id="progress" class="progress">请先设置 API 密钥</div>
         </div>
         
-        <div id="output" class="output">结果将显示在这里...</div>
+        <div>
+            <div class="section-title">文本生成</div>
+            <textarea id="inputText" placeholder="请输入您的提示文本...&#10;&#10;例如：&#10;- 写一首关于春天的诗&#10;- 解释什么是人工智能&#10;- 帮我写一封邮件"></textarea>
+            <button id="generate" disabled>🚀 生成文本</button>
+        </div>
+        
+        <div>
+            <div class="section-title">生成结果</div>
+            <div id="output" class="output">结果将显示在这里...</div>
+        </div>
     </div>
     <script type="module" src="/gpt/bundle.js"></script>
 </body>

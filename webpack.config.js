@@ -25,18 +25,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './gpt/index.html'
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { 
-          from: path.resolve(__dirname, 'node_modules/@wllama/wllama/esm/single-thread/wllama.wasm'),
-          to: 'wllama/single-thread/'
-        },
-        { 
-          from: path.resolve(__dirname, 'node_modules/@wllama/wllama/esm/multi-thread/wllama.wasm'),
-          to: 'wllama/multi-thread/'
-        }
-      ]
     })
   ],
   devServer: {
