@@ -182,19 +182,12 @@ function setClaudeApiKey(apiKey) {
 const VOICE_CONFIG = {
     voices: {
         paimon: {
-            baseUrl: 'http://127.0.0.1:9880',
+            baseUrl: 'https://asplos.dev/play_music',
             ref_audio_path: 'samples/Paimon/疑问—哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？.wav',
             prompt_text: '哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？',
             prompt_language: 'zh',
             text_language: 'zh'
         },
-        linyi: {
-            baseUrl: 'http://127.0.0.1:9881',
-            ref_audio_path: 'samples/linyi/【愤怒】你这问题太弱智了，我都不知道该从哪开始骂你。.WAV',
-            prompt_text: '你这问题太弱智了，我都不知道该从哪开始骂你。',
-            prompt_language: 'zh',
-            text_language: 'zh'
-        }
     }
 };
 
