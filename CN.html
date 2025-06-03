@@ -84,12 +84,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Initialize loading screen
             const loadingScreen = document.getElementById('loading-screen');
-            
+
             // Create particles
             createParticles();
-            
+
             // Hide loading screen after everything loads
-            window.addEventListener('load', function() {
+            window.addEventListener('load', function () {
                 setTimeout(() => {
                     loadingScreen.style.opacity = '0';
                     setTimeout(() => {
@@ -103,7 +103,7 @@
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
             const particleCount = 50;
-            
+
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
@@ -136,7 +136,7 @@
 
         function initScrollReveal() {
             const revealElements = document.querySelectorAll('h2, h3, .btn-links, .desc');
-            
+
             revealElements.forEach(element => {
                 element.classList.add('reveal');
             });
@@ -262,7 +262,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .loading-text {
@@ -274,8 +276,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         /* Particle Background */
@@ -299,15 +308,20 @@
         }
 
         @keyframes float {
-            0%, 100% { 
-                transform: translateY(0px) rotate(0deg); 
-                opacity: 0; 
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0;
             }
-            10%, 90% { 
-                opacity: 1; 
+
+            10%,
+            90% {
+                opacity: 1;
             }
-            50% { 
-                transform: translateY(-100px) rotate(180deg); 
+
+            50% {
+                transform: translateY(-100px) rotate(180deg);
             }
         }
 
@@ -332,13 +346,25 @@
         }
 
         @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
         }
 
         @keyframes blink-caret {
-            from, to { border-color: transparent; }
-            50% { border-color: #333; }
+
+            from,
+            to {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: #333;
+            }
         }
 
         /* Scroll reveal animations */
@@ -446,7 +472,8 @@
                             style="width:24px;height:12px;position:relative;top:2px;"></a> -->
                 </div>
                 <div><img
-                    src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations" href="https://scholar.google.com/citations?user=sDUT22MAAAAJ"><a
+                        src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations"
+                        href="https://scholar.google.com/citations?user=sDUT22MAAAAJ"><a
                         href="https://www.linkedin.com/in/yiwei-yang-56b920166/"><i
                             class="fab fa-linkedin-in"></i></a><a
                         href="https://scholar.google.com/citations?user=sDUT22MAAAAJ"> <i
@@ -467,7 +494,7 @@
             <h2 class="col">自我陈述</h2>
             <div class="section-text col-right row">
                 学了一点点 C++，Go 和 Rust，可以解决除了算法外的几乎所有代码问题。完全不会linux，会一点点LLVM/MLIR，WebAssembly，eBPF 和 Z3。AI
-                是业余有空会开发开发的小东西。如果你觉得我写的代码或者发的 paper 没有 novelty 或者垃圾的要死，绝对不是你的问题，欢迎邮件来喷！我的研究目标是利用 CXL 和 UALink
+                是业余有空会开发开发的小东西。如果你觉得我写的代码或者发的 paper 没有 novelty 或者垃圾的要死，绝对不是你的问题，欢迎邮件来喷！我的研究目标是利用 CXL 和 UCIe
                 技术在现代异构架构和通用处理器上加速数据访问和操作，以满足不同公司的工作负载。我相信硬件-软件协同设计的方法。硬件在不牺牲异构处理性能的前提下，通过对工作负载的深入了解，为常见的情况提供专门的加速能力，而软件则通过发送语义提示，自适应地利用硬件的优势，并在硬件加速无法实现时，退回到其他较慢的路径。我对寻求新知识和商业机会有极大的热情，并位于两个大都市——旧金山湾区和上海，我很自豪能学到更多的东西，使他人受益更多，赚得更多。
                 <pre><code class="language-rust mycode">fn research_no_failure()->Result < Paper, Error > {
     let output = if cfg!(target_os = "linux") {
@@ -529,6 +556,9 @@
                                 style="width:24px;height:24px;position:relative;top:2px;"></a></li>
                     <li>基于CXL.cache的数据movement软硬件协同设计<a href="/cxl"><img src="/about/cxlmemuring.jpg"
                                 style="width:24px;height:24px;position:relative;top:2px;"></a></li>
+                    <li>基于WebAssembly和PTX的通用迁移<a href="/mvvm"><img src="/about/mvvm.png"
+                                style="width:24px;height:24px;position:relative;top:2px;"></a>
+                    </li>
                     <li>基于用户态内核态eBPF协同工作的分布式系统<a href="https://github.com/eunomia-bpf/bpftime/"><img
                                 src="/about/ebpf.png" style="width:24px;height:24px;position:relative;top:2px;"></a>
                     </li>
@@ -621,8 +651,8 @@
                     </div>
                     <div class="btn-links mb-3">
                         <div class="col-right light">2025年7月</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://www.usenix.org/conference/osdi25/" target="_blank" rel="noopener">OSDI
+                        <a class="btn btn-outline-primary my-1 mr-1" href="https://www.usenix.org/conference/osdi25/"
+                            target="_blank" rel="noopener">OSDI
                             25</a>
                         <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2311.07923"
                             target="_blank" rel="noopener">文章</a>
@@ -651,7 +681,8 @@
                         <a class="btn btn-outline-primary my-1 mr-1"
                             href="https://hcds-workshop.github.io/edition/2025/" target="_blank" rel="noopener">HCDS
                             25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726985" target="_blank"
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726985" target="_blank"
                             rel="noopener">文章</a>
                         <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
                             data-filename="/about/cite_hcds25_1.bib">
@@ -679,7 +710,8 @@
                         <a class="btn btn-outline-primary my-1 mr-1"
                             href="https://hcds-workshop.github.io/edition/2025/" target="_blank" rel="noopener">HCDS
                             25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726984" target="_blank"
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726984" target="_blank"
                             rel="noopener">文章</a>
                         <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
                             data-filename="/about/cite_hcds25.bib">
