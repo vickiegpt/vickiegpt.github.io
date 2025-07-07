@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Yiwei Yang (VickieGPT) - Resume</title>
-    <meta name="theme-color" content="rgb(167, 211, 235)">
+    <meta name="theme-color" content="rgb(138, 43, 226)">
     <!--- <meta name="viewport" content="width=device-width, initial-scale=1"> --->
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
@@ -272,7 +272,7 @@
                     originalShowMessage(text, timeout);
                     // 如果聊天面板打开，也在聊天记录中显示
                     if (chatPanel.is(':visible') && text.startsWith('yyw:')) {
-                        chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${text}</strong></div>`);
+                        chatMessages.append(`<div style="margin-bottom: 5px; color: #8B2BE2;"><strong>${text}</strong></div>`);
                         chatMessages.scrollTop(chatMessages[0].scrollHeight);
                     }
                 };
@@ -362,11 +362,42 @@
         }
     </style>
     <style>
+        /* Purple Theme Button Styles */
+        .btn-outline-primary {
+            color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+            color: white !important;
+        }
+        
+        .btn-primary {
+            background-color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #6A0DAD !important;
+            border-color: #6A0DAD !important;
+        }
+        
+        /* Update link colors */
+        a {
+            color: #8B2BE2;
+        }
+        
+        a:hover {
+            color: #6A0DAD;
+        }
+        
         .demo {
             width: 200px;
             height: 200px;
-            border: 4px solid rgb(167, 211, 235);
-            background-color: rgb(232, 178, 196);
+            border: 4px solid rgb(138, 43, 226);
+            background-color: rgb(186, 85, 211);
             border-radius: 50%;
             /*border-radius: 60%;*/
         }
@@ -378,7 +409,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8B2BE2 0%, #6A0DAD 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -437,7 +468,7 @@
             position: absolute;
             width: 4px;
             height: 4px;
-            background: rgba(167, 211, 235, 0.3);
+            background: rgba(138, 43, 226, 0.3);
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
         }
@@ -575,7 +606,7 @@
         <!-- Claude 聊天界面 -->
         <div id="claude-chat-panel"
             style="position: fixed; top: 10px; right: 10px; width: 300px; background: rgba(0,0,0,0.8); border-radius: 10px; padding: 15px; color: white; display: none; z-index: 9998; pointer-events: auto;">
-            <h3 id="chat-title" style="margin: 0 0 10px 0; color: #ff69b4;">与yyw聊天</h3>
+            <h3 id="chat-title" style="margin: 0 0 10px 0; color: #8B2BE2;">与yyw聊天</h3>
             <div id="chat-messages"
                 style="height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">
             </div>
@@ -583,7 +614,7 @@
                 <input type="text" id="chat-input" placeholder="输入消息..."
                     style="flex: 1; padding: 5px; border: none; border-radius: 3px;">
                 <button id="send-chat"
-                    style="padding: 5px 10px; background: #ff69b4; border: none; border-radius: 3px; color: white; cursor: pointer;">发送</button>
+                    style="padding: 5px 10px; background: #8B2BE2; border: none; border-radius: 3px; color: white; cursor: pointer;">发送</button>
             </div>
             <div style="margin-top: 10px;">
                 <label style="font-size: 12px; color: #ccc;">🔊 语音合成:</label>
@@ -596,12 +627,12 @@
                 💡 支持GPT-SoVITS语音合成
             </div>
             <button id="close-chat"
-                style="position: absolute; top: 5px; right: 5px; background: #ff4444; border: none; border-radius: 50%; width: 20px; height: 20px; color: white; cursor: pointer;">×</button>
+                style="position: absolute; top: 5px; right: 5px; background: #8B2BE2; border: none; border-radius: 50%; width: 20px; height: 20px; color: white; cursor: pointer;">×</button>
         </div>
 
         <!-- 聊天按钮 -->
         <button id="open-chat"
-            style="position: fixed; top: 10px; right: 10px; background: linear-gradient(45deg, #ff69b4, #ff1493); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; cursor: pointer; z-index: 9999; font-size: 20px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4); transition: all 0.3s ease; pointer-events: auto;">💬</button>
+            style="position: fixed; top: 10px; right: 10px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; cursor: pointer; z-index: 9999; font-size: 20px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease; pointer-events: auto;">💬</button>
 
     </div>
 
@@ -665,6 +696,19 @@
                             class="fa fa-plane"></i></a></div>
             </div>
         </div>
+        
+        <!-- DeepSeek All-in-One Machine Button -->
+        <div class="section row" style="text-align: center; margin: 30px 0;">
+            <a href="https://www.ebay.com/itm/365709053261?_skw=DeepSeek%2FLLAMA+All-in-One+Machine&itmmeta=01JZJFKQ373WRHT0X7WW0SM3NM&hash=item5525f54d4d:g:9X8AAeSwwiVoZwex&itmprp=enc%3AAQAKAAABAFkggFvd1GGDu0w3yXCmi1fdyxfAMoN7i%2B8gG3Vf4benAE24FkThw6ZHhb7f1AHOmwwQNSoxMnjGZLAqJ5SQAqxb6%2BfhRCHaPXUBZyV%2F6v%2BVHNzUjrXuAKNf8cbcodcnFAgtkv24dzwvdJWyIpuEooNHUJCAWHkQDLp7dNANP9R7xJaB56gqxINchLEWJCbKU12rgCUyjvXyT83GtClqphZ0VrkmsQPqO1FWYSY6AFEnLH%2BPYLvg%2BBxDzb00N1Zj5qpbfOFYgaXa%2FFFmTHK2rUpG2%2BGDkFPi%2Be8RlH3WWIW2G3XyOGcvGNAbKSwz9MXUlx079LzAmumB0vA9uw1bpl4%3D%7Ctkp%3ABk9SR-Lxzs_8ZQ" 
+                class="btn btn-primary" 
+                style="display: inline-block; padding: 12px 30px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease;"
+                target="_blank"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(138, 43, 226, 0.6)';" 
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(138, 43, 226, 0.4)';">
+                Buy DeepSeek All-in-One Machine
+            </a>
+        </div>
+        
         <div class="section row">
             <h2 class="col">Biography</h2>
             <div class="section-text col-right row">

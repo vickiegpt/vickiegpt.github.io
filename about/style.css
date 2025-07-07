@@ -49,7 +49,7 @@ body {
 }
 
 #live2d-submit {
-  background-color: #4CAF50;
+  background-color: #8B2BE2;
   color: white;
   border: none;
   padding: 5px 10px;
@@ -59,11 +59,11 @@ body {
 }
 
 #live2d-submit:hover {
-  background-color: #45a049;
+  background-color: #6A0DAD;
 }
 
 #live2d-input-button {
-  background-color: #ff69b4;
+  background-color: #8B2BE2;
   color: white;
   border: none;
   border-radius: 50%;
@@ -78,7 +78,7 @@ body {
 }
 
 #live2d-input-button:hover {
-  background-color: #ff1493;
+  background-color: #6A0DAD;
 }
 .skillset {
   display: none;
@@ -196,7 +196,7 @@ body {
 }
 
 .social-panel p a {
-  color: #FF7500;
+  color: #9370DB;
   text-decoration: none;
 }
 
@@ -234,8 +234,8 @@ body {
 }
 
 .social-panel ul li a:hover {
-  border-color: #FF6A00;
-  box-shadow: 0 9px 12px -9px #FF6A00;
+  border-color: #8B2BE2;
+  box-shadow: 0 9px 12px -9px #8B2BE2;
 }
 
 .floating-btn {
@@ -278,7 +278,7 @@ body {
 }
 
 .floating-text a {
-  color: #FF7500;
+  color: #9370DB;
   text-decoration: none;
 }
 
@@ -390,7 +390,7 @@ h1 {
   font-weight: 300;
   margin: 0px 0 0;
   font-size: 1.75em;
-  color: red;
+  color: #8B2BE2;
   padding: 0 0px 0px;
   border-radius: 2px;
   font-family: 'Merriweather', serif;
@@ -398,12 +398,12 @@ h1 {
 
 h1.dark-mode {
   background-color: black;
-  color: red;
+  color: #9370DB;
 }
 
 h2 {
   float: right;
-  color: red;
+  color: #8B2BE2;
   width: 100%;
   font-size: 18px;
   padding-left: 0px;
@@ -414,7 +414,7 @@ h2 {
 
 h2.dark-mode {
   background-color: black;
-  color: red;
+  color: #9370DB;
 }
 
 h3 {
@@ -435,7 +435,7 @@ h2, h3 {
 }
 
 a {
-  color: red;
+  color: #8B2BE2;
   display: inline-block;
   text-decoration: none;
   padding: 2px 4px;
@@ -444,7 +444,7 @@ a {
 }
 
 a:hover {
-  background-color: red;
+  background-color: #8B2BE2;
   color: #fff;
 }
 
@@ -2179,32 +2179,32 @@ a.badge-secondary:focus, a.badge-secondary.focus {
 
 .badge-success {
   color: #fff;
-  background-color: #28a745
+  background-color: #8B2BE2
 }
 
 a.badge-success:hover, a.badge-success:focus {
   color: #fff;
-  background-color: #1e7e34
+  background-color: #6A0DAD
 }
 
 a.badge-success:focus, a.badge-success.focus {
   outline: 0;
-  box-shadow: 0 0 0 .2rem rgba(40, 167, 69, .5)
+  box-shadow: 0 0 0 .2rem rgba(139, 43, 226, .5)
 }
 
 .badge-info {
   color: #fff;
-  background-color: #17a2b8
+  background-color: #9370DB
 }
 
 a.badge-info:hover, a.badge-info:focus {
   color: #fff;
-  background-color: #117a8b
+  background-color: #7B68EE
 }
 
 a.badge-info:focus, a.badge-info.focus {
   outline: 0;
-  box-shadow: 0 0 0 .2rem rgba(23, 162, 184, .5)
+  box-shadow: 0 0 0 .2rem rgba(147, 112, 219, .5)
 }
 
 .badge-warning {
@@ -2344,12 +2344,12 @@ a.badge-dark:focus, a.badge-dark.focus {
 
 .alert-success {
   color: #155724;
-  background-color: #d4edda;
-  border-color: #c3e6cb
+  background-color: #E6D4FF;
+  border-color: #DCC3FF
 }
 
 .alert-success hr {
-  border-top-color: #b1dfbb
+  border-top-color: #D1B1FF
 }
 
 .alert-success .alert-link {
@@ -2358,12 +2358,12 @@ a.badge-dark:focus, a.badge-dark.focus {
 
 .alert-info {
   color: #0c5460;
-  background-color: #d1ecf1;
-  border-color: #bee5eb
+  background-color: #E1D1FF;
+  border-color: #D5BEFF
 }
 
 .alert-info hr {
-  border-top-color: #abdde5
+  border-top-color: #C9ABFF
 }
 
 .alert-info .alert-link {
@@ -2715,12 +2715,12 @@ a.badge-dark:focus, a.badge-dark.focus {
 
 .list-group-item-success {
   color: #155724;
-  background-color: #c3e6cb
+  background-color: #DCC3FF
 }
 
 .list-group-item-success.list-group-item-action:hover, .list-group-item-success.list-group-item-action:focus {
   color: #155724;
-  background-color: #b1dfbb
+  background-color: #D1B1FF
 }
 
 .list-group-item-success.list-group-item-action.active {
@@ -2731,12 +2731,12 @@ a.badge-dark:focus, a.badge-dark.focus {
 
 .list-group-item-info {
   color: #0c5460;
-  background-color: #bee5eb
+  background-color: #D5BEFF
 }
 
 .list-group-item-info.list-group-item-action:hover, .list-group-item-info.list-group-item-action:focus {
   color: #0c5460;
-  background-color: #abdde5
+  background-color: #C9ABFF
 }
 
 .list-group-item-info.list-group-item-action.active {
