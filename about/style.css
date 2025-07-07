@@ -873,8 +873,8 @@ ul.skills li:last-child {
 
 .custom-control-input:checked~.custom-control-label::before {
   color: #fff;
-  border-color: red;
-  background-color: red
+  border-color: purple;
+  background-color: purple
 }
 
 .custom-control-input:focus~.custom-control-label::before {
@@ -938,8 +938,8 @@ ul.skills li:last-child {
 }
 
 .custom-checkbox .custom-control-input:indeterminate~.custom-control-label::before {
-  border-color: red;
-  background-color: red
+  border-color: purple;
+  background-color: purple
 }
 
 .custom-checkbox .custom-control-input:indeterminate~.custom-control-label::after {
@@ -947,11 +947,11 @@ ul.skills li:last-child {
 }
 
 .custom-checkbox .custom-control-input:disabled:checked~.custom-control-label::before {
-  background-color: red
+  background-color: purple
 }
 
 .custom-checkbox .custom-control-input:disabled:indeterminate~.custom-control-label::before {
-  background-color: red
+  background-color: purple
 }
 
 .custom-radio .custom-control-label::before {
@@ -963,7 +963,7 @@ ul.skills li:last-child {
 }
 
 .custom-radio .custom-control-input:disabled:checked~.custom-control-label::before {
-  background-color: red
+  background-color: purple
 }
 
 .custom-switch {
@@ -999,7 +999,7 @@ ul.skills li:last-child {
 }
 
 .custom-switch .custom-control-input:disabled:checked~.custom-control-label::before {
-  background-color: red
+  background-color: purple
 }
 
 .custom-select {
@@ -1160,7 +1160,7 @@ ul.skills li:last-child {
   width: 1rem;
   height: 1rem;
   margin-top: -.25rem;
-  background-color: red;
+  background-color: purple;
   border: 0;
   border-radius: 1rem;
   transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
@@ -1190,7 +1190,7 @@ ul.skills li:last-child {
 .custom-range::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
-  background-color: red;
+  background-color: purple;
   border: 0;
   border-radius: 1rem;
   transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
@@ -1223,7 +1223,7 @@ ul.skills li:last-child {
   margin-top: 0;
   margin-right: .2rem;
   margin-left: .2rem;
-  background-color: red;
+  background-color: purple;
   border: 0;
   border-radius: 1rem;
   transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
@@ -1356,7 +1356,7 @@ ul.skills li:last-child {
 
 .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
   color: #fff;
-  background-color: red
+  background-color: purple
 }
 
 .nav-fill .nav-item {
@@ -2032,7 +2032,7 @@ ul.skills li:last-child {
   padding: .5rem .75rem;
   margin-left: -1px;
   line-height: 1.25;
-  color: red;
+  color: purple;
   background-color: #fff;
   border: 1px solid #dee2e6
 }
@@ -2065,8 +2065,8 @@ ul.skills li:last-child {
 .page-item.active .page-link {
   z-index: 1;
   color: #fff;
-  background-color: red;
-  border-color: red
+  background-color: purple;
+  border-color: purple
 }
 
 .page-item.disabled .page-link {
@@ -2149,7 +2149,7 @@ a.badge:hover, a.badge:focus {
 
 .badge-primary {
   color: #fff;
-  background-color: red
+  background-color: purple
 }
 
 a.badge-primary:hover, a.badge-primary:focus {
@@ -2159,7 +2159,7 @@ a.badge-primary:hover, a.badge-primary:focus {
 
 a.badge-primary:focus, a.badge-primary.focus {
   outline: 0;
-  box-shadow: 0 0 0 .2rem red
+  box-shadow: 0 0 0 .2rem purple
 }
 
 .badge-secondary {
@@ -2452,7 +2452,7 @@ a.badge-dark:focus, a.badge-dark.focus {
   color: #fff;
   text-align: center;
   white-space: nowrap;
-  background-color: red;
+  background-color: purple;
   transition: width .6s ease
 }
 
@@ -2540,8 +2540,8 @@ a.badge-dark:focus, a.badge-dark.focus {
 .list-group-item.active {
   z-index: 2;
   color: #fff;
-  background-color: red;
-  border-color: red
+  background-color: purple;
+  border-color: purple
 }
 
 .list-group-horizontal {
