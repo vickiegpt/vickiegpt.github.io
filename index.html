@@ -308,6 +308,41 @@
         }
     </script>
     <style type="text/css">
+        /* Publication layout using Flexbox */
+        .publication-item {
+            margin-bottom: 30px;
+        }
+        
+        .publication-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .publication-title {
+            flex: 1;
+            padding-right: 20px;
+        }
+        
+        .publication-date {
+            flex-shrink: 0;
+            color: #666;
+            font-weight: 300;
+        }
+        
+        .publication-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .publication-authors {
+            color: #666;
+            line-height: 1.6;
+        }
+        
         /* 为hover区域添加圆滑过渡效果 */
         #hover {
             width: 70%;
@@ -681,7 +716,7 @@
                 </div>
                 <div><img
                         src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations"
-                        href="https://scholar.google.com/citations?user=sDUT22MAAAAJ"><a
+                        href="https://scholar.google.com/citations?user=sDUT22MAAAAJ" style="width:64px;height:12px;position:relative;top:1px;"><a
                         href="https://www.linkedin.com/in/yiwei-yang-56b920166/"><i
                             class="fab fa-linkedin-in"></i></a><a
                         href="https://scholar.google.com/citations?user=sDUT22MAAAAJ&hl=zh-TW"> <i
@@ -788,16 +823,16 @@
                             memory allocation, prefetching, and
                             replacement policies. Emulating memory disaggregation for data center applications<a
                                 href="/cxl"><img src="about/cxl.png"
-                                    style="width:24px;height:24px;position:relative;top:2px;"></a></li>
-                        <li>Make Hardware Software Co-design for on CXL.cache data movement<a href="/cxl"><img
+                                    style="width:14px;height:14px;position:relative;top:2px;"></a></li>
+                        <li>Make Hardware Software Co-design for on CXL.cache data movement<a href="https://CXLMemUring.github.io"><img
                                     src="/about/cxlmemuring.jpg"
-                                    style="width:24px;height:24px;position:relative;top:2px;"></a></li>
-                        <li>Make universal migration based on WebAssembly and PTX<a href="/mvvm"><img
-                                    src="/about/mvvm.png" style="width:24px;height:24px;position:relative;top:2px;"></a>
+                                    style="width:14px;height:14px;position:relative;top:2px;"></a></li>
+                        <li>Make universal migration based on WebAssembly and PTX<a href="https://Multi-V-VM.github.io"><img
+                                    src="/about/mvvm.png" style="width:14px;height:14px;position:relative;top:2px;"></a>
                         </li>
                         <li>Make cross kernel-userspace eBPF observation for distributed system<a
-                                href="https://github.com/eunomia-bpf/bpftime/"><img src="/about/ebpf.png"
-                                    style="width:24px;height:24px;position:relative;top:2px;"></a></li>
+                                href="https://eunomia.dev/"><img src="/about/ebpf.png"
+                                    style="width:14px;height:14px;position:relative;top:2px;"></a></li>
                 </div>
             </div>
 
@@ -840,292 +875,168 @@
         <div class="section row">
             <h2 class="col" id="publication">Publications</h2>
             <div class="section-text col-right">
-                <div class="row">
-                    <div class="col">
-                        <h3>HetGPU: The pursuit of making binary compatibility towards
-                            GPUs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">HetGPU: The pursuit of making binary compatibility towards GPUs</h3>
+                        <div class="publication-date">June 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">June 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/" target="_blank"
-                            rel="noopener">Preprint</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://www.arxiv.org/pdf/2506.15993">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_preprint25.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/Multi-V-VM/hetGPU">
-                            Code</a>
-                        <div class="col light"><b>Yiwei Yang</b>, Yusheng Zheng, Tong Yu,
-                            Andi
-                            Quinn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/" target="_blank" rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://www.arxiv.org/pdf/2506.15993">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_preprint25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/Multi-V-VM/hetGPU">Code</a>
                     </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yusheng Zheng, Tong Yu, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>CXLMemUring: A Hardware Software Co-design Paradigm for Asynchronous and Flexible Parallel
-                            CXL Memory Pool Access
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">CXLMemUring: A Hardware Software Co-design Paradigm for Asynchronous and Flexible Parallel CXL Memory Pool Access</h3>
+                        <div class="publication-date">September 2023</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">September 2023</div>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/" target="_blank"
-                            rel="noopener">Preprint</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2309.04011">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_preprint23.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/CXLMemUring/CIRA">
-                            Code</a>
-                        <div class="col light"><b>Yiwei Yang</b>, Steve Hu, Brian Zhao,
-                            Andi
-                            Quinn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/" target="_blank" rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2309.04011">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_preprint23.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/CXLMemUring/CIRA">Code</a>
                     </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Steve Hu, Brian Zhao, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>Transparent and Efficient Live Migration across Heterogeneous Hosts with Wharf
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Transparent and Efficient Live Migration across Heterogeneous Hosts with Wharf</h3>
+                        <div class="publication-date">October 2024</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">October 2024</div>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/" target="_blank"
-                            rel="noopener">Preprint</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2410.15894">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_preprint24.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/Multi-V-VM/MVVM">
-                            Code</a>
-                        <div class="col light"><b>Yiwei Yang</b>, Aibo Hu, Yusheng Zheng, Brian Zhao, Xinqi Zhang,
-                            Andi Quinn
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/" target="_blank" rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2410.15894">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_preprint24.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/Multi-V-VM/MVVM">Code</a>
                     </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Aibo Hu, Yusheng Zheng, Brian Zhao, Xinqi Zhang, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>eInfer: Unlocking Fine-Grained Tracing for
-                            Distributed LLM Inference with eBPF</h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">eInfer: Unlocking Fine-Grained Tracing for Distributed LLM Inference with eBPF</h3>
+                        <div class="publication-date">September 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">September 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank"
-                            rel="noopener">eBPF
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/pdf/ebpf25-paper80.pdf" target="_blank"
-                            rel="noopener">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_ebpf25.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/eGPU">
-                            Code</a>
-                        <div class="col light">Kexin Chu, Jianchang Su, Yifan Zhang, Chenxingyu Zhao, <b>Yiwei Yang</b>,
-                            Yusheng Zheng, Shengkai Lin, Shizhen Zhao, Wei
-                            Zhang
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank" rel="noopener">eBPF 25</a>
+                        <a class="btn btn-outline-primary" href="/pdf/ebpf25-paper80.pdf" target="_blank" rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_ebpf25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/eGPU">Code</a>
                     </div>
+                    <div class="publication-authors">Kexin Chu, Jianchang Su, Yifan Zhang, Chenxingyu Zhao, <b>Yiwei Yang</b>, Yusheng Zheng, Shengkai Lin, Shizhen Zhao, Wei Zhang</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>ChainIO: Bridging Disk and Network Domains with
-                            eBPF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">ChainIO: Bridging Disk and Network Domains with eBPF</h3>
+                        <div class="publication-date">September 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">September 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank"
-                            rel="noopener">eBPF
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/pdf/ebpf25-paper77.pdf" target="_blank"
-                            rel="noopener">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_ebpf25_1.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/Bur">
-                            Code</a>
-                        <div class="col light">Zheng Cao, He Xuhang, Yanpeng Hu, Yusheng Zheng, <b>Yiwei Yang</b>,
-                            Jianchang Su, Wei Zhang Andi Quinn
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank" rel="noopener">eBPF 25</a>
+                        <a class="btn btn-outline-primary" href="/pdf/ebpf25-paper77.pdf" target="_blank" rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_ebpf25_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/Bur">Code</a>
                     </div>
+                    <div class="publication-authors">Zheng Cao, He Xuhang, Yanpeng Hu, Yusheng Zheng, <b>Yiwei Yang</b>, Jianchang Su, Wei Zhang Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>Offloading the Tedious Task of Writing eBPF
-                            Programs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Offloading the Tedious Task of Writing eBPF Programs</h3>
+                        <div class="publication-date">September 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">September 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank"
-                            rel="noopener">eBPF
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/pdf/ebpf25-paper74.pdf" target="_blank"
-                            rel="noopener">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_ebpf25_2.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/KEN">
-                            Code</a>
-                        <div class="col light">Xiangyu Gao, Xiangfeng Zhu, Bhavana Vannarth Shobhana, <b>Yiwei Yang</b>,
-                            Arvind Krishnamurthy Ratul Mahajan
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank" rel="noopener">eBPF 25</a>
+                        <a class="btn btn-outline-primary" href="/pdf/ebpf25-paper74.pdf" target="_blank" rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_ebpf25_2.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/KEN">Code</a>
                     </div>
+                    <div class="publication-authors">Xiangyu Gao, Xiangfeng Zhu, Bhavana Vannarth Shobhana, <b>Yiwei Yang</b>, Arvind Krishnamurthy Ratul Mahajan</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>Extending Applications Safely and Efficiently (bpftime: userspace eBPF Runtime for Uprobe,
-                            Syscall and Kernel-User Interactions)</h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Extending Applications Safely and Efficiently (bpftime: userspace eBPF Runtime for Uprobe, Syscall and Kernel-User Interactions)</h3>
+                        <div class="publication-date">July 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">July 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://www.usenix.org/conference/osdi25/">OSDI
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://www.usenix.org/system/files/osdi25-zheng-yusheng.pdf">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_osdi25.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/about/osdi25.pdf">
-                            Slides</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/about/osdi25_posters.pdf">
-                            Poster</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/bpftime/">
-                            Code</a>
-                        <div class="col light">Yusheng Zheng, Tong Yu, <b>Yiwei Yang</b>, Yanpeng Hu, XiaoZheng Lai, Dan
-                            Williams,
-                            Andi Quinn
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://www.usenix.org/conference/osdi25/">OSDI 25</a>
+                        <a class="btn btn-outline-primary" href="https://www.usenix.org/system/files/osdi25-zheng-yusheng.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_osdi25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/about/osdi25.pdf">Slides</a>
+                        <a class="btn btn-outline-primary" href="/about/osdi25_posters.pdf">Poster</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/bpftime/">Code</a>
                     </div>
+                    <div class="publication-authors">Yusheng Zheng, Tong Yu, <b>Yiwei Yang</b>, Yanpeng Hu, XiaoZheng Lai, Dan Williams, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>wBPF: Efficient Edge-Case Observability for CXL
-                            Pooling systems via
-                            eBPF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">wBPF: Efficient Edge-Case Observability for CXL Pooling systems via eBPF</h3>
+                        <div class="publication-date">February 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">February 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://hcds-workshop.github.io/edition/2025/">HCDS
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726985">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_hcds25_1.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://docs.google.com/presentation/d/1zd_GxT1ssy8Z5yWdYGKFEEejP27pXx36va_5rAUTpas">Slides</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://github.com/eunomia-bpf/wasm-bpf-evaluation/tree/dev-atc25">
-                            Code</a>
-                        <div class="col light">Yusheng Zheng, Yu Tong, <b>Yiwei Yang</b>,
-                            Andi
-                            Quinn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://hcds-workshop.github.io/edition/2025/">HCDS 25</a>
+                        <a class="btn btn-outline-primary" href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726985">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_hcds25_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://docs.google.com/presentation/d/1zd_GxT1ssy8Z5yWdYGKFEEejP27pXx36va_5rAUTpas">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/wasm-bpf-evaluation/tree/dev-atc25">Code</a>
                     </div>
+                    <div class="publication-authors">Yusheng Zheng, Yu Tong, <b>Yiwei Yang</b>, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>eGPU: Extending eBPF Programmability and Observability to
-                            GPUs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">eGPU: Extending eBPF Programmability and Observability to GPUs</h3>
+                        <div class="publication-date">February 2025</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">February 2025</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://hcds-workshop.github.io/edition/2025/">HCDS
-                            25</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726984" target="_blank"
-                            rel="noopener">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_hcds25.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://docs.google.com/presentation/d/1K80P6URGDKZvJUmpFxzlvXQywnzvTnFvRZufZp-7mmo">Slides</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/eGPU">
-                            Code</a>
-                        <div class="col light"><b>Yiwei Yang</b>, Yu Tong, Yusheng Zheng,
-                            Andi
-                            Quinn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://hcds-workshop.github.io/edition/2025/">HCDS 25</a>
+                        <a class="btn btn-outline-primary" href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726984" target="_blank" rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_hcds25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://docs.google.com/presentation/d/1K80P6URGDKZvJUmpFxzlvXQywnzvTnFvRZufZp-7mmo">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/eGPU">Code</a>
                     </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yu Tong, Yusheng Zheng, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>Kgent: Kernel Extensions Large Language Model Agent (KEN: Kernel Extensions using Natural
-                            Language)
-                        </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Kgent: Kernel Extensions Large Language Model Agent (KEN: Kernel Extensions using Natural Language)</h3>
+                        <div class="publication-date">Jun 2024</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">Jun 2024</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://conferences.sigcomm.org/sigcomm/2024/workshop/ebpf/" target="_blank"
-                            rel="noopener">eBPF 24</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2312.05531">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_ebpf24.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="/about/KEN.pptx" target="_blank"
-                            rel="noopener">Slides</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://github.com/eunomia-bpf/KEN/">
-                            Code</a>
-                        <div class="col light">Yusheng Zheng, <b>Yiwei Yang</b>, Maolin Chen, Andi Quinn
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conferences.sigcomm.org/sigcomm/2024/workshop/ebpf/" target="_blank" rel="noopener">eBPF 24</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2312.05531">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_ebpf24.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/pdf/KEN.pdf" target="_blank" rel="noopener">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/KEN/">Code</a>
                     </div>
+                    <div class="publication-authors">Yusheng Zheng, <b>Yiwei Yang</b>, Maolin Chen, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>CXLMemSim: A pure software simulated CXL.mem for performance characterization </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">CXLMemSim: A pure software simulated CXL.mem for performance characterization</h3>
+                        <div class="publication-date">March 2023</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">March 2023</div>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://web.mit.edu/yarch2023/">Yarch23</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2303.06153.pdf">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_yarch23.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://docs.google.com/file/d/1bZi2rbB-u5xMw_YET726gb2s9QuxMZJE/edit?usp=docslist_api&filetype=mspresentation">
-                            Slides</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://drive.google.com/file/d/1XtCbRUyMwgxGaRUnMCnlDDJKFmeaVszP/view?usp=sharing">
-                            Poster</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://github.com/SlugLab/SlugAllocator">Code</a>
-                        <div class="col light"><b>Yiwei Yang</b>, Pooneh Safayenikoo, Jiacheng Ma, Tanvir Ahmed
-                            Khan, Andi Quinn
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://web.mit.edu/yarch2023/">Yarch23</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2303.06153.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_yarch23.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://docs.google.com/file/d/1bZi2rbB-u5xMw_YET726gb2s9QuxMZJE/edit?usp=docslist_api&filetype=mspresentation">Slides</a>
+                        <a class="btn btn-outline-primary" href="/pdf/yarch23_poster.pdf">Poster</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/SlugLab/SlugAllocator">Code</a>
                     </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Pooneh Safayenikoo, Jiacheng Ma, Tanvir Ahmed Khan, Andi Quinn</div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <h3>Attack as Defense: Characterizing Adversarial Examples using Robustness </h3>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Attack as Defense: Characterizing Adversarial Examples using Robustness</h3>
+                        <div class="publication-date">July 2021</div>
                     </div>
-                    <div class="btn-links mb-3">
-                        <div class="col-right light">July 2021</div>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://conf.researchr.org/home/issta-2021">ISSTA21</a>
-                        <a class="btn btn-outline-primary my-1 mr-1" href="https://arxiv.org/pdf/2103.07633.pdf">PDF</a>
-                        <a class="btn btn-outline-primary my-1 mr-1 js-cite-modal" href="javascript:void(0)"
-                            data-filename="/about/cite_issta21.bib">
-                            Cite</a>
-                        <a class="btn btn-outline-primary my-1 mr-1"
-                            href="https://github.com/S3L-official/attack-as-detection" target="_blank"
-                            rel="noopener">Code</a>
-                        <div class="col light"><a href="http://s3l.shanghaitech.edu.cn/people/zhezhao/">Zhe
-                                Zhao</a>, Guangke Chen, Jingyi Wang, <b>Yiwei Yang</b>, Fu Song,
-                            Jun Sun
-                        </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conf.researchr.org/home/issta-2021">ISSTA21</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2103.07633.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)" data-filename="/about/cite_issta21.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/S3L-official/attack-as-detection" target="_blank" rel="noopener">Code</a>
                     </div>
+                    <div class="publication-authors"><a href="http://s3l.shanghaitech.edu.cn/people/zhezhao/">Zhe Zhao</a>, Guangke Chen, Jingyi Wang, <b>Yiwei Yang</b>, Fu Song, Jun Sun</div>
                 </div>
 
             </div>
@@ -1162,7 +1073,7 @@
                     </div>
                     <div style="white-space: pre-line;"><a></a></div>
                     <div class="btn-links mb-3">
-                        <a class="container">&nbsp;&nbsp;<br></a>
+                        <div style="height: 20px;"></div>
                         <div class="col-right light">Fall 2022</div>
                         <a class="btn btn-outline-primary my-1 mr-1"
                             href="https://docs.google.com/presentation/d/1Bovx3vuJ70Lof-ZHi-XeJHOaoJa_qVEUqol0Vy4AKPg/edit#slide=id.p"
