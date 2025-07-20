@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # Allow manual trigger
   push:
     paths:
-      - 'scripts/update_citations.py'
+      - 'scripts/update_citations_scholarly.py'
       - '.github/workflows/update-citations.yml'
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
     - name: Run citation update script
       run: |
         cd scripts
-        python update_citations.py
+        python update_citations_scholarly.py
 
     - name: Check if citations were updated
       id: check_changes
