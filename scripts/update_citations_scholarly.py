@@ -101,20 +101,8 @@ def main():
             sys.exit(1)
     else:
         print("Failed to fetch citation count")
-        # Try the web scraping method as fallback
-        print("Trying web scraping method...")
-        from update_citations import get_citation_count
-        citation_count = get_citation_count()
-        if citation_count is not None:
-            print(f"Found {citation_count} citations (via web scraping)")
-            if update_json_file(citation_count):
-                print("Update completed successfully")
-            else:
-                print("Failed to update JSON file")
-                sys.exit(1)
-        else:
-            print("Both methods failed")
-            sys.exit(1)
+        print("The scholarly library couldn't fetch from Google Scholar")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
