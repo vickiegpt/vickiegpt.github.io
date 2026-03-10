@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1900">
   <title>Live2D</title>
-  <link rel="stylesheet" href="./css/live2d.css">
+  <link rel="stylesheet" href="./css/live2d.css?v=20260309">
   <link rel="stylesheet" href="./font/iconfont.css">
   <!-- Pollyfill script -->
   <!-- <script src="https://unpkg.com/core-js-bundle@3.6.1/minified.js"></script> -->
@@ -37,6 +37,10 @@
       background-color: rgba(143, 7, 7, 0.89);
     }
   </style>
+
+<style>
+#landlord { width: 320px !important; height: 520px !important; }
+</style>
 </head>
 
 <body style="width: 100%; height: 100%;">
@@ -48,7 +52,7 @@
 
   <script type="text/javascript" src="./js/jquery.min.js"></script>
   <script src="./js/main.js"></script>
-  <script type="text/javascript" src="./js/message.js"></script>
+  <script type="text/javascript" src="./js/message.js?v=20260309"></script>
   <button id='staticCheckButton' class='compile-button'>Run Static Checks</button>
 
   <!-- Claude 聊天界面 -->
@@ -85,7 +89,7 @@
   <pre class="example"></pre>
 
   <script>
-    var compileService = "http://127.0.0.1:9880";
+    var compileService = "/play_music_api";
     var Range = require('ace/range').Range;
 
     function makeEditor(example) {
@@ -119,7 +123,7 @@
         console.log("Running static checks...");
         clearMarkers();
         var code = editor.getValue();
-        fetch('http://127.0.0.1:9880/play_music', {
+        fetch('/play_music_api/play_music', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

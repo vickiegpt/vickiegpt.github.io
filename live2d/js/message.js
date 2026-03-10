@@ -238,39 +238,35 @@ async function synthesizeVoice(text, voiceType = 'paimon') {
     }
 }
 
-// 与 Claude 聊天 (模拟回复 - 避免 CORS 错误)
+// 与 yyw 聊天 (Gemini 真实回复)
 async function chatWithClaude(userMessage) {
     const selectedVoice = $('#voice-select').val() || 'paimon';
+    const charName = selectedVoice === 'linyi' ? '林忆' : 'yyw';
+    const thinking = selectedVoice === 'linyi' ? '让我想想怎么骂你...' : '让yyw想想...';
 
-    const responses = {
-        paimon: {
-            messages: [
-                '旅行者，这个问题yyw也不太懂呢～',
-                '哇！听起来好有趣的样子！yyw想知道更多！',
-                '唔...让yyw想想...应该是这样的吧！',
-                '旅行者真厉害！yyw都要学不过来了～',
-                '这个yyw知道！就像是...嗯...那个...算了，yyw忘了～',
-                '哇哦！旅行者说的话yyw都听懂了呢！',
-                'yyw觉得旅行者说得很对！就是这样的！',
-                '嘿嘿，旅行者又在逗yyw开心了～'
-            ],
-            thinking: '让yyw想想...',
-            name: 'yyw'
-        },
-        linyi: {
-            messages: [
-                '切，这种问题你也要问我？',
-                '啧，真是麻烦死了...',
-                '你这脑子是怎么长的？',
-                '算了算了，我告诉你吧...',
-                '这么简单的事情都不懂吗？',
-                '真是服了你了，听好了...',
-                '下次别问这种弱智问题',
-                '我就勉强回答你一下吧'
-            ],
-            thinking: '让我想想怎么骂你...',
-            name: '林忆'
-        }
+    showMessage(thinking, 1000);
+
+    try {
+        const resp = await fetch('/yyw-chat/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage, voice: selectedVoice })
+        });
+        const data = await resp.json();
+        const reply = data.reply || '唔...yyw不知道怎么回答呢～';
+
+        setTimeout(async () => {
+            showMessage(reply, 5000);
+            await synthesizeVoice(reply, selectedVoice);
+            const chatMessages = $('#chat-messages');
+            if (chatMessages.length > 0) {
+                chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${charName}:</strong> ${reply}</div>`);
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+        }, 800);
+    } catch (e) {
+        console.error('chat error:', e);
+        showMessage('网络出问题了，yyw联系不上了～', 2000);
     };
 
     const currentChar = responses[selectedVoice];

@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
+const marketplaceRouter = require('./code/router');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
+
+// Mount self-hosted marketplace API (no external forwarding)
+app.use(marketplaceRouter);
 
 // API endpoint for Claude chat
 app.post('/api/chat', async (req, res) => {
@@ -62,6 +66,11 @@ app.post('/api/chat', async (req, res) => {
 // Serve static files
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Convenience route to marketplace docs
+app.get('/code', (req, res) => {
+    res.sendFile(path.join(__dirname, 'code', 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {

@@ -34,12 +34,11 @@
     position: fixed; 
     right: 30px;
     bottom: 0;
+    width: 200px;
+    height: 400px;
     z-index: 100;
-    width: 320px;
-    height: 380px;
     pointer-events: none;
 }
-
 #landlord .live2d {
     pointer-events: auto;
 }
