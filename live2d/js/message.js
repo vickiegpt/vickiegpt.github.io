@@ -108,7 +108,6 @@ window.bindConfigEvent = (config) => {
  */
 function showMessage(text, timeout) {
     if (Array.isArray(text)) text = text[Math.floor(Math.random() * text.length + 1) - 1];
-    console.log('showMessage', text);
     $('.message').stop();
     $('.message').html(text).fadeTo(200, 1);
     if (timeout === null) timeout = 5000;
@@ -130,7 +129,7 @@ window.adjustSize = (width, height) => {
     document.getElementById("live2d").width = width;
     document.getElementById("live2d").height = height;
 }
-adjustSize(320, 380)
+adjustSize(320, 500)
 
 // Claude API 调用函数
 async function callClaudeAPI(userMessage) {
@@ -182,7 +181,7 @@ function setClaudeApiKey(apiKey) {
 const VOICE_CONFIG = {
     voices: {
         paimon: {
-            baseUrl: 'https://asplos.dev/play_music',
+            baseUrl: '/play_music/',
             ref_audio_path: 'samples/Paimon/疑问—哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？.wav',
             prompt_text: '哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？',
             prompt_language: 'zh',
@@ -193,14 +192,16 @@ const VOICE_CONFIG = {
 
 // 语音合成函数
 async function synthesizeVoice(text, voiceType = 'paimon') {
+    console.log('[TTS] synthesizeVoice called, text:', text, 'voice:', voiceType);
     try {
         const voiceSettings = VOICE_CONFIG.voices[voiceType];
         if (!voiceSettings) {
-            console.error('未知的语音类型:', voiceType);
+            console.error('[TTS] 未知的语音类型:', voiceType);
             return;
         }
 
-        const response = await fetch(`${voiceSettings.baseUrl}/tts`, {
+        console.log('[TTS] fetching:', voiceSettings.baseUrl);
+        const response = await fetch(voiceSettings.baseUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -218,8 +219,10 @@ async function synthesizeVoice(text, voiceType = 'paimon') {
             })
         });
 
+        console.log('[TTS] response status:', response.status);
         if (response.ok) {
             const audioBlob = await response.blob();
+            console.log('[TTS] audio blob size:', audioBlob.size, 'type:', audioBlob.type);
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
 
@@ -227,14 +230,16 @@ async function synthesizeVoice(text, voiceType = 'paimon') {
                 URL.revokeObjectURL(audioUrl);
             };
 
-            audio.play().catch(error => {
-                console.error('音频播放失败:', error);
+            audio.play().then(() => {
+                console.log('[TTS] audio playing');
+            }).catch(error => {
+                console.error('[TTS] 音频播放失败:', error);
             });
         } else {
-            console.error('语音合成失败:', response.status, response.statusText);
+            console.error('[TTS] 语音合成失败:', response.status, response.statusText);
         }
     } catch (error) {
-        console.error('语音合成错误:', error);
+        console.error('[TTS] 语音合成错误:', error);
     }
 }
 
@@ -246,46 +251,38 @@ async function chatWithClaude(userMessage) {
 
     showMessage(thinking, 1000);
 
+    let reply = '';
     try {
-        const resp = await fetch('/yyw-chat/chat', {
+        const resp = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: userMessage, voice: selectedVoice })
         });
         const data = await resp.json();
-        const reply = data.reply || '唔...yyw不知道怎么回答呢～';
-
-        setTimeout(async () => {
-            showMessage(reply, 5000);
-            await synthesizeVoice(reply, selectedVoice);
-            const chatMessages = $('#chat-messages');
-            if (chatMessages.length > 0) {
-                chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${charName}:</strong> ${reply}</div>`);
-                chatMessages.scrollTop(chatMessages[0].scrollHeight);
-            }
-        }, 800);
+        reply = data.reply || '';
     } catch (e) {
-        console.error('chat error:', e);
-        showMessage('网络出问题了，yyw联系不上了～', 2000);
-    };
+        console.error('chat API error:', e);
+    }
 
-    const currentChar = responses[selectedVoice];
-    showMessage(currentChar.thinking, 1000);
+    // 如果聊天 API 没有返回回复，直接用用户输入的文字合成语音
+    if (!reply) {
+        reply = userMessage;
+    }
 
-    setTimeout(async () => {
-        const randomResponse = currentChar.messages[Math.floor(Math.random() * currentChar.messages.length)];
-        showMessage(randomResponse, 4000);
+    showMessage(reply, 5000);
 
-        // 合成并播放语音
-        await synthesizeVoice(randomResponse, selectedVoice);
+    const chatMessages = $('#chat-messages');
+    if (chatMessages.length > 0) {
+        chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${charName}:</strong> ${reply}</div>`);
+        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+    }
 
-        // 在聊天记录中添加回复
-        const chatMessages = $('#chat-messages');
-        if (chatMessages.length > 0) {
-            chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>${currentChar.name}:</strong> ${randomResponse}</div>`);
-            chatMessages.scrollTop(chatMessages[0].scrollHeight);
-        }
-    }, 1500);
+    console.log('[Chat] calling synthesizeVoice with reply:', reply);
+    try {
+        await synthesizeVoice(reply, selectedVoice);
+    } catch (e) {
+        console.error('[Chat] TTS error:', e);
+    }
 }
 
 // 信息框

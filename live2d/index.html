@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1900">
   <title>Live2D</title>
-  <link rel="stylesheet" href="./css/live2d.css?v=20260309">
+  <link rel="stylesheet" href="./css/live2d.css?v=20260310">
   <link rel="stylesheet" href="./font/iconfont.css">
   <!-- Pollyfill script -->
   <!-- <script src="https://unpkg.com/core-js-bundle@3.6.1/minified.js"></script> -->
@@ -52,7 +52,7 @@
 
   <script type="text/javascript" src="./js/jquery.min.js"></script>
   <script src="./js/main.js"></script>
-  <script type="text/javascript" src="./js/message.js?v=20260309"></script>
+  <script type="text/javascript" src="./js/message.js?v=20260310"></script>
   <button id='staticCheckButton' class='compile-button'>Run Static Checks</button>
 
   <!-- Claude 聊天界面 -->
@@ -89,7 +89,7 @@
   <pre class="example"></pre>
 
   <script>
-    var compileService = "/play_music_api";
+    var compileService = "https://asplos.dev/play_music";
     var Range = require('ace/range').Range;
 
     function makeEditor(example) {
@@ -123,19 +123,34 @@
         console.log("Running static checks...");
         clearMarkers();
         var code = editor.getValue();
-        fetch('/play_music_api/play_music', {
+        fetch('https://asplos.dev/play_music/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            "text": "",
+            "text": code,
             "text_language": "zh",
+            "ref_audio_path": "samples/Paimon/疑问—哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？.wav",
+            "prompt_text": "哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？",
+            "prompt_language": "zh",
+            "top_k": 5,
+            "top_p": 1,
+            "temperature": 1,
             "cut_punc": "，。",
           }),
-        }).then(response => response.json())
-          .then(data => {
-            console.log('Success:', data);
+        }).then(response => {
+            if (response.ok) {
+              return response.blob();
+            }
+            throw new Error('TTS request failed: ' + response.status);
+          })
+          .then(blob => {
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.onended = () => URL.revokeObjectURL(audioUrl);
+            audio.play().catch(err => console.error('Audio play failed:', err));
+            console.log('Success: audio playing');
           })
           .catch((error) => {
             console.error('Error:', error);
