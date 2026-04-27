@@ -97,7 +97,7 @@
 
             } catch (error) {
                 console.error('Claude API error:', error);
-                showMessage('聊天服务暂时不可用', 3000);
+                showMessage('Chat service is temporarily unavailable', 3000);
             }
         };
         // Page Loading and Animation Effects
@@ -123,13 +123,24 @@
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
             const particleCount = 50;
+            const colors = [
+                'rgba(123, 56, 255, 0.26)',
+                'rgba(255, 122, 89, 0.24)',
+                'rgba(22, 198, 163, 0.24)',
+                'rgba(50, 72, 255, 0.2)'
+            ];
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 8 + 3;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
                 particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
                 particlesContainer.appendChild(particle);
             }
         }
@@ -152,6 +163,7 @@
 
             // Initialize scroll reveal
             initScrollReveal();
+            initSpotlightCards();
         }
 
         function initScrollReveal() {
@@ -171,6 +183,18 @@
 
             revealElements.forEach(element => {
                 observer.observe(element);
+            });
+        }
+
+        function initSpotlightCards() {
+            const spotlightCards = document.querySelectorAll('.fact-card, .play-card, .publication-item');
+
+            spotlightCards.forEach((card) => {
+                card.addEventListener('pointermove', (event) => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+                    card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+                });
             });
         }
 
@@ -212,7 +236,7 @@
                 });
             }
 
-            // 按Enter键也可以发送
+            // Send on Enter.
             if (inputField) {
                 inputField.addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') {
@@ -222,7 +246,7 @@
                 });
             }
 
-            // Claude 聊天界面事件处理
+            // Claude chat panel handlers.
             const chatPanel = $('#claude-chat-panel');
             const openChatBtn = $('#open-chat');
             const closeChatBtn = $('#close-chat');
@@ -230,30 +254,30 @@
             const chatInput = $('#chat-input');
             const chatMessages = $('#chat-messages');
 
-            // 打开聊天面板
+            // Open chat panel.
             openChatBtn.click(function () {
-                console.log('聊天按钮被点击了');
+                console.log('Chat button clicked');
                 chatPanel.show();
                 openChatBtn.hide();
             });
 
-            // 关闭聊天面板
+            // Close chat panel.
             closeChatBtn.click(function () {
                 chatPanel.hide();
                 openChatBtn.show();
             });
 
-            // 发送Claude消息
+            // Send Claude message.
             function sendClaudeMessage() {
                 const message = chatInput.val().trim();
                 if (!message) return;
 
-                // 添加用户消息到聊天记录
-                chatMessages.append(`<div style="margin-bottom: 5px;"><strong>你:</strong> ${message}</div>`);
+                // Add the user message to the chat history.
+                chatMessages.append(`<div style="margin-bottom: 5px;"><strong>You:</strong> ${message}</div>`);
                 chatInput.val('');
                 chatMessages.scrollTop(chatMessages[0].scrollHeight);
 
-                // 调用 Claude API
+                // Call the Claude API.
                 window.chatWithClaude(message);
             }
 
@@ -265,12 +289,12 @@
             });
 
 
-            // 重写 showMessage 函数以同时显示在聊天记录中
+            // Mirror showMessage responses into the chat history.
             const originalShowMessage = window.showMessage;
             if (originalShowMessage) {
                 window.showMessage = function (text, timeout) {
                     originalShowMessage(text, timeout);
-                    // 如果聊天面板打开，也在聊天记录中显示
+                    // If the chat panel is open, show the response there too.
                     if (chatPanel.is(':visible') && text.startsWith('yyw:')) {
                         chatMessages.append(`<div style="margin-bottom: 5px; color: #8B2BE2;"><strong>${text}</strong></div>`);
                         chatMessages.scrollTop(chatMessages[0].scrollHeight);
@@ -412,11 +436,13 @@
         .btn-primary {
             background-color: #8B2BE2 !important;
             border-color: #8B2BE2 !important;
+            color: white !important;
         }
 
         .btn-primary:hover {
             background-color: #6A0DAD !important;
             border-color: #6A0DAD !important;
+            color: white !important;
         }
 
         /* Update link colors */
@@ -611,6 +637,795 @@
         .btn:hover::before {
             left: 100%;
         }
+
+        :root {
+            --brand-violet: #7b38ff;
+            --brand-indigo: #3248ff;
+            --brand-coral: #ff7a59;
+            --brand-mint: #16c6a3;
+            --ink-strong: #21183a;
+            --ink-soft: #5e5676;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-border: rgba(123, 56, 255, 0.12);
+            --shadow-soft: 0 24px 80px rgba(52, 41, 89, 0.16);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            color: var(--ink-strong);
+            background:
+                radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 28%),
+                radial-gradient(circle at top right, rgba(50, 72, 255, 0.16), transparent 24%),
+                linear-gradient(180deg, #f9f4ff 0%, #f7fbff 45%, #fffaf4 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: -2;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -120px;
+            left: -120px;
+            background: rgba(22, 198, 163, 0.25);
+        }
+
+        body::after {
+            right: -140px;
+            bottom: 10%;
+            background: rgba(123, 56, 255, 0.2);
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 32px 20px 72px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page>.section.row {
+            margin: 0 0 28px;
+            padding: 30px 32px;
+            border-radius: 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page>.section.row::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -90px;
+            top: -90px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(123, 56, 255, 0.16) 0%, rgba(123, 56, 255, 0) 72%);
+            pointer-events: none;
+        }
+
+        .section:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 80px rgba(33, 24, 58, 0.14);
+        }
+
+        .hero-section {
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.93), rgba(247, 251, 255, 0.78)),
+                radial-gradient(circle at right top, rgba(123, 56, 255, 0.14), transparent 30%);
+        }
+
+        .hero-section:hover {
+            transform: translateY(-4px);
+        }
+
+        .hero-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
+            gap: 34px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hero-copy,
+        .hero-aside {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(123, 56, 255, 0.08);
+            color: var(--brand-violet);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .hero-kicker::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-coral), var(--brand-violet));
+            box-shadow: 0 0 18px rgba(255, 122, 89, 0.5);
+        }
+
+        .hero-title {
+            margin: 18px 0 14px;
+            font-size: clamp(2.4rem, 3.8vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-alias {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 0.5em;
+            color: var(--ink-soft);
+            letter-spacing: 0;
+        }
+
+        .hero-summary {
+            max-width: 680px;
+            font-size: 1.08rem;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            margin-bottom: 20px;
+        }
+
+        .hero-badges,
+        .hero-actions,
+        .hero-facts,
+        .social-cloud,
+        .play-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(50, 72, 255, 0.12);
+            color: var(--ink-strong);
+            font-weight: 600;
+            box-shadow: 0 10px 24px rgba(50, 72, 255, 0.08);
+        }
+
+        .hero-actions {
+            margin: 22px 0 24px;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            box-shadow: 0 14px 28px rgba(123, 56, 255, 0.12);
+        }
+
+        .hero-facts {
+            margin-top: 10px;
+        }
+
+        .fact-card,
+        .play-card,
+        .publication-item {
+            --spot-x: 50%;
+            --spot-y: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fact-card::before,
+        .play-card::before,
+        .publication-item::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--spot-x) var(--spot-y), rgba(255, 255, 255, 0.4), transparent 42%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+
+        .fact-card:hover::before,
+        .play-card:hover::before,
+        .publication-item:hover::before {
+            opacity: 1;
+        }
+
+        .fact-card {
+            min-width: 160px;
+            flex: 1 1 0;
+            padding: 16px 18px;
+            border-radius: 22px;
+            text-decoration: none;
+            color: var(--ink-strong);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(249, 244, 255, 0.86));
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            box-shadow: 0 12px 30px rgba(123, 56, 255, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .fact-card:hover {
+            transform: translateY(-4px) rotate(-0.4deg);
+            border-color: rgba(255, 122, 89, 0.34);
+            box-shadow: 0 18px 34px rgba(255, 122, 89, 0.12);
+        }
+
+        .fact-label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--brand-violet);
+            margin-bottom: 8px;
+        }
+
+        .fact-card strong {
+            display: block;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .hero-aside {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .hero-portrait {
+            position: relative;
+            padding: 18px;
+            border-radius: 28px;
+            background: linear-gradient(140deg, rgba(123, 56, 255, 0.14), rgba(255, 122, 89, 0.12));
+            border: 1px solid rgba(123, 56, 255, 0.16);
+        }
+
+        .hero-portrait::after {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border-radius: 22px;
+            border: 1px dashed rgba(123, 56, 255, 0.2);
+            pointer-events: none;
+        }
+
+        .hero-avatar-link {
+            display: block;
+            text-align: center;
+        }
+
+        .demo.hero-avatar {
+            width: min(100%, 250px);
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-width: 6px;
+            background: linear-gradient(135deg, rgba(123, 56, 255, 0.14), rgba(255, 122, 89, 0.22));
+            box-shadow: 0 18px 40px rgba(123, 56, 255, 0.18);
+        }
+
+        .hero-mini-card,
+        .contact-card {
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            box-shadow: 0 12px 28px rgba(33, 24, 58, 0.08);
+        }
+
+        .hero-mini-card {
+            margin-top: 16px;
+            padding: 16px 18px;
+        }
+
+        .mini-label {
+            display: inline-block;
+            margin-bottom: 6px;
+            color: var(--brand-coral);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .contact-card {
+            padding: 20px 22px;
+        }
+
+        .contact-topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .contact-topline strong {
+            font-size: 1rem;
+        }
+
+        .contact-subtitle {
+            color: var(--ink-soft);
+            font-size: 0.95rem;
+        }
+
+        .contact-stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-soft);
+            line-height: 1.5;
+        }
+
+        .contact-link a {
+            color: var(--ink-strong);
+            font-weight: 600;
+        }
+
+        .social-cloud {
+            margin-top: 16px;
+            align-items: center;
+        }
+
+        .social-cloud a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(123, 56, 255, 0.08);
+            color: var(--brand-violet);
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .social-cloud a:hover {
+            transform: translateY(-2px);
+            background: var(--brand-violet);
+            color: white;
+        }
+
+        .scholar-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(123, 56, 255, 0.12);
+        }
+
+        .playground-section {
+            background:
+                linear-gradient(135deg, rgba(255, 252, 247, 0.95), rgba(246, 249, 255, 0.86)),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.12), transparent 26%);
+        }
+
+        .playground-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-end;
+            margin-bottom: 22px;
+        }
+
+        .playground-note {
+            max-width: 520px;
+            color: var(--ink-soft);
+            line-height: 1.7;
+            text-align: right;
+        }
+
+        .play-grid {
+            gap: 16px;
+        }
+
+        .play-card {
+            flex: 1 1 240px;
+            min-height: 180px;
+            padding: 22px;
+            border-radius: 24px;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(248, 245, 255, 0.88));
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            text-decoration: none;
+            color: var(--ink-strong);
+            box-shadow: 0 12px 30px rgba(33, 24, 58, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .play-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 40px rgba(33, 24, 58, 0.12);
+            border-color: rgba(22, 198, 163, 0.28);
+        }
+
+        .play-label {
+            display: inline-block;
+            margin-bottom: 14px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(22, 198, 163, 0.1);
+            color: var(--brand-mint);
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .play-title {
+            font-size: 1.28rem;
+            margin-bottom: 10px;
+            line-height: 1.25;
+        }
+
+        .play-copy {
+            color: var(--ink-soft);
+            line-height: 1.75;
+            margin-bottom: 18px;
+        }
+
+        .play-meta {
+            color: var(--brand-violet);
+            font-weight: 700;
+        }
+
+        .publication-item {
+            margin-bottom: 18px;
+            padding: 22px 22px 18px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(249, 245, 255, 0.82));
+            border: 1px solid rgba(123, 56, 255, 0.1);
+            box-shadow: 0 14px 30px rgba(33, 24, 58, 0.05);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .publication-item:hover {
+            transform: translateY(-4px);
+            border-color: rgba(123, 56, 255, 0.2);
+            box-shadow: 0 18px 36px rgba(33, 24, 58, 0.09);
+        }
+
+        .publication-date,
+        .publication-authors {
+            color: var(--ink-soft);
+        }
+
+        .bio-code-block {
+            position: relative;
+            margin-top: 24px;
+            margin-bottom: 0;
+            padding-top: 18px;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(123, 56, 255, 0.18);
+            background: linear-gradient(180deg, #fffdf8, #f7fbff);
+            box-shadow: 0 20px 42px rgba(33, 24, 58, 0.12);
+        }
+
+        .bio-code-block::before {
+            content: "lab notebook / rust-ish";
+            position: absolute;
+            top: 12px;
+            left: 18px;
+            z-index: 1;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(123, 56, 255, 0.1);
+            color: #5b21d9;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .bio-code-block code,
+        .bio-code-block code.hljs {
+            display: block;
+            padding: 22px 24px 24px !important;
+            background: transparent !important;
+            font-size: 0.94rem;
+            line-height: 1.75;
+            color: #172033 !important;
+            text-shadow: none !important;
+        }
+
+        .bio-code-block .hljs-keyword,
+        .bio-code-block .hljs-built_in {
+            color: #8b2be2 !important;
+            font-weight: 700;
+        }
+
+        .bio-code-block .hljs-title,
+        .bio-code-block .hljs-title.function_,
+        .bio-code-block .hljs-function {
+            color: #0f766e !important;
+        }
+
+        .bio-code-block .hljs-type,
+        .bio-code-block .hljs-class,
+        .bio-code-block .hljs-variable.language_ {
+            color: #b45309 !important;
+        }
+
+        .bio-code-block .hljs-string,
+        .bio-code-block .hljs-symbol {
+            color: #0b7a75 !important;
+        }
+
+        .bio-code-block .hljs-number,
+        .bio-code-block .hljs-literal {
+            color: #c2410c !important;
+        }
+
+        .bio-code-block .hljs-comment {
+            color: #64748b !important;
+            font-style: italic;
+        }
+
+        .bio-code-block .hljs-attr,
+        .bio-code-block .hljs-params,
+        .bio-code-block .hljs-punctuation,
+        .bio-code-block .hljs-operator {
+            color: #334155 !important;
+        }
+
+        .section>h2.col {
+            position: relative;
+            margin-bottom: 18px;
+            padding-left: 14px;
+        }
+
+        .section>h2.col::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 4px;
+            height: calc(100% - 16px);
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--brand-coral), var(--brand-violet));
+        }
+
+        body.dark-mode {
+            color: #f2efff;
+            background:
+                radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 26%),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.16), transparent 24%),
+                linear-gradient(180deg, #0f1020 0%, #14172a 55%, #111321 100%);
+        }
+
+        body.dark-mode .page>.section.row,
+        body.dark .page>.section.row {
+            background: rgba(20, 23, 42, 0.8);
+            border-color: rgba(140, 127, 255, 0.18);
+            box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+        }
+
+        body.dark-mode .hero-section,
+        body.dark .hero-section {
+            background:
+                linear-gradient(135deg, rgba(26, 30, 52, 0.92), rgba(18, 20, 36, 0.82)),
+                radial-gradient(circle at right top, rgba(123, 56, 255, 0.18), transparent 30%);
+        }
+
+        body.dark-mode .playground-section,
+        body.dark .playground-section {
+            background:
+                linear-gradient(135deg, rgba(17, 22, 38, 0.94), rgba(25, 30, 50, 0.84)),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.16), transparent 26%);
+        }
+
+        body.dark-mode .hero-summary,
+        body.dark-mode .contact-subtitle,
+        body.dark-mode .playground-note,
+        body.dark-mode .play-copy,
+        body.dark-mode .publication-date,
+        body.dark-mode .publication-authors,
+        body.dark-mode .contact-link,
+        body.dark .hero-summary,
+        body.dark .contact-subtitle,
+        body.dark .playground-note,
+        body.dark .play-copy,
+        body.dark .publication-date,
+        body.dark .publication-authors,
+        body.dark .contact-link {
+            color: rgba(233, 230, 255, 0.78);
+        }
+
+        body.dark-mode .hero-badge,
+        body.dark-mode .fact-card,
+        body.dark-mode .play-card,
+        body.dark-mode .publication-item,
+        body.dark-mode .hero-mini-card,
+        body.dark-mode .contact-card,
+        body.dark .hero-badge,
+        body.dark .fact-card,
+        body.dark .play-card,
+        body.dark .publication-item,
+        body.dark .hero-mini-card,
+        body.dark .contact-card {
+            background: rgba(29, 35, 58, 0.88);
+            border-color: rgba(140, 127, 255, 0.2);
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .contact-link a,
+        body.dark-mode .play-card,
+        body.dark-mode .fact-card,
+        body.dark-mode .social-cloud a,
+        body.dark .contact-link a,
+        body.dark .play-card,
+        body.dark .fact-card,
+        body.dark .social-cloud a {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .social-cloud a,
+        body.dark .social-cloud a {
+            background: rgba(123, 56, 255, 0.16);
+        }
+
+        body.dark-mode .bio-code-block,
+        body.dark .bio-code-block {
+            border-color: rgba(140, 127, 255, 0.28);
+            background: linear-gradient(180deg, rgba(13, 17, 29, 0.98), rgba(23, 27, 46, 0.98));
+            box-shadow: 0 22px 46px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .bio-code-block::before,
+        body.dark .bio-code-block::before {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(246, 243, 255, 0.86);
+        }
+
+        body.dark-mode .bio-code-block code,
+        body.dark-mode .bio-code-block code.hljs,
+        body.dark .bio-code-block code,
+        body.dark .bio-code-block code.hljs {
+            color: #f3f7ff !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-keyword,
+        body.dark-mode .bio-code-block .hljs-built_in,
+        body.dark .bio-code-block .hljs-keyword,
+        body.dark .bio-code-block .hljs-built_in {
+            color: #c084fc !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-title,
+        body.dark-mode .bio-code-block .hljs-title.function_,
+        body.dark-mode .bio-code-block .hljs-function,
+        body.dark .bio-code-block .hljs-title,
+        body.dark .bio-code-block .hljs-title.function_,
+        body.dark .bio-code-block .hljs-function {
+            color: #5eead4 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-type,
+        body.dark-mode .bio-code-block .hljs-class,
+        body.dark-mode .bio-code-block .hljs-variable.language_,
+        body.dark .bio-code-block .hljs-type,
+        body.dark .bio-code-block .hljs-class,
+        body.dark .bio-code-block .hljs-variable.language_ {
+            color: #fbbf24 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-string,
+        body.dark-mode .bio-code-block .hljs-symbol,
+        body.dark .bio-code-block .hljs-string,
+        body.dark .bio-code-block .hljs-symbol {
+            color: #7dd3fc !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-number,
+        body.dark-mode .bio-code-block .hljs-literal,
+        body.dark .bio-code-block .hljs-number,
+        body.dark .bio-code-block .hljs-literal {
+            color: #fb923c !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-comment,
+        body.dark .bio-code-block .hljs-comment {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-attr,
+        body.dark-mode .bio-code-block .hljs-params,
+        body.dark-mode .bio-code-block .hljs-punctuation,
+        body.dark-mode .bio-code-block .hljs-operator,
+        body.dark .bio-code-block .hljs-attr,
+        body.dark .bio-code-block .hljs-params,
+        body.dark .bio-code-block .hljs-punctuation,
+        body.dark .bio-code-block .hljs-operator {
+            color: #dbeafe !important;
+        }
+
+        @media (max-width: 991px) {
+            .hero-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: clamp(2.4rem, 11vw, 3.7rem);
+            }
+
+            .playground-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .playground-note {
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 18px 12px 48px;
+            }
+
+            .page>.section.row {
+                padding: 22px 18px;
+                border-radius: 24px;
+            }
+
+            .hero-kicker,
+            .hero-badge,
+            .hero-cta,
+            .play-label {
+                font-size: 0.78rem;
+            }
+
+            .hero-summary {
+                font-size: 0.98rem;
+            }
+
+            .publication-header {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .publication-title {
+                padding-right: 0;
+            }
+
+            .fact-card,
+            .play-card {
+                flex-basis: 100%;
+            }
+        }
     </style>
     <link rel=alternate href=/index.xml type=application/rss+xml title="Yiwei Yang @UCSC CS">
     <link rel=icon type=image/png href=/about/victoryang00.png>
@@ -638,34 +1453,34 @@
             <!-- 控制按钮 -->
         </div>
 
-        <!-- Claude 聊天界面 -->
+        <!-- Claude chat panel -->
         <div id="claude-chat-panel"
             style="position: fixed; top: 10px; right: 10px; width: 300px; background: rgba(0,0,0,0.8); border-radius: 10px; padding: 15px; color: white; display: none; z-index: 9998; pointer-events: auto;">
-            <h3 id="chat-title" style="margin: 0 0 10px 0; color: #8B2BE2;">与yyw聊天</h3>
+            <h3 id="chat-title" style="margin: 0 0 10px 0; color: #8B2BE2;">Chat with yyw</h3>
             <div id="chat-messages"
                 style="height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">
             </div>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="chat-input" placeholder="输入消息..."
+                <input type="text" id="chat-input" placeholder="Type a message..."
                     style="flex: 1; padding: 5px; border: none; border-radius: 3px;">
                 <button id="send-chat"
-                    style="padding: 5px 10px; background: #8B2BE2; border: none; border-radius: 3px; color: white; cursor: pointer;">发送</button>
+                    style="padding: 5px 10px; background: #8B2BE2; border: none; border-radius: 3px; color: white; cursor: pointer;">Send</button>
             </div>
             <div style="margin-top: 10px;">
-                <label style="font-size: 12px; color: #ccc;">🔊 语音合成:</label>
+                <label style="font-size: 12px; color: #ccc;">Voice synthesis:</label>
                 <select id="voice-select"
                     style="width: 100%; padding: 3px; margin-top: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #666; border-radius: 3px;">
                     <option value="paimon">yyw</option>
                 </select>
             </div>
             <div style="margin-top: 10px; font-size: 12px; color: #ccc; text-align: center;">
-                💡 支持GPT-SoVITS语音合成
+                GPT-SoVITS voice synthesis supported
             </div>
             <button id="close-chat"
                 style="position: absolute; top: 5px; right: 5px; background: #8B2BE2; border: none; border-radius: 50%; width: 20px; height: 20px; color: white; cursor: pointer;">×</button>
         </div>
 
-        <!-- 聊天按钮 -->
+        <!-- Chat button -->
         <button id="open-chat"
             style="position: fixed; top: 10px; right: 10px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; cursor: pointer; z-index: 9999; font-size: 20px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease; pointer-events: auto;">💬</button>
 
@@ -676,78 +1491,144 @@
     <script src="/live2d/js/main.js"></script>
     <script src="/live2d/js/message.js"></script>
     <div class="page">
-        <div class="section row">
-            <h1 class="col">
-                <a href="/about/yiwei2.png"> <img class="demo" src="/about/yiwei2.png"></a>
-
-                <a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br></a>
-                <span class="name">Yiwei Yang</span> (VickieGPT)
-            </h1>
-            <div class="contact-info col-right" style="line-height: 110%;">
-                <div><br></div>
-                <div>
-                    <input type="checkbox" class="checkbox" onclick="myFunction()" id="chk" />
-                    <label class="label" for="chk">
-                        <i class="fas fa-moon"></i>
-                        <i class="fas fa-sun"></i>
-                        <div class="ball"></div>
-                    </label>
+        <div class="section row hero-section">
+            <div class="hero-shell">
+                <div class="hero-copy">
+                    <div class="hero-kicker">Systems Research • Startup Builder • CXL Maximalist</div>
+                    <h1 class="hero-title">
+                        <span class="name">Yiwei Yang</span>
+                        <span class="hero-alias">(VickieGPT)</span>
+                    </h1>
+                    <p class="hero-summary">
+                        Final-year systems Ph.D. at UCSC and founder at Zettai, building faster data paths for CXL,
+                        UCIe, eBPF, heterogeneous accelerators, and occasionally delightfully weird hardware-software
+                        combinations.
+                    </p>
+                    <div class="hero-badges">
+                        <span class="hero-badge">Final-year Ph.D. @ UCSC</span>
+                        <span class="hero-badge">Founder @ Zettai</span>
+                        <span class="hero-badge">Bay Area ↔ Shanghai</span>
+                    </div>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary hero-cta" href="#publication">Read Papers</a>
+                        <a class="btn btn-outline-primary hero-cta" href="#talks-section">See Talks</a>
+                        <a class="btn btn-outline-primary hero-cta" href="javascript:void(0)"
+                            onclick="document.getElementById('open-chat').click()">Chat with yyw</a>
+                    </div>
+                    <div class="hero-facts">
+                        <a class="fact-card" href="#research-section">
+                            <span class="fact-label">Now building</span>
+                            <strong>CXL, UCIe, eBPF, and heterogeneous execution</strong>
+                        </a>
+                        <a class="fact-card" href="#skills-section">
+                            <span class="fact-label">Comfort zone</span>
+                            <strong>Kernel paths, compilers, hardware-software co-design</strong>
+                        </a>
+                        <a class="fact-card" href="/trips">
+                            <span class="fact-label">Side quest</span>
+                            <strong>Trips, experiments, and systems notes outside the lab</strong>
+                        </a>
+                    </div>
                 </div>
-                <div><a href="/pdf/resume-zh.pdf">中文简历</a><span class="iconify"
-                        data-icon="icon-park-outline:chinese"></span></div>
-                <div><a href="/pdf/resume.pdf">PDF
-                        Version</a><span class="iconify" data-icon="fluent:document-pdf-16-regular"></span></div>
-                <div><a font-size:2.5em href="mailto:victoryang00@ucsc.edu">victoryang00 at ucsc.edu</a><i
-                        class="fas fa-envelope"></i></div>
-                <div>
-                    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations"
-                        href="https://scholar.google.com/citations?user=sDUT22MAAAAJ"
-                        style="width:64px;height:12px;position:relative;top:1px;">
-                    <a href="https://github.com/vickiegpt"><i style="position:relative;top:2px;"
-                            class="fab fa-github"></i></a>
-                    <a href="https://www.zhihu.com/people/dian-dian-di-di-87-74"><i style="position:relative;top:2px;"
-                            class="fab fa-zhihu"></i></a>
-                    <!--<a href="https://www.youtube.com/channel/UCaLod4S2-Z-66pzckZUVy0w"><i
-                            style="position:relative;top:2px;" class="fab fa-youtube"></i></a> -->
-                    <a href="/about/wechat.jpg"><i style="position:relative;top:2px;" class="fab fa-wechat"></i></a>
-                    <!-- <a href="https://cn.pornhub.com/users/victoryang_00"><img src="my-icon.png"
-                            style="width:24px;height:12px;position:relative;top:2px;"></a> -->
-                    <a href="https://www.linkedin.com/in/yiwei-yang-56b920166/"><i class="fab fa-linkedin-in"></i></a><a
-                        href="https://scholar.google.com/citations?user=sDUT22MAAAAJ&hl=zh-TW"> <i
-                            style="position:relative; top:3px;" class="iconify"
-                            data-icon="academicons:google-scholar"></i></a><a
-                        href="https://dblp.org/pid/233/9195-2.html"> <i style="position:relative; top:3px;"
-                            class="iconify" data-icon="academicons:dblp"></i></a><a
-                        href="https://orcid.org/0000-0001-8011-5868"> <i style="position:relative; top:3px;"
-                            class="iconify" data-icon="academicons:orcid"></i></a><a href="/blog"><i
-                            class="fa fa-camera"></i></a><a href="/wiki"><span style="position:relative;top:2px;"
-                            class="iconify" data-icon="icon-park-outline:save"></a><a href="/trips"><i
-                            class="fa fa-plane"></i></a>
+                <div class="hero-aside">
+                    <div class="hero-portrait">
+                        <a class="hero-avatar-link" href="/about/yiwei2.png">
+                            <img class="demo hero-avatar" src="/about/yiwei2.png" alt="Yiwei Yang portrait">
+                        </a>
+                        <div class="hero-mini-card">
+                            <span class="mini-label">Current vibe</span>
+                            <strong>Turning infrastructure into something a little faster and a lot more fun.</strong>
+                        </div>
+                    </div>
+                    <div class="contact-card contact-info">
+                        <div class="contact-topline">
+                            <div>
+                                <strong>Open to research, systems, and startup conversations</strong>
+                                <div class="contact-subtitle">Email is still the fastest interrupt.</div>
+                            </div>
+                            <div>
+                                <input type="checkbox" class="checkbox" onclick="myFunction()" id="chk" />
+                                <label class="label" for="chk">
+                                    <i class="fas fa-moon"></i>
+                                    <i class="fas fa-sun"></i>
+                                    <div class="ball"></div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="contact-stack">
+                            <div class="contact-link"><a href="/pdf/resume-zh.pdf">中文简历</a><span class="iconify"
+                                    data-icon="icon-park-outline:chinese"></span></div>
+                            <div class="contact-link"><a href="/pdf/resume.pdf">PDF Version</a><span class="iconify"
+                                    data-icon="fluent:document-pdf-16-regular"></span></div>
+                            <div class="contact-link"><a href="mailto:victoryang00@ucsc.edu">victoryang00 at
+                                    ucsc.edu</a><i class="fas fa-envelope"></i></div>
+                        </div>
+                        <div class="social-cloud">
+                            <span class="scholar-pill">
+                                <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations"
+                                    alt="Google Scholar citations" style="width:64px;height:12px;position:relative;top:1px;">
+                            </span>
+                            <a href="https://github.com/vickiegpt" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                            <a href="https://www.zhihu.com/people/dian-dian-di-di-87-74" aria-label="Zhihu"><i class="fab fa-zhihu"></i></a>
+                            <a href="/about/wechat.jpg" aria-label="WeChat"><i class="fab fa-wechat"></i></a>
+                            <a href="https://www.linkedin.com/in/yiwei-yang-56b920166/" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://scholar.google.com/citations?user=sDUT22MAAAAJ&hl=zh-TW" aria-label="Google Scholar"><i class="iconify" data-icon="academicons:google-scholar"></i></a>
+                            <a href="https://dblp.org/pid/233/9195-2.html" aria-label="DBLP"><i class="iconify" data-icon="academicons:dblp"></i></a>
+                            <a href="https://orcid.org/0000-0001-8011-5868" aria-label="ORCID"><i class="iconify" data-icon="academicons:orcid"></i></a>
+                            <a href="/blog" aria-label="Blog"><i class="fa fa-camera"></i></a>
+                            <a href="/wiki" aria-label="Wiki"><span class="iconify" data-icon="icon-park-outline:save"></span></a>
+                            <a href="/trips" aria-label="Trips"><i class="fa fa-plane"></i></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- DeepSeek All-in-One Machine Button -->
-        <div class="section row" style="text-align: center; margin: 30px 0;">
-            <a href="https://zett-ai.myshopify.com/zh/products/zettengine?variant=50799110160672"
-                class="btn btn-primary"
-                style="display: inline-block; padding: 12px 30px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease;"
-                target="_blank"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(138, 43, 226, 0.6)';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(138, 43, 226, 0.4)';">
-                Best Seller AI Inference Machine
-            </a>
-            <a href="https://github.com/Multi-V-VM/Codify" class="btn btn-primary"
-                style="display: inline-block; padding: 12px 30px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease;"
-                target="_blank"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(138, 43, 226, 0.6)';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(138, 43, 226, 0.4)';">
-                Best Coding Agent on iPad CodifyOne
-            </a>
+        <div class="section row playground-section">
+            <div style="width: 100%;">
+                <div class="playground-head">
+                    <h2 class="col">Explore</h2>
+                    <div class="playground-note">
+                        A few faster ways into the parts of the site that feel most alive right now: products,
+                        papers, experiments, and the travel log that somehow also became a systems side channel.
+                    </div>
+                </div>
+                <div class="play-grid">
+                    <a class="play-card" href="https://zett-ai.myshopify.com/zh/products/zettengine?variant=50799110160672"
+                        target="_blank" rel="noopener">
+                        <span class="play-label">Hardware</span>
+                        <div class="play-title">Best Seller AI Inference Machine</div>
+                        <div class="play-copy">A direct path into the product side: practical inference hardware with a
+                            little more personality than the average landing page.</div>
+                        <div class="play-meta">Open product page →</div>
+                    </a>
+                    <a class="play-card" href="https://github.com/Multi-V-VM/Codify" target="_blank" rel="noopener">
+                        <span class="play-label">Agent</span>
+                        <div class="play-title">CodifyOne on iPad</div>
+                        <div class="play-copy">The coding-agent corner of the universe: repo, ideas, and ongoing
+                            experiments in how we build with smaller screens and bigger ambitions.</div>
+                        <div class="play-meta">See the repo →</div>
+                    </a>
+                    <a class="play-card" href="#publication">
+                        <span class="play-label">Research</span>
+                        <div class="play-title">Jump straight into papers and preprints</div>
+                        <div class="play-copy">From CXL and UCIe to eBPF and migration systems, this is the
+                            research-heavy track with the least small talk.</div>
+                        <div class="play-meta">Skip to publications →</div>
+                    </a>
+                    <a class="play-card" href="/trips">
+                        <span class="play-label">Off path</span>
+                        <div class="play-title">Trips, notes, and side-channel energy</div>
+                        <div class="play-copy">The more playful branch of the site: movement, snapshots, and the bits
+                            of curiosity that refuse to stay inside a CV.</div>
+                        <div class="play-meta">Take the scenic route →</div>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="section row">
-            <h2 class="col">Biography</h2>
+            <h2 class="col" id="biography-section">Biography</h2>
             <div class="section-text col-right row">
                 I'm a final-year Computer Science System Ph.D. candidate <a
                     href="https://engineering.ucsc.edu/">@BaskinEng</a> and a founder <a
@@ -766,25 +1647,46 @@
                 Fransisco Bay area, and Shanghai, I'm proud to learn more, benefit others more, and earn more.
                 Previously, I was an undergraduate <a href="https://sist.shanghaitech.edu.cn/">@ShanghaiTech</a>.
                 <!-- TODO Run on local machine-->
-                <pre><code class="language-rust">fn research_no_failure()->Result < Paper, Error > {
-    let output = if cfg!(target_os = "linux") {
-        Command::new("qemu-x86_64-system")
-        .args(["-smp 6", "-numa node,cpus=0-7,memdev=mem0,nodeid=0", "-object memory-backend-ram,id=mem0,size=8G","-numa node,cpus=8-15,memdev=mem1,nodeid=1", "-object memory-backend-ram,id=mem1,size=8G","-m 16G,slots=4,maxmem=32G", "-machine q35,cxl=on", "-M cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G",
-             "-device pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl3.1", "-device cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2",
-             "-device cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-mem0",
-             "-device cxl-type2,bus=root_port14,virtio-gpu-cxl,id=gpu0,gpudev=gpudev0"])
-             "-device cxl-type1,bus=root_port15,virtio-crypto-cxl,id=crypto0,cryptodev=cryptodev0"])
-            .output()
-            .expect("failed to execute process")
+                <pre class="bio-code-block"><code class="language-rust">fn research_no_failure() -> Result&lt;Paper, Error&gt; {
+    if !cfg!(target_os = "linux") {
+        return Err(Error::UnsupportedHost);
     }
+
+    // Boot a playful CXL topology and wait for the paper to become real.
+    let qemu_args = [
+        "-smp", "6",
+        "-m", "16G,slots=4,maxmem=32G",
+        "-machine", "q35,cxl=on",
+        "-M", "cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G",
+        "-object", "memory-backend-ram,id=mem0,size=8G",
+        "-numa", "node,cpus=0-7,memdev=mem0,nodeid=0",
+        "-object", "memory-backend-ram,id=mem1,size=8G",
+        "-numa", "node,cpus=8-15,memdev=mem1,nodeid=1",
+        "-device", "pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl3.1",
+        "-device", "cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2",
+        "-device", "cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-mem0",
+        "-device", "cxl-type2,bus=root_port14,virtio-gpu-cxl,id=gpu0,gpudev=gpudev0",
+        "-device", "cxl-type1,bus=root_port15,virtio-crypto-cxl,id=crypto0,cryptodev=cryptodev0",
+    ];
+
+    let output = Command::new("qemu-system-x86_64")
+        .args(qemu_args)
+        .output()?;
+
     let paper = Paper::new(output);
-    loop{
-        asm!("clflush" :: "r" (&paper.iter()) : "rax", "rbx", "rcx", "rdx": "volatile" );
-        __atomic_thread_fence(__ATOMIC_SEQ_CST);
-        if (paper.is_valid()){
-            break;
+
+    while !paper.is_valid() {
+        unsafe {
+            asm!(
+                "clflush [{ptr}]",
+                ptr = in(reg) paper.iter(),
+                options(nostack, preserves_flags)
+            );
         }
+
+        core::sync::atomic::fence(core::sync::atomic::Ordering::SeqCst);
     }
+
     Ok(paper)
 }
 </code></pre>
@@ -792,7 +1694,7 @@
         </div>
 
         <div class="section row">
-            <h2 class="col">Skills</h2>
+            <h2 class="col" id="skills-section">Skills</h2>
             <div class="section-text col-right skill" style="position: relative;left:30px;">
                 <iframe src="/block" width="530" height="290" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -808,7 +1710,7 @@
             </div>
         </div>
         <div class="section row">
-            <h2 class="col">Current Research</h2>
+            <h2 class="col" id="research-section">Current Research</h2>
             <div class="section-text col-right">
                 <div class="row subsection">
                     <div class="row">
@@ -910,6 +1812,23 @@
             <div class="section-text col-right">
                 <div class="publication-item">
                     <div class="publication-header">
+                        <h3 class="publication-title">GPUOS: A GPU Operating System Primitive for Transparent Operation
+                            Fusion</h3>
+                        <div class="publication-date">April 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2604.17861" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2604.17861" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_gpuos.bib">Cite</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Xiangyu Gao, Yuan Zhou, Yuhang Gan, Yusheng
+                        Zheng, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
                         <h3 class="publication-title">DAXFS: A Lock-Free Shared Filesystem for CXL Disaggregated Memory
                         </h3>
                         <div class="publication-date">April 2026</div>
@@ -923,6 +1842,22 @@
                             data-filename="/about/cite_preprint26_1.bib">Cite</a>
                     </div>
                     <div class="publication-authors">Cong Wang, <b>Yiwei Yang</b>, Yusheng Zheng</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">WIO: Upload-Enabled Computational Storage on CXL SSDs</h3>
+                        <div class="publication-date">April 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2604.02442" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2604.02442" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_wio.bib">Cite</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yanpeng Hu, Yusheng Zheng, Estabon Ramos,
+                        Jianchang Su, Andi Quinn, Wei Zhang</div>
                 </div>
                 <div class="publication-item">
                     <div class="publication-header">
@@ -1195,7 +2130,7 @@
             </div>
         </div>
         <div class="section row">
-            <h2 class="col">Talks</h2>
+            <h2 class="col" id="talks-section">Talks</h2>
             <div class="section-text col-right">
                 <div class="publication-item">
                     <div class="publication-header">
@@ -1204,7 +2139,8 @@
                         <div class="publication-date">May 2026</div>
                     </div>
                     <div class="publication-links">
-                        <span class="btn btn-outline-primary disabled">IPDPS26 Tutorial</span>
+                        <a class="btn btn-outline-primary" href="https://www.ipdps.org/ipdps2026/2026-tutorials.html"
+                            target="_blank" rel="noopener">IPDPS26 Tutorial</a>
                     </div>
                 </div>
                 <div class="publication-item">
@@ -1225,7 +2161,8 @@
                         <div class="publication-date">Apr 2026</div>
                     </div>
                     <div class="publication-links">
-                        <span class="btn btn-outline-primary disabled">eBPFTravel26</span>
+                        <a class="btn btn-outline-primary" href="https://www.ebpftravel.com/" target="_blank"
+                            rel="noopener">eBPFTravel26</a>
                     </div>
                 </div>
             </div>
