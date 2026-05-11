@@ -427,7 +427,7 @@ async function reloadForCrossOriginIsolation() {
     location.reload();
 }
 
-async function startBrowserNetwork() {
+function startBrowserNetwork() {
     if (config.network?.mode !== "browser" || window.CXL_WEB_NETWORK_STARTED) {
         return;
     }
@@ -439,26 +439,25 @@ async function startBrowserNetwork() {
     networkStatus.textContent = "browser/c2w starting";
     term.writeln(`Starting browser network stack on ${Module.websocket.url}`);
 
-    await new Promise((resolve) => {
-        startNetworkStack(
-            Module.websocket.url,
-            config.network.stackWorker,
-            config.network.stackImage,
-            (certificate) => {
-                Module.preRun = Module.preRun || [];
-                Module.preRun.push((mod) => {
-                    try {
-                        mod.FS.mkdir("/.wasmenv");
-                    } catch (error) {
-                    }
-                    mod.FS.writeFile("/.wasmenv/proxy.crt", certificate);
-                });
-                window.CXL_WEB_NETWORK_STARTED = true;
-                networkStatus.textContent = "browser/c2w ready";
-                resolve();
-            }
-        );
-    });
+    startNetworkStack(
+        Module.websocket.url,
+        config.network.stackWorker,
+        config.network.stackImage,
+        (certificate) => {
+            Module.preRun = Module.preRun || [];
+            Module.preRun.push((mod) => {
+                try {
+                    mod.FS.mkdir("/.wasmenv");
+                } catch (error) {
+                }
+                mod.FS.writeFile("/.wasmenv/proxy.crt", certificate);
+            });
+            networkStatus.textContent = "browser/c2w ready";
+        }
+    );
+    window.CXL_WEB_NETWORK_STARTED = true;
+    networkStatus.textContent = "browser/c2w listening";
+    term.writeln("Browser network listener installed; continuing VM boot.");
 }
 
 async function start() {
@@ -481,7 +480,7 @@ async function start() {
     });
 
     try {
-        await startBrowserNetwork();
+        startBrowserNetwork();
         await initEmscriptenModule(Module);
         const oldPoll = Module.TTY.stream_ops.poll;
         const pty = Module.pty;
