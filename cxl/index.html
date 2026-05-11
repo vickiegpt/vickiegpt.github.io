@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HETGPU WebGPU QEMU</title>
+<title>HETGPU WebGPU x86_64 QEMU</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css">
 <style>
 :root {
@@ -212,7 +212,7 @@ pre {
 <div class="shell">
     <main class="terminal-pane">
         <div class="topbar">
-            <div class="title">HETGPU WebGPU QEMU</div>
+            <div class="title">HETGPU WebGPU x86_64 QEMU</div>
             <div id="status" class="status">idle</div>
             <button id="start">Start VM</button>
             <button id="reset">Reset</button>
@@ -224,10 +224,11 @@ pre {
             <h1>HETGPU WebGPU + CXL</h1>
             <dl class="kv">
                 <dt>Profile</dt><dd id="profile-label">all</dd>
-                <dt>Assets</dt><dd id="asset-base">/cxl/images/hetgpu-webgpu/</dd>
-                <dt>Kernel</dt><dd id="kernel-path">/pack-kernel/vmlinuz-virt</dd>
-                <dt>Initramfs</dt><dd id="initramfs-path">/pack-initramfs/initramfs-virt</dd>
-                <dt>Disk</dt><dd id="disk-path">/pack-rootfs/disk-rootfs.img</dd>
+                <dt>Assets</dt><dd id="asset-base">/cxl/images/alpine-x86_64/</dd>
+                <dt>Kernel</dt><dd id="kernel-path">/about/bzImage</dd>
+                <dt>Disk</dt><dd id="disk-path">/about/qemu.img</dd>
+                <dt>Network</dt><dd id="network-status">browser/c2w idle</dd>
+                <dt>CXLMemSim</dt><dd id="cxlmemsim-label">127.0.0.1:9999</dd>
                 <dt>Backend</dt><dd id="webgpu-status">webgpu probing</dd>
             </dl>
         </section>
@@ -247,6 +248,11 @@ pre {
 uname -a
 cat /proc/cmdline
 mount | head
+ip addr show
+udhcpc -i eth0 2>/dev/null || true
+export http_proxy=http://192.168.127.253:80
+export https_proxy=http://192.168.127.253:80
+wget -O - http://example.com 2>/dev/null | head
 dmesg | grep -i cxl
 find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
@@ -260,8 +266,8 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         </section>
         <section class="section">
             <h2>Runtime</h2>
-            <p class="note"><span class="warn">Note:</span> Type1/Type2 are command profiles for this browser VM. Type2 exposes `hetgpu0` with `hetgpu.backend=webgpu`; Type3 adds a QEMU `cxl-type3` volatile memory device.</p>
-            <p class="note"><span class="warn">Image:</span> This asset path is wired to the HETGPU-linked `qemu-system-i386` wasm. Replace the staged kernel/initramfs/rootfs with an i386 guest package if the current Alpine x86_64 package rejects the CPU.</p>
+            <p class="note"><span class="warn">Note:</span> This page uses the x86_64 QEMU wasm assets and range-backed `/about/bzImage` plus `/about/qemu.img`. Type3 adds a QEMU `cxl-type3` volatile memory device.</p>
+            <p class="note"><span class="warn">Network:</span> The browser network stack is connected through `-netdev socket` and the c2w fetch proxy. Inside the guest, use `http_proxy`/`https_proxy` with `http://192.168.127.253:80` for outbound HTTP(S).</p>
         </section>
     </aside>
 </div>
@@ -274,15 +280,12 @@ window.coi = {
 </script>
 <script src="./coi-serviceworker.js"></script>
 <script src="./cxl-module.js"></script>
-<script src="./images/hetgpu-webgpu/lz4-runtime.js"></script>
-<script src="./images/hetgpu-webgpu/load-rom.js"></script>
-<script src="./images/hetgpu-webgpu/load-kernel.js"></script>
-<script src="./images/hetgpu-webgpu/load-initramfs.js"></script>
-<script src="./images/hetgpu-webgpu/load-rootfs.js"></script>
+<script src="./images/alpine-x86_64/load-rom.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/hetgpu-webgpu/qemu-system-i386.js";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
@@ -290,8 +293,9 @@ const resetButton = document.getElementById("reset");
 const profileLabel = document.getElementById("profile-label");
 const assetBaseLabel = document.getElementById("asset-base");
 const kernelPathLabel = document.getElementById("kernel-path");
-const initramfsPathLabel = document.getElementById("initramfs-path");
 const diskPathLabel = document.getElementById("disk-path");
+const networkStatus = document.getElementById("network-status");
+const cxlmemsimLabel = document.getElementById("cxlmemsim-label");
 const activeArgs = document.getElementById("active-args");
 const webgpuStatus = document.getElementById("webgpu-status");
 let booted = false;
@@ -312,26 +316,37 @@ const term = new Terminal({
 });
 
 term.open(document.getElementById("terminal"));
-term.writeln("HETGPU WebGPU QEMU ready.");
+term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
 term.writeln("Press Start VM, then login as root when Alpine reaches the prompt.");
 term.writeln("");
 
 const config = window.CXL_WEB_CONFIG || {
     profile: "all",
     backend: "webgpu",
-    assetBase: "/cxl/images/hetgpu-webgpu/",
+    assetBase: "/cxl/images/alpine-x86_64/",
     image: {
-        kernel: "/pack-kernel/vmlinuz-virt",
-        initramfs: "/pack-initramfs/initramfs-virt",
-        disk: "/pack-rootfs/disk-rootfs.img"
+        kernelUrl: "/about/bzImage",
+        diskUrl: "/about/qemu.img"
+    },
+    network: {
+        mode: "browser",
+        websocketUrl: "http://localhost:9999/",
+        stackWorker: "/cxl/images/alpine-x86_64/dist/stack-worker.js",
+        stackImage: "/cxl/images/alpine-x86_64/c2w-net-proxy.wasm.gzip",
+        proxyUrl: "http://192.168.127.253:80"
+    },
+    cxlmemsim: {
+        host: "127.0.0.1",
+        port: 9999
     },
     arguments: []
 };
 profileLabel.textContent = config.profile;
-assetBaseLabel.textContent = config.assetBase || "/cxl/images/hetgpu-webgpu/";
-kernelPathLabel.textContent = config.image?.kernel || "/pack-kernel/vmlinuz-virt";
-initramfsPathLabel.textContent = config.image?.initramfs || "/pack-initramfs/initramfs-virt";
-diskPathLabel.textContent = config.image?.disk || "/pack-rootfs/disk-rootfs.img";
+assetBaseLabel.textContent = config.assetBase || "/cxl/images/alpine-x86_64/";
+kernelPathLabel.textContent = config.image?.kernelUrl || "/about/bzImage";
+diskPathLabel.textContent = config.image?.diskUrl || "/about/qemu.img";
+networkStatus.textContent = config.network?.mode === "browser" ? "browser/c2w idle" : "disabled";
+cxlmemsimLabel.textContent = `${config.cxlmemsim?.host || "127.0.0.1"}:${config.cxlmemsim?.port || 9999}`;
 activeArgs.textContent = (config.arguments || []).map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(" ");
@@ -378,22 +393,91 @@ function setStatus(text, ready = false) {
     status.classList.toggle("ready", ready);
 }
 
+async function reloadForCrossOriginIsolation() {
+    setStatus("isolating");
+    startButton.disabled = true;
+    term.writeln("Cross-origin isolation is not active yet. Reloading after the service worker is ready.");
+
+    if (!window.isSecureContext) {
+        term.writeln("Open this page over https:// or http://localhost/ so SharedArrayBuffer can be enabled.");
+        setStatus("error");
+        startButton.disabled = false;
+        return;
+    }
+
+    if (!("serviceWorker" in navigator)) {
+        term.writeln("This browser does not expose service workers, so pthread wasm cannot start here.");
+        setStatus("error");
+        startButton.disabled = false;
+        return;
+    }
+
+    try {
+        await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((resolve) => setTimeout(resolve, 1500))
+        ]);
+    } catch (error) {
+        term.writeln(String(error && error.message ? error.message : error));
+    }
+    location.reload();
+}
+
+async function startBrowserNetwork() {
+    if (config.network?.mode !== "browser" || window.CXL_WEB_NETWORK_STARTED) {
+        return;
+    }
+
+    Module.websocket = {
+        url: config.network.websocketUrl || "http://localhost:9999/"
+    };
+    setStatus("network");
+    networkStatus.textContent = "browser/c2w starting";
+    term.writeln(`Starting browser network stack on ${Module.websocket.url}`);
+
+    await new Promise((resolve) => {
+        startNetworkStack(
+            Module.websocket.url,
+            config.network.stackWorker,
+            config.network.stackImage,
+            (certificate) => {
+                Module.preRun = Module.preRun || [];
+                Module.preRun.push((mod) => {
+                    try {
+                        mod.FS.mkdir("/.wasmenv");
+                    } catch (error) {
+                    }
+                    mod.FS.writeFile("/.wasmenv/proxy.crt", certificate);
+                });
+                window.CXL_WEB_NETWORK_STARTED = true;
+                networkStatus.textContent = "browser/c2w ready";
+                resolve();
+            }
+        );
+    });
+}
+
 async function start() {
     if (booted) return;
+    if (!window.crossOriginIsolated) {
+        await reloadForCrossOriginIsolation();
+        return;
+    }
+
     booted = true;
     startButton.disabled = true;
-    setStatus(window.crossOriginIsolated ? "booting" : "isolating");
-
-    if (!window.crossOriginIsolated) {
-        term.writeln("Waiting for cross-origin isolation. If the page reloads, press Start VM again.");
-    }
+    setStatus("booting");
 
     Module.preRun = Module.preRun || [];
     Module.preRun.push((mod) => {
-        mod.FS.mkdir("/.wasmenv");
+        try {
+            mod.FS.mkdir("/.wasmenv");
+        } catch (error) {
+        }
     });
 
     try {
+        await startBrowserNetwork();
         await initEmscriptenModule(Module);
         const oldPoll = Module.TTY.stream_ops.poll;
         const pty = Module.pty;
