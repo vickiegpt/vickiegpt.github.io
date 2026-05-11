@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investor Portal - zett.ai</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        accent: {
+                            blue: '#667eea',
+                            purple: '#764ba2',
+                            pink: '#ff6b9d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-white font-sans antialiased min-h-screen selection:bg-brand-100 selection:text-brand-900">
+
+    <!-- Header -->
+    <nav class="fixed w-full bg-slate-900/90 backdrop-blur-sm border-b border-white/10 z-50 transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-3">
+                    <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="35" fill="url(#logoGrad)"/>
+                        <circle cx="38" cy="45" r="3" fill="white"/>
+                        <circle cx="62" cy="45" r="3" fill="white"/>
+                        <path d="M 35 55 Q 50 65 65 55" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <span class="font-mono font-bold text-xl tracking-tight text-brand-400">zett.ai Portal</span>
+                </div>
+                <a href="../" class="text-sm font-medium text-brand-400 hover:text-brand-200 transition-colors flex items-center gap-1.5">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Back to Main Site
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="relative pt-32 pb-12 lg:pt-40 lg:pb-16 overflow-hidden">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-brand-600 opacity-15 blur-[100px]"></div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-600/20 border border-brand-500/30 text-brand-300 text-xs font-mono font-medium mb-6">
+                Insider Access
+            </div>
+            <h1 class="text-3xl md:text-5xl font-serif font-bold text-white tracking-tight mb-4">
+                Investor Portal
+            </h1>
+            <p class="text-lg text-slate-400 font-light max-w-2xl mx-auto">
+                Confidential documents and resources for investors and partners
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+
+        <!-- Document Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            <!-- White Paper Card -->
+            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/10 transition-all">
+                <div class="flex items-start gap-4 mb-5">
+                    <div class="flex-shrink-0">
+                        <svg width="50" height="50" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="5" width="40" height="50" rx="4" fill="#667eea"/>
+                            <rect x="16" y="12" width="28" height="3" rx="1.5" fill="white" opacity="0.9"/>
+                            <rect x="16" y="18" width="28" height="2" rx="1" fill="white" opacity="0.6"/>
+                            <rect x="16" y="23" width="22" height="2" rx="1" fill="white" opacity="0.6"/>
+                            <rect x="16" y="28" width="28" height="2" rx="1" fill="white" opacity="0.6"/>
+                            <rect x="16" y="33" width="18" height="2" rx="1" fill="white" opacity="0.6"/>
+                            <rect x="16" y="38" width="25" height="2" rx="1" fill="white" opacity="0.6"/>
+                            <rect x="16" y="43" width="20" height="2" rx="1" fill="white" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1">Zettai White Paper</h3>
+                        <span class="text-xs text-slate-500 font-mono">Technical Documentation</span>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                    Comprehensive technical deep-dive into Zettai's revolutionary architecture. Covers CXL memory fabric design,
+                    disaggregated computing principles, FPGA acceleration strategies, and our vision for next-generation AI infrastructure.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="../Zettai_White_Paper.pdf" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" target="_blank">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Download PDF
+                    </a>
+                    <button class="tab-trigger inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium rounded-md text-sm transition-colors" onclick="showViewer('whitepaper')">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                        View Online
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pitch Deck Card -->
+            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/10 transition-all">
+                <div class="flex items-start gap-4 mb-5">
+                    <div class="flex-shrink-0">
+                        <svg width="50" height="50" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="10" width="50" height="35" rx="4" fill="#ff6b9d"/>
+                            <rect x="10" y="15" width="40" height="25" rx="2" fill="white"/>
+                            <rect x="14" y="19" width="15" height="8" rx="2" fill="#667eea"/>
+                            <rect x="14" y="30" width="32" height="2" rx="1" fill="#ddd"/>
+                            <rect x="14" y="35" width="25" height="2" rx="1" fill="#ddd"/>
+                            <polygon points="30,52 25,45 35,45" fill="#ff6b9d"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1">ZettEngine Pitch Deck</h3>
+                        <span class="text-xs text-slate-500 font-mono">Investor Presentation</span>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                    Executive overview of ZettEngine's market positioning, competitive advantages, and business opportunity.
+                    Includes performance benchmarks, cost analysis, and roadmap for the AI infrastructure revolution.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="../ZettEngine_CXL_PitchDeck_v1.pdf" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" target="_blank">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Download PDF
+                    </a>
+                    <button class="tab-trigger inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium rounded-md text-sm transition-colors" onclick="showViewer('pitchdeck')">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                        View Online
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PDF Viewer -->
+        <section id="viewer-section" class="border-t border-white/10 pt-12">
+            <h2 class="text-xl font-serif font-bold text-white text-center mb-6">Document Viewer</h2>
+            <div class="flex justify-center gap-3 mb-6">
+                <button class="tab-btn active px-5 py-2 rounded-md text-sm font-medium transition-all bg-brand-600 text-white" onclick="showViewer('whitepaper')">White Paper</button>
+                <button class="tab-btn px-5 py-2 rounded-md text-sm font-medium transition-all bg-white/10 text-white border border-white/20 hover:bg-white/15" onclick="showViewer('pitchdeck')">Pitch Deck</button>
+            </div>
+            <div class="bg-white/[0.02] border border-white/10 rounded-lg overflow-hidden h-[700px] max-sm:h-[450px]">
+                <iframe id="whitepaper-frame" class="pdf-frame w-full h-full border-none" src="../Zettai_White_Paper.pdf" title="Zettai White Paper"></iframe>
+                <iframe id="pitchdeck-frame" class="pdf-frame w-full h-full border-none hidden" src="../ZettEngine_CXL_PitchDeck_v1.pdf" title="ZettEngine Pitch Deck"></iframe>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/20 border-t border-white/10 py-8 mt-16">
+        <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
+            <p class="text-sm text-slate-500">Confidential - For authorized investors and partners only</p>
+            <p class="text-xs text-slate-600 font-mono">&copy; 2026 zett.ai Absolute Technology</p>
+        </div>
+    </footer>
+
+    <!-- Init Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <!-- Viewer Logic -->
+    <script>
+        function showViewer(doc) {
+            // Update tabs
+            document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                btn.classList.remove('active', 'bg-brand-600');
+                btn.classList.add('bg-white/10', 'border', 'border-white/20');
+            });
+
+            // Update frames
+            document.querySelectorAll('.pdf-frame').forEach(function(frame) {
+                frame.classList.add('hidden');
+            });
+
+            if (doc === 'whitepaper') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active', 'bg-brand-600');
+                document.querySelectorAll('.tab-btn')[0].classList.remove('bg-white/10', 'border', 'border-white/20');
+                document.getElementById('whitepaper-frame').classList.remove('hidden');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active', 'bg-brand-600');
+                document.querySelectorAll('.tab-btn')[1].classList.remove('bg-white/10', 'border', 'border-white/20');
+                document.getElementById('pitchdeck-frame').classList.remove('hidden');
+            }
+
+            // Scroll to viewer
+            document.getElementById('viewer-section').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

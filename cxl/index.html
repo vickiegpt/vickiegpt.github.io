@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CXL Web QEMU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css">
+<style>
+:root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121a22;
+    --panel-2: #18232d;
+    --line: #263440;
+    --text: #e7edf3;
+    --muted: #9fb0bd;
+    --green: #4fd17b;
+    --cyan: #5fc8e8;
+    --warn: #f5c86a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    min-height: 36px;
+    padding: 0 14px;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    border-color: var(--cyan);
+}
+
+button:disabled {
+    cursor: wait;
+    color: var(--muted);
+}
+
+.shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.terminal-pane {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--line);
+}
+
+.topbar {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line);
+    background: #0d1319;
+}
+
+.title {
+    font-size: 15px;
+    font-weight: 650;
+    margin-right: auto;
+    letter-spacing: 0;
+}
+
+.status {
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.status.ready {
+    color: var(--green);
+}
+
+#terminal {
+    flex: 1;
+    min-height: 520px;
+    padding: 12px;
+    background: #05080b;
+}
+
+.side {
+    min-width: 0;
+    padding: 16px;
+    background: var(--panel);
+    overflow: auto;
+}
+
+.section {
+    padding: 12px 0 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.section:first-child {
+    padding-top: 0;
+}
+
+.section:last-child {
+    border-bottom: 0;
+}
+
+h1, h2 {
+    margin: 0 0 10px;
+    letter-spacing: 0;
+}
+
+h1 {
+    font-size: 18px;
+}
+
+h2 {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+
+.kv {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 6px 10px;
+    margin: 0;
+}
+
+.kv dt {
+    color: var(--muted);
+}
+
+.kv dd {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+pre {
+    margin: 0;
+    max-width: 100%;
+    overflow: auto;
+    padding: 10px;
+    background: #0a1016;
+    border: 1px solid var(--line);
+    color: #d9e8f3;
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.note {
+    margin: 8px 0 0;
+    color: var(--muted);
+}
+
+.warn {
+    color: var(--warn);
+}
+
+.segmented {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.segmented button {
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.segmented button.active {
+    border-color: var(--green);
+    color: var(--green);
+    background: #102116;
+}
+
+@media (max-width: 960px) {
+    .shell {
+        grid-template-columns: 1fr;
+    }
+
+    .terminal-pane {
+        border-right: 0;
+    }
+
+    .side {
+        border-top: 1px solid var(--line);
+    }
+
+    #terminal {
+        min-height: 460px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+    <main class="terminal-pane">
+        <div class="topbar">
+            <div class="title">CXL Web QEMU</div>
+            <div id="status" class="status">idle</div>
+            <button id="start">Start VM</button>
+            <button id="reset">Reset</button>
+        </div>
+        <div id="terminal"></div>
+    </main>
+    <aside class="side">
+        <section class="section">
+            <h1>CXL + HETGPU</h1>
+            <dl class="kv">
+                <dt>Profile</dt><dd id="profile-label">all</dd>
+                <dt>Kernel</dt><dd>/about/bzImage</dd>
+                <dt>Disk</dt><dd>/about/qemu.img</dd>
+                <dt>Backend</dt><dd id="webgpu-status">webgpu probing</dd>
+            </dl>
+        </section>
+        <section class="section">
+            <h2>CXL Profile</h2>
+            <div class="segmented" id="profile-controls">
+                <button type="button" data-profile="all">All</button>
+                <button type="button" data-profile="type1">Type1</button>
+                <button type="button" data-profile="type2">Type2</button>
+                <button type="button" data-profile="type3">Type3</button>
+            </div>
+            <p class="note">Changing profile reloads the page before VM boot.</p>
+        </section>
+        <section class="section">
+            <h2>Guest Probe</h2>
+            <pre>root
+uname -a
+cat /proc/cmdline
+mount | head
+dmesg | grep -i cxl
+find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
+lspci 2>/dev/null | grep -i cxl
+find /sys/bus/pci/devices -maxdepth 1 -type l
+grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
+            <p class="note">Login as <strong>root</strong> after the prompt appears.</p>
+        </section>
+        <section class="section">
+            <h2>Active QEMU Args</h2>
+            <pre id="active-args"></pre>
+        </section>
+        <section class="section">
+            <h2>Runtime</h2>
+            <p class="note"><span class="warn">Note:</span> Type1/Type2 are command profiles for this browser VM. Type2 exposes `hetgpu0` with `hetgpu.backend=webgpu`; Type3 adds a QEMU `cxl-type3` volatile memory device.</p>
+        </section>
+    </aside>
+</div>
+
+<script>
+window.coi = {
+    coepCredentialless: () => true,
+    quiet: true
+};
+</script>
+<script src="./coi-serviceworker.js"></script>
+<script src="./cxl-module.js"></script>
+<script src="./images/alpine-x86_64/load-rom.js"></script>
+<script type="module">
+import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
+import "https://unpkg.com/xterm-pty/index.js";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js";
+
+const status = document.getElementById("status");
+const startButton = document.getElementById("start");
+const resetButton = document.getElementById("reset");
+const profileLabel = document.getElementById("profile-label");
+const activeArgs = document.getElementById("active-args");
+const webgpuStatus = document.getElementById("webgpu-status");
+let booted = false;
+
+const term = new Terminal({
+    cols: 104,
+    rows: 32,
+    cursorBlink: true,
+    convertEol: true,
+    fontFamily: "SFMono-Regular, Menlo, Consolas, monospace",
+    fontSize: 13,
+    theme: {
+        background: "#05080b",
+        foreground: "#dce8f1",
+        cursor: "#5fc8e8",
+        selectionBackground: "#315268"
+    }
+});
+
+term.open(document.getElementById("terminal"));
+term.writeln("CXL Web QEMU ready.");
+term.writeln("Press Start VM, then login as root when Alpine reaches the prompt.");
+term.writeln("");
+
+const config = window.CXL_WEB_CONFIG || { profile: "all", backend: "webgpu", arguments: [] };
+profileLabel.textContent = config.profile;
+activeArgs.textContent = (config.arguments || []).map((arg) => {
+    return /\s/.test(arg) ? JSON.stringify(arg) : arg;
+}).join(" ");
+
+document.querySelectorAll("[data-profile]").forEach((button) => {
+    const isActive = button.dataset.profile === config.profile;
+    button.classList.toggle("active", isActive);
+    button.addEventListener("click", () => {
+        if (booted) return;
+        const url = new URL(location.href);
+        url.searchParams.set("cxl", button.dataset.profile);
+        url.searchParams.set("hetgpu", config.backend || "webgpu");
+        location.href = url.toString();
+    });
+});
+
+async function probeWebGPU() {
+    if (!("gpu" in navigator)) {
+        webgpuStatus.textContent = "webgpu unavailable";
+        return;
+    }
+    try {
+        const adapter = await navigator.gpu.requestAdapter();
+        webgpuStatus.textContent = adapter ? "webgpu ready" : "webgpu no adapter";
+        window.HETGPU_WEBGPU_ADAPTER = adapter || null;
+    } catch (error) {
+        webgpuStatus.textContent = "webgpu blocked";
+    }
+}
+
+probeWebGPU();
+
+const { master, slave } = openpty();
+term.loadAddon(master);
+Module.pty = slave;
+Module.print = (text) => term.writeln(text);
+Module.printErr = (text) => term.writeln(text);
+Module.setStatus = (text) => {
+    status.textContent = text || "running";
+};
+
+function setStatus(text, ready = false) {
+    status.textContent = text;
+    status.classList.toggle("ready", ready);
+}
+
+async function start() {
+    if (booted) return;
+    booted = true;
+    startButton.disabled = true;
+    setStatus(window.crossOriginIsolated ? "booting" : "isolating");
+
+    if (!window.crossOriginIsolated) {
+        term.writeln("Waiting for cross-origin isolation. If the page reloads, press Start VM again.");
+    }
+
+    Module.preRun = Module.preRun || [];
+    Module.preRun.push((mod) => {
+        mod.FS.mkdir("/.wasmenv");
+    });
+
+    try {
+        await initEmscriptenModule(Module);
+        const oldPoll = Module.TTY.stream_ops.poll;
+        const pty = Module.pty;
+        Module.TTY.stream_ops.poll = function(stream, timeout) {
+            if (!pty.readable) {
+                return (pty.readable ? 1 : 0) | (pty.writable ? 4 : 0);
+            }
+            return oldPoll.call(stream, timeout);
+        };
+        setStatus("running", true);
+    } catch (error) {
+        term.writeln("");
+        term.writeln(String(error && error.stack ? error.stack : error));
+        setStatus("error");
+        startButton.disabled = false;
+        booted = false;
+    }
+}
+
+startButton.addEventListener("click", start);
+resetButton.addEventListener("click", () => location.reload());
+</script>
+</body>
+</html>
