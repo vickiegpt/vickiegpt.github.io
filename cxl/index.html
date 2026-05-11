@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CXL Web QEMU</title>
+<title>HETGPU WebGPU QEMU</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css">
 <style>
 :root {
@@ -212,7 +212,7 @@ pre {
 <div class="shell">
     <main class="terminal-pane">
         <div class="topbar">
-            <div class="title">CXL Web QEMU</div>
+            <div class="title">HETGPU WebGPU QEMU</div>
             <div id="status" class="status">idle</div>
             <button id="start">Start VM</button>
             <button id="reset">Reset</button>
@@ -221,11 +221,13 @@ pre {
     </main>
     <aside class="side">
         <section class="section">
-            <h1>CXL + HETGPU</h1>
+            <h1>HETGPU WebGPU + CXL</h1>
             <dl class="kv">
                 <dt>Profile</dt><dd id="profile-label">all</dd>
-                <dt>Kernel</dt><dd>/about/bzImage</dd>
-                <dt>Disk</dt><dd>/about/qemu.img</dd>
+                <dt>Assets</dt><dd id="asset-base">/cxl/images/hetgpu-webgpu/</dd>
+                <dt>Kernel</dt><dd id="kernel-path">/pack-kernel/vmlinuz-virt</dd>
+                <dt>Initramfs</dt><dd id="initramfs-path">/pack-initramfs/initramfs-virt</dd>
+                <dt>Disk</dt><dd id="disk-path">/pack-rootfs/disk-rootfs.img</dd>
                 <dt>Backend</dt><dd id="webgpu-status">webgpu probing</dd>
             </dl>
         </section>
@@ -259,6 +261,7 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         <section class="section">
             <h2>Runtime</h2>
             <p class="note"><span class="warn">Note:</span> Type1/Type2 are command profiles for this browser VM. Type2 exposes `hetgpu0` with `hetgpu.backend=webgpu`; Type3 adds a QEMU `cxl-type3` volatile memory device.</p>
+            <p class="note"><span class="warn">Image:</span> This asset path is wired to the HETGPU-linked `qemu-system-i386` wasm. Replace the staged kernel/initramfs/rootfs with an i386 guest package if the current Alpine x86_64 package rejects the CPU.</p>
         </section>
     </aside>
 </div>
@@ -271,16 +274,24 @@ window.coi = {
 </script>
 <script src="./coi-serviceworker.js"></script>
 <script src="./cxl-module.js"></script>
-<script src="./images/alpine-x86_64/load-rom.js"></script>
+<script src="./images/hetgpu-webgpu/lz4-runtime.js"></script>
+<script src="./images/hetgpu-webgpu/load-rom.js"></script>
+<script src="./images/hetgpu-webgpu/load-kernel.js"></script>
+<script src="./images/hetgpu-webgpu/load-initramfs.js"></script>
+<script src="./images/hetgpu-webgpu/load-rootfs.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js";
+import initEmscriptenModule from "./images/hetgpu-webgpu/qemu-system-i386.js";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
 const resetButton = document.getElementById("reset");
 const profileLabel = document.getElementById("profile-label");
+const assetBaseLabel = document.getElementById("asset-base");
+const kernelPathLabel = document.getElementById("kernel-path");
+const initramfsPathLabel = document.getElementById("initramfs-path");
+const diskPathLabel = document.getElementById("disk-path");
 const activeArgs = document.getElementById("active-args");
 const webgpuStatus = document.getElementById("webgpu-status");
 let booted = false;
@@ -301,12 +312,26 @@ const term = new Terminal({
 });
 
 term.open(document.getElementById("terminal"));
-term.writeln("CXL Web QEMU ready.");
+term.writeln("HETGPU WebGPU QEMU ready.");
 term.writeln("Press Start VM, then login as root when Alpine reaches the prompt.");
 term.writeln("");
 
-const config = window.CXL_WEB_CONFIG || { profile: "all", backend: "webgpu", arguments: [] };
+const config = window.CXL_WEB_CONFIG || {
+    profile: "all",
+    backend: "webgpu",
+    assetBase: "/cxl/images/hetgpu-webgpu/",
+    image: {
+        kernel: "/pack-kernel/vmlinuz-virt",
+        initramfs: "/pack-initramfs/initramfs-virt",
+        disk: "/pack-rootfs/disk-rootfs.img"
+    },
+    arguments: []
+};
 profileLabel.textContent = config.profile;
+assetBaseLabel.textContent = config.assetBase || "/cxl/images/hetgpu-webgpu/";
+kernelPathLabel.textContent = config.image?.kernel || "/pack-kernel/vmlinuz-virt";
+initramfsPathLabel.textContent = config.image?.initramfs || "/pack-initramfs/initramfs-virt";
+diskPathLabel.textContent = config.image?.disk || "/pack-rootfs/disk-rootfs.img";
 activeArgs.textContent = (config.arguments || []).map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(" ");
