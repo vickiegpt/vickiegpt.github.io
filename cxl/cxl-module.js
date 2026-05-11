@@ -1,4 +1,4 @@
-if (typeof Module === 'undefined') {
+cxl/cxl-module.jsif (typeof Module === 'undefined') {
     Module = {};
 }
 
@@ -42,10 +42,12 @@ const CXL_WEB_CONFIG = (() => {
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
+    const fastBoot = params.get('fast_boot') !== '0';
     return {
         profile,
         backend,
         nativeType2,
+        fastBoot,
         assetBase: '/cxl/images/alpine-x86_64/',
         image: {
             rom: '/pack-rom/',
@@ -85,6 +87,9 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const chunks = new Map();
     const writes = new Map();
     const writable = options.writable === true;
+    const allowFullFallback = options.allowFullFallback === true;
+    const maxFullFallbackSize = options.maxFullFallbackSize || 64 * 1024 * 1024;
+    let fullFile = null;
 
     function request(method, requestUrl, start, end) {
         const xhr = new XMLHttpRequest();
@@ -120,13 +125,30 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     if (!Number.isFinite(size) || size <= 0) {
         throw new Error(`${url} did not return a usable Content-Length`);
     }
-    if (!acceptsRanges) {
-        throw new Error(`${url} does not advertise Accept-Ranges: bytes`);
+    if (!acceptsRanges && (!allowFullFallback || size > maxFullFallbackSize)) {
+        throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
+    }
+
+    function getFullFile() {
+        if (fullFile) {
+            return fullFile;
+        }
+        if (!allowFullFallback || size > maxFullFallbackSize) {
+            throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
+        }
+        fullFile = responseBytes(request('GET', url));
+        return fullFile;
     }
 
     function getChunk(chunkIndex) {
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize - 1, size - 1);
+
         if (writes.has(chunkIndex)) {
             return writes.get(chunkIndex);
+        }
+        if (!acceptsRanges) {
+            return getFullFile().subarray(start, end + 1);
         }
         if (chunks.has(chunkIndex)) {
             const cached = chunks.get(chunkIndex);
@@ -135,10 +157,12 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
             return cached;
         }
 
-        const start = chunkIndex * chunkSize;
-        const end = Math.min(start + chunkSize - 1, size - 1);
         const xhr = request('GET', url, start, end);
-        if (xhr.status !== 206 && size > chunkSize) {
+        if (xhr.status !== 206) {
+            if (xhr.status === 200 && allowFullFallback && size <= maxFullFallbackSize) {
+                fullFile = responseBytes(xhr);
+                return fullFile.subarray(start, end + 1);
+            }
             throw new Error(`${url} ignored Range ${start}-${end}: HTTP ${xhr.status}`);
         }
         const data = responseBytes(xhr);
@@ -227,7 +251,7 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
 Module['preRun'] = Module['preRun'] || [];
 Module['preRun'].push((mod) => {
     mod.FS.mkdir('/remote');
-    createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl);
+    createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl, { allowFullFallback: true });
     createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, { writable: true });
 });
 
@@ -237,6 +261,19 @@ function profileHas(name) {
 
 function buildQemuArguments() {
     const type3Enabled = profileHas('type3');
+    const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
+        'systemd.mask=apt-daily.service',
+        'systemd.mask=apt-daily.timer',
+        'systemd.mask=apt-daily-upgrade.service',
+        'systemd.mask=apt-daily-upgrade.timer',
+        'systemd.mask=dpkg-db-backup.service',
+        'systemd.mask=dpkg-db-backup.timer',
+        'systemd.mask=e2scrub_all.service',
+        'systemd.mask=e2scrub_all.timer',
+        'systemd.mask=e2scrub_reap.service',
+        'systemd.mask=logrotate.service',
+        'systemd.mask=logrotate.timer'
+    ] : [];
     const cxlDebug = [
         'cxl_acpi.dyndbg=+fplm',
         'cxl_pci.dyndbg=+fplm',
@@ -255,6 +292,10 @@ function buildQemuArguments() {
         'console=ttyS0,115200',
         'ignore_loglevel',
         'nokaslr',
+        'nowatchdog',
+        'nosoftlockup',
+        'systemd.default_timeout_start_sec=20s',
+        'systemd.default_timeout_stop_sec=10s',
         `cxl.profile=${CXL_WEB_CONFIG.profile}`,
         profileHas('type1') ? 'cxl.type1=on' : 'cxl.type1=off',
         profileHas('type2') ? 'cxl.type2=on' : 'cxl.type2=off',
@@ -266,6 +307,7 @@ function buildQemuArguments() {
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        ...fastBootMasks,
         ...cxlDebug
     ].join(' ');
 
