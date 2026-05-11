@@ -1,4 +1,4 @@
-cxl/cxl-module.jsif (typeof Module === 'undefined') {
+if (typeof Module === 'undefined') {
     Module = {};
 }
 
@@ -48,6 +48,7 @@ const CXL_WEB_CONFIG = (() => {
         backend,
         nativeType2,
         fastBoot,
+        assetVersion: '20260511-worker-url',
         assetBase: '/cxl/images/alpine-x86_64/',
         image: {
             rom: '/pack-rom/',
@@ -370,6 +371,14 @@ window.CXL_WEB_CONFIG.command = Module['arguments'].map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(' ');
 Module['locateFile'] = function(path, prefix) {
-    return CXL_WEB_CONFIG.assetBase + path;
+    const url = new URL(path, new URL(CXL_WEB_CONFIG.assetBase, location.href));
+    if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.wasm') {
+        url.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
+    }
+    return url.href;
 };
-Module['mainScriptUrlOrBlob'] = CXL_WEB_CONFIG.assetBase + 'out.js';
+{
+    const mainScriptUrl = new URL('out.js', new URL(CXL_WEB_CONFIG.assetBase, location.href));
+    mainScriptUrl.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
+    Module['mainScriptUrlOrBlob'] = mainScriptUrl.href;
+}
