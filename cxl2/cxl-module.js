@@ -138,12 +138,7 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
-    const apicParam = params.get('apic') || params.get('irq_mode') || '';
-    const apicMode = qemuCxlEnabled && apicParam !== 'ioapic' ? 'noapic' : 'ioapic';
-    const diskBusParam = params.get('disk_bus') || '';
-    const diskBus = diskBusParam === 'legacy' || (qemuCxlEnabled && apicMode === 'noapic' && diskBusParam !== 'virtio')
-        ? 'legacy'
-        : 'virtio';
+    const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
     const image = parseImageConfig(params);
@@ -165,12 +160,11 @@ const CXL_WEB_CONFIG = (() => {
         startTimeoutSec,
         qemuCore,
         diskBus,
-        apicMode,
         tcg: {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-noapic-ide-input',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-rp-reserve-input',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -452,9 +446,7 @@ function buildQemuArguments() {
         'fsck.repair=no',
         'random.trust_cpu=on',
         'log_buf_len=256K',
-        'printk.time=0',
-        ...(CXL_WEB_CONFIG.qemuCxlEnabled ? ['pci=realloc'] : []),
-        ...(CXL_WEB_CONFIG.apicMode === 'noapic' ? ['noapic'] : [])
+        'printk.time=0'
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -570,7 +562,7 @@ function buildQemuArguments() {
     if (type3Enabled) {
         args.push(
             '-object', 'memory-backend-ram,id=vmem0,share=on,size=128M',
-            '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2',
+            '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2,mem-reserve=64M,pref64-reserve=256M,io-reserve=4K',
             '-device', 'cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0,sn=0x1',
             '-M', 'cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=256M'
         );
