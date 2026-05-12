@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl-serial',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl-console',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -487,6 +487,7 @@ function buildQemuArguments() {
         `systemd.setenv=CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `systemd.setenv=CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
         'systemd.default_device_timeout_sec=3s',
+        'systemd.wants=console-getty.service',
         ...runtimeAppend,
         ...fastBootMasks,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
