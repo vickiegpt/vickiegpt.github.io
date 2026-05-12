@@ -148,13 +148,13 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
-    const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
+    const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
-    const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
+    const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
-    const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
+    const hpet = params.get('hpet') === 'off' ? 'off' : 'on';
     const nodefaults = params.get('nodefaults') === '1';
-    const rtc = params.get('rtc') === 'off' ? 'off' : 'vm';
+    const rtc = params.get('rtc') === 'vm' ? 'vm' : 'off';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -184,7 +184,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-rtc-probe',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-relfix1',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -615,7 +615,7 @@ window.CXL_WEB_CONFIG.command = Module['arguments'].map((arg) => {
 }).join(' ');
 Module['locateFile'] = function(path, prefix) {
     const url = new URL(path, new URL(CXL_WEB_CONFIG.assetBase, location.href));
-    if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.wasm') {
+    if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.js' || path === 'qemu-system-x86_64.wasm') {
         url.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
     }
     return url.href;
