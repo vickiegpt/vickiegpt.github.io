@@ -485,129 +485,6 @@ function createWasm() {
  return {};
 }
 
-function readWasmUleb(bytes, state) {
- var result = 0;
- var shift = 0;
- while (state.pos < bytes.length) {
-  var value = bytes[state.pos++];
-  result |= (value & 127) << shift;
-  if ((value & 128) === 0) return result >>> 0;
-  shift += 7;
- }
- throw new Error("truncated wasm uleb");
-}
-
-function readWasmName(bytes, state) {
- var size = readWasmUleb(bytes, state);
- var begin = state.pos;
- state.pos += size;
- var text = "";
- for (var i = begin; i < begin + size; i++) {
-  text += String.fromCharCode(bytes[i]);
- }
- return text;
-}
-
-function skipWasmLimits(bytes, state) {
- var flags = readWasmUleb(bytes, state);
- readWasmUleb(bytes, state);
- if (flags & 1) readWasmUleb(bytes, state);
-}
-
-function wasmValueTypeToSig(type) {
- switch (type) {
- case 127:
-  return "i";
- case 126:
-  return "j";
- case 125:
-  return "f";
- case 124:
-  return "d";
- case 111:
-  return "e";
- default:
-  throw new Error("unsupported wasm value type " + type);
- }
-}
-
-function parseWasmFunctionImportSigs(bytes) {
- var state = { pos: 8 };
- var types = [];
- var imports = [];
- while (state.pos < bytes.length) {
-  var section = bytes[state.pos++];
-  var sectionSize = readWasmUleb(bytes, state);
-  var sectionEnd = state.pos + sectionSize;
-  if (section === 1) {
-   var typeCount = readWasmUleb(bytes, state);
-   for (var i = 0; i < typeCount; i++) {
-    if (bytes[state.pos++] !== 96) throw new Error("unsupported wasm type form");
-    var paramCount = readWasmUleb(bytes, state);
-    var params = "";
-    for (var p = 0; p < paramCount; p++) params += wasmValueTypeToSig(bytes[state.pos++]);
-    var resultCount = readWasmUleb(bytes, state);
-    var result = "v";
-    if (resultCount > 0) {
-     result = wasmValueTypeToSig(bytes[state.pos++]);
-     for (var r = 1; r < resultCount; r++) wasmValueTypeToSig(bytes[state.pos++]);
-    }
-    types.push(result + params);
-   }
-  } else if (section === 2) {
-   var importCount = readWasmUleb(bytes, state);
-   for (var j = 0; j < importCount; j++) {
-    var moduleName = readWasmName(bytes, state);
-    var fieldName = readWasmName(bytes, state);
-    var kind = bytes[state.pos++];
-    if (kind === 0) {
-     imports.push({ module: moduleName, name: fieldName, sig: types[readWasmUleb(bytes, state)] });
-    } else if (kind === 1) {
-     state.pos++;
-     skipWasmLimits(bytes, state);
-    } else if (kind === 2) {
-     skipWasmLimits(bytes, state);
-    } else if (kind === 3) {
-     state.pos += 2;
-    }
-   }
-  }
-  state.pos = sectionEnd;
- }
- return imports;
-}
-
-function normalizeWasmReturn(value, sig) {
- switch (sig[0]) {
- case "v":
-  return undefined;
- case "j":
-  return toWasmBigInt(value);
- case "i":
- case "p":
-  return typeof value === "bigint" ? Number(BigInt.asUintN(32, value)) : value;
- default:
-  return value;
- }
-}
-
-function wrapWasmHelperImport(func, sig) {
- if (!sig) return func;
- var wrapper = function() {
-  var args = Array.prototype.slice.call(arguments);
-  return normalizeWasmReturn(callWasmFunctionWithI64Fallback(func, args), sig);
- };
- return convertJsFunctionToWasm(wrapper, sig);
-}
-
-function wrapWasm32TbStart(func) {
- var sig = "jjjjjjjjjjjjjjjjj";
- var wrapper = function(a0) {
-  return toWasmBigInt(func(Number(BigInt.asUintN(32, toWasmBigInt(a0)))));
- };
- return convertJsFunctionToWasm(wrapper, sig);
-}
-
 function instantiate_wasm() {
  const memory_v = new DataView(HEAP8.buffer);
  const tb_ptr = memory_v.getInt32(Module.__wasm32_tb.tb_ptr_ptr, true);
@@ -622,11 +499,9 @@ function instantiate_wasm() {
  const import_vec_size = memory_v.getInt32(wasm_begin + wasm_size, true);
  const import_vec_begin = wasm_begin + wasm_size + 4;
  const wasmBytes = new Uint8Array(HEAP8.slice(wasm_begin, wasm_begin + wasm_size));
- const importSigs = parseWasmFunctionImportSigs(wasmBytes);
  var helper = {};
  for (var i = 0; i < import_vec_size / 4; i++) {
-  var importSig = importSigs.find(importInfo => importInfo.module === "helper" && importInfo.name === String(i));
-  helper[i] = wrapWasmHelperImport(wasmTable.get(memory_v.getInt32(import_vec_begin + i * 4, true)), importSig && importSig.sig);
+  helper[i] = wasmTable.get(memory_v.getInt32(import_vec_begin + i * 4, true));
  }
  const mod = new WebAssembly.Module(wasmBytes);
  const inst = new WebAssembly.Instance(mod, {
@@ -636,7 +511,7 @@ function instantiate_wasm() {
   "helper": helper
  });
  Module.__wasm32_tb.inst_gc_registry.register(inst, "instance");
- const fidx = addFunction(wrapWasm32TbStart(inst.exports.start), "jjjjjjjjjjjjjjjjj");
+ const fidx = addFunction(inst.exports.start, "ii");
  return fidx;
 }
 
@@ -682,81 +557,6 @@ function unbox_small_structs(type_ptr) {
   }
  }
  return [ type_ptr, type_id ];
-}
-
-function toWasmBigInt(value) {
- if (value === undefined || value === null) {
-  return 0n;
- }
- return typeof value === "bigint" ? value : BigInt(value);
-}
-
-function toWasmNumber(value) {
- if (value === undefined || value === null) {
-  return 0;
- }
- return typeof value === "bigint" ? Number(BigInt.asUintN(32, value)) : value;
-}
-
-function callWasmFunctionWithI64Fallback(func, args, depth) {
- depth = depth || 0;
- try {
-  return (0, func.apply(null, args));
- } catch (e) {
-  if (!(e instanceof TypeError)) {
-   throw e;
-  }
-  var match = /^Cannot convert (-?[0-9]+) to a BigInt$/.exec(e.message);
-  if (!match) {
-   if (e.message === "Cannot convert undefined to a BigInt" && depth < 64) {
-    for (var j = 0; j < args.length; j++) {
-     if (args[j] !== undefined) {
-      continue;
-     }
-     var undefinedRetryArgs = args.slice();
-     undefinedRetryArgs[j] = 0n;
-     return callWasmFunctionWithI64Fallback(func, undefinedRetryArgs, depth + 1);
-    }
-    var appendedRetryArgs = args.slice();
-    appendedRetryArgs.push(0n);
-    return callWasmFunctionWithI64Fallback(func, appendedRetryArgs, depth + 1);
-   }
-   if (e.message === "Cannot convert a BigInt value to a number" && depth < 64) {
-    for (var b = 0; b < args.length; b++) {
-     if (typeof args[b] !== "bigint") {
-      continue;
-     }
-     var numberRetryArgs = args.slice();
-     numberRetryArgs[b] = Number(BigInt.asUintN(32, args[b]));
-     try {
-      return callWasmFunctionWithI64Fallback(func, numberRetryArgs, depth + 1);
-     } catch (numberRetryError) {
-      if (numberRetryError instanceof TypeError && numberRetryError.message === "Cannot convert undefined to a BigInt") {
-       throw numberRetryError;
-      }
-     }
-    }
-   }
-   throw e;
-  }
-  var value = Number(match[1]);
-  for (var i = 0; i < args.length; i++) {
-   if (typeof args[i] !== "number" || args[i] !== value) {
-    continue;
-   }
-   var retryArgs = args.slice();
-   retryArgs[i] = BigInt(retryArgs[i]);
-   try {
-    return callWasmFunctionWithI64Fallback(func, retryArgs, depth + 1);
-   } catch (retryError) {
-    if (retryError instanceof TypeError && retryError.message === "Cannot convert a BigInt value to a number") {
-     continue;
-    }
-    throw retryError;
-   }
-  }
-  throw e;
- }
 }
 
 function ffi_call_js(cif, fn, rvalue, avalue) {
@@ -924,7 +724,7 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
  }
  stackRestore(cur_stack_ptr);
  stackAlloc(0);
- var result = callWasmFunctionWithI64Fallback(getWasmTableEntry(fn), args);
+ var result = (0, getWasmTableEntry(fn).apply(null, args));
  stackRestore(orig_stack_ptr);
  if (ret_by_arg) {
   return;
@@ -937,7 +737,7 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
  case 9:
  case 10:
  case 14:
-  HEAPU32[(rvalue >> 2) + 0 >>> 0] = toWasmNumber(result);
+  HEAPU32[(rvalue >> 2) + 0 >>> 0] = result;
   break;
 
  case 2:
@@ -950,17 +750,17 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
 
  case 5:
  case 6:
-  HEAPU8[rvalue + 0 >>> 0] = toWasmNumber(result);
+  HEAPU8[rvalue + 0 >>> 0] = result;
   break;
 
  case 7:
  case 8:
-  HEAPU16[(rvalue >> 1) + 0 >>> 0] = toWasmNumber(result);
+  HEAPU16[(rvalue >> 1) + 0 >>> 0] = result;
   break;
 
  case 11:
  case 12:
-  HEAPU64[(rvalue >> 3) + 0] = toWasmBigInt(result);
+  HEAPU64[(rvalue >> 3) + 0] = result;
   break;
 
  case 15:
@@ -1114,14 +914,14 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 6:
     ((cur_ptr -= (1)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU8[cur_ptr + 0 >>> 0] = toWasmNumber(cur_arg);
+    HEAPU8[cur_ptr + 0 >>> 0] = cur_arg;
     break;
 
    case 7:
    case 8:
     ((cur_ptr -= (2)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU16[(cur_ptr >> 1) + 0 >>> 0] = toWasmNumber(cur_arg);
+    HEAPU16[(cur_ptr >> 1) + 0 >>> 0] = cur_arg;
     break;
 
    case 1:
@@ -1130,7 +930,7 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 14:
     ((cur_ptr -= (4)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU32[(cur_ptr >> 2) + 0 >>> 0] = toWasmNumber(cur_arg);
+    HEAPU32[(cur_ptr >> 2) + 0 >>> 0] = cur_arg;
     break;
 
    case 13:
@@ -1155,19 +955,19 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 12:
     ((cur_ptr -= (8)), (cur_ptr &= (~((8) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU64[(cur_ptr >> 3) + 0] = toWasmBigInt(cur_arg);
+    HEAPU64[(cur_ptr >> 3) + 0] = cur_arg;
     break;
 
    case 4:
     ((cur_ptr -= (16)), (cur_ptr &= (~((8) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU64[(cur_ptr >> 3) + 0] = toWasmBigInt(cur_arg);
+    HEAPU64[(cur_ptr >> 3) + 0] = cur_arg;
     cur_arg = args[jsarg_idx++];
-    HEAPU64[(cur_ptr >> 3) + 1] = toWasmBigInt(cur_arg);
+    HEAPU64[(cur_ptr >> 3) + 1] = cur_arg;
     break;
    }
   }
-  var varargs = toWasmNumber(args[args.length - 1]);
+  var varargs = args[args.length - 1];
   for (;carg_idx < nargs; carg_idx++) {
    var arg_type_id = unboxed_arg_type_id_list[carg_idx];
    var arg_type_info = unboxed_arg_type_info_list[carg_idx];

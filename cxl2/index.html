@@ -276,7 +276,7 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         </section>
         <section class="section">
             <h2>Runtime</h2>
-            <p class="note"><span class="warn">Note:</span> This page uses the x86_64 QEMU wasm assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL devices can be re-enabled with `?acpi=on&qemu_cxl=1`.</p>
+            <p class="note"><span class="warn">Note:</span> This page uses the fast x86_64 TB/TBI QEMU wasm assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL devices can be re-enabled with `?acpi=on&qemu_cxl=1`, which switches to the compatibility core.</p>
             <p class="note"><span class="warn">Boot:</span> Default boot uses trimmed systemd and keeps CXL initialization. Add `fast_login=1` only for a direct `/bin/sh` debug shell, or `fast_boot=0` to restore the guest defaults.</p>
             <p class="note"><span class="warn">Network:</span> The browser network stack is connected through `-netdev socket` and the c2w fetch proxy. Inside the guest, use `http_proxy`/`https_proxy` with `http://192.168.127.253:80` for outbound HTTP(S).</p>
         </section>
@@ -290,12 +290,11 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-numfix"></script>
+<script src="./cxl-module.js?v=20260512-fastcore"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-numfix";
 import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-numfix";
 
 const status = document.getElementById("status");
@@ -351,11 +350,16 @@ const config = window.CXL_WEB_CONFIG || {
         host: "127.0.0.1",
         port: 9999
     },
+    qemuCore: "fast",
+    assetVersion: "20260512-fastcore",
     startTimeoutSec: 180,
     arguments: []
 };
+const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-fastcore");
+const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
-assetBaseLabel.textContent = config.assetBase || "/cxl2/images/alpine-x86_64/";
+assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
 kernelPathLabel.textContent = config.image?.kernelUrl || "/about/bzImage";
 diskPathLabel.textContent = config.image?.diskUrl || "/about/qemu.img";
 networkStatus.textContent = config.network?.mode === "browser" ? "browser/c2w idle" : "disabled";
@@ -493,6 +497,7 @@ async function start() {
 
     try {
         startBrowserNetwork();
+        const initEmscriptenModule = await initEmscriptenModulePromise;
         await initEmscriptenModule(Module);
         const oldPoll = Module.TTY.stream_ops.poll;
         const pty = Module.pty;

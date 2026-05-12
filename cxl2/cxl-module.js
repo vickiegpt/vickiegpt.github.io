@@ -82,6 +82,20 @@ function parseTimeoutSeconds(params, names, fallback) {
     return fallback;
 }
 
+function parseIntegerParam(params, names, fallback, min, max) {
+    for (const name of names) {
+        const raw = params.get(name);
+        if (!raw) {
+            continue;
+        }
+        const value = Number(String(raw).trim());
+        if (Number.isInteger(value) && value >= min && value <= max) {
+            return value;
+        }
+    }
+    return fallback;
+}
+
 function parseImageConfig(params) {
     const imageDirParam = params.get('file_dir')
         || params.get('local_dir')
@@ -122,6 +136,11 @@ const CXL_WEB_CONFIG = (() => {
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
+    const coreParam = params.get('qemu_core') || params.get('core') || '';
+    const qemuCore = coreParam === 'fpcast' || (coreParam !== 'fast' && qemuCxlEnabled) ? 'fpcast' : 'fast';
+    const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
+    const tcgThread = params.get('tcg_thread') === 'multi' ? 'multi' : 'single';
+    const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
     const startTimeoutSec = parseTimeoutSeconds(
@@ -139,8 +158,14 @@ const CXL_WEB_CONFIG = (() => {
         qemuCxlEnabled,
         debug,
         startTimeoutSec,
-        assetVersion: '20260512-numfix',
-        assetBase: '/cxl2/images/alpine-x86_64/',
+        qemuCore,
+        diskBus,
+        tcg: {
+            thread: tcgThread,
+            tbSize
+        },
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcore',
+        assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
             mode: 'browser',
@@ -168,8 +193,8 @@ Module['ENV'] = {
 
 function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const FS = mod.FS;
-    const chunkSize = 4 * 1024 * 1024;
-    const maxChunks = 64;
+    const chunkSize = options.chunkSize || 4 * 1024 * 1024;
+    const maxChunks = options.maxChunks || 64;
     const chunks = new Map();
     const writes = new Map();
     const writable = options.writable === true;
@@ -338,7 +363,11 @@ Module['preRun'] = Module['preRun'] || [];
 Module['preRun'].push((mod) => {
     mod.FS.mkdir('/remote');
     createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl, { allowFullFallback: true });
-    createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, { writable: true });
+    createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, {
+        writable: true,
+        chunkSize: 16 * 1024 * 1024,
+        maxChunks: 32
+    });
 });
 
 function profileHas(name) {
@@ -347,6 +376,8 @@ function profileHas(name) {
 
 function buildQemuArguments() {
     const type3Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type3');
+    const virtioDisk = CXL_WEB_CONFIG.diskBus !== 'legacy';
+    const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
     const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
         'systemd.mask=apt-daily.service',
         'systemd.mask=apt-daily.timer',
@@ -406,11 +437,14 @@ function buildQemuArguments() {
         'loglevel=3'
     ];
     const baseAppend = [
-        'root=/dev/sda',
+        `root=${rootDevice}`,
         'rootwait',
         'rw',
         'console=ttyS0,115200',
-        'devtmpfs.mount=1'
+        'devtmpfs.mount=1',
+        'fsck.mode=skip',
+        'fsck.repair=no',
+        'random.trust_cpu=on'
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -447,6 +481,7 @@ function buildQemuArguments() {
         'nokaslr',
         'nowatchdog',
         'nosoftlockup',
+        ...(CXL_WEB_CONFIG.fastBoot ? ['systemd.volatile=state'] : []),
         `systemd.default_timeout_start_sec=${startTimeout}`,
         `systemd.default_timeout_stop_sec=${stopTimeout}`,
         `systemd.setenv=CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
@@ -457,20 +492,38 @@ function buildQemuArguments() {
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
+    const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
     const args = [
-        '-nographic',
+        '-nodefaults',
+        '-no-user-config',
+        '-display', 'none',
+        '-serial', 'stdio',
+        '-monitor', 'none',
         '-M', CXL_WEB_CONFIG.qemuCxlEnabled ? 'q35,cxl=on' : (CXL_WEB_CONFIG.acpiEnabled ? 'q35' : 'q35,acpi=off'),
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
-        '-accel', 'tcg,tb-size=500,thread=multi',
+        '-accel', accel,
+        '-rtc', 'base=utc,clock=vm',
+        '-no-hpet',
         '-L', CXL_WEB_CONFIG.image.rom,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
-        '-drive', `file=${CXL_WEB_CONFIG.image.disk},index=0,media=disk,format=raw`,
         '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
-        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22'
+        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22',
+        '-device', 'virtio-rng-pci'
     ];
+
+    if (virtioDisk) {
+        args.push(
+            '-drive', `file=${CXL_WEB_CONFIG.image.disk},if=none,id=rootfs,format=raw,cache=unsafe`,
+            '-device', 'virtio-blk-pci,drive=rootfs,bootindex=1'
+        );
+    } else {
+        args.push(
+            '-drive', `file=${CXL_WEB_CONFIG.image.disk},index=0,media=disk,format=raw,cache=unsafe`
+        );
+    }
 
     if (CXL_WEB_CONFIG.qemuCxlEnabled) {
         args.push('-device', 'pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1');
