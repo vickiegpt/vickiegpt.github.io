@@ -324,7 +324,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-cxl-notimer-input"></script>
+<script src="./cxl-module.js?v=20260512-cxl-hpet-input"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -389,12 +389,12 @@ const config = window.CXL_WEB_CONFIG || {
         port: 9999
     },
     qemuCore: "fast",
-    assetVersion: "20260512-cxl-notimer-input",
+    assetVersion: "20260512-cxl-hpet-input",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-cxl-notimer-input");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-cxl-hpet-input");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;

@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-notimer-input',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-hpet-input',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -447,8 +447,7 @@ function buildQemuArguments() {
         'random.trust_cpu=on',
         'log_buf_len=256K',
         'printk.time=0',
-        'pci=realloc',
-        'no_timer_check'
+        'pci=realloc'
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -497,7 +496,7 @@ function buildQemuArguments() {
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
     const machine = CXL_WEB_CONFIG.qemuCxlEnabled
-        ? 'q35,cxl=on,hpet=off'
+        ? 'q35,cxl=on,hpet=on'
         : (CXL_WEB_CONFIG.acpiEnabled ? 'q35,hpet=off' : 'q35,acpi=off,hpet=off');
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
