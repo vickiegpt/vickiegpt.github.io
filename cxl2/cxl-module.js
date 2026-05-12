@@ -103,6 +103,7 @@ const CXL_WEB_CONFIG = (() => {
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const image = parseImageConfig(params);
+    const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
     return {
         profile,
         backend,
@@ -110,7 +111,8 @@ const CXL_WEB_CONFIG = (() => {
         fastBoot,
         acpiEnabled,
         qemuCxlEnabled,
-        assetVersion: '20260512-localdisk',
+        debug,
+        assetVersion: '20260512-boottrim',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -329,7 +331,29 @@ function buildQemuArguments() {
         'systemd.mask=e2scrub_all.timer',
         'systemd.mask=e2scrub_reap.service',
         'systemd.mask=logrotate.service',
-        'systemd.mask=logrotate.timer'
+        'systemd.mask=logrotate.timer',
+        'systemd.mask=ldconfig.service',
+        'systemd.mask=systemd-hwdb-update.service',
+        'systemd.mask=systemd-journal-catalog-update.service',
+        'systemd.mask=systemd-journal-flush.service',
+        'systemd.mask=systemd-journald-audit.socket',
+        'systemd.mask=systemd-journald-dev-log.socket',
+        'systemd.mask=systemd-journald.service',
+        'systemd.mask=systemd-journald.socket',
+        'systemd.mask=systemd-rfkill.socket',
+        'systemd.mask=systemd-udev-settle.service',
+        'systemd.mask=systemd-udev-trigger.service',
+        'systemd.mask=systemd-udevd-control.socket',
+        'systemd.mask=systemd-udevd-kernel.socket',
+        'systemd.mask=systemd-udevd.service',
+        'systemd.mask=cxl-monitor.service',
+        'systemd.mask=cxl-numa-setup.service',
+        'systemd.mask=ndctl-monitor.service',
+        'systemd.mask=cron.service',
+        'systemd.mask=dbus.service',
+        'systemd.mask=ssh.service',
+        'systemd.mask=systemd-logind.service',
+        'systemd.mask=modprobe@drm.service'
     ] : [];
     const cxlDebug = [
         'cxl_acpi.dyndbg=+fplm',
@@ -343,16 +367,24 @@ function buildQemuArguments() {
         'dax_cxl.dyndbg=+fplm',
         'device_dax.dyndbg=+fplm'
     ];
+    const bootLogArgs = CXL_WEB_CONFIG.debug ? ['ignore_loglevel'] : [
+        'quiet',
+        'loglevel=3',
+        'systemd.show_status=auto'
+    ];
+    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
+    const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
     const append = [
         'root=/dev/sda',
         'rw',
         'console=ttyS0,115200',
-        'ignore_loglevel',
+        'systemd.unit=multi-user.target',
+        ...bootLogArgs,
         'nokaslr',
         'nowatchdog',
         'nosoftlockup',
-        'systemd.default_timeout_start_sec=20s',
-        'systemd.default_timeout_stop_sec=10s',
+        `systemd.default_timeout_start_sec=${startTimeout}`,
+        `systemd.default_timeout_stop_sec=${stopTimeout}`,
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
         `qemu.cxl=${CXL_WEB_CONFIG.qemuCxlEnabled ? 'on' : 'off'}`,
         `cxl.profile=${CXL_WEB_CONFIG.profile}`,
@@ -367,7 +399,7 @@ function buildQemuArguments() {
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         ...fastBootMasks,
-        ...cxlDebug
+        ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ].join(' ');
 
     const args = [
