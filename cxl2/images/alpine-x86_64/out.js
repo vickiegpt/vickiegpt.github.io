@@ -560,10 +560,14 @@ function unbox_small_structs(type_ptr) {
 }
 
 function toWasmBigInt(value) {
+ if (value === undefined || value === null) {
+  return 0n;
+ }
  return typeof value === "bigint" ? value : BigInt(value);
 }
 
-function callWasmFunctionWithI64Fallback(func, args) {
+function callWasmFunctionWithI64Fallback(func, args, depth) {
+ depth = depth || 0;
  try {
   return (0, func.apply(null, args));
  } catch (e) {
@@ -572,6 +576,19 @@ function callWasmFunctionWithI64Fallback(func, args) {
   }
   var match = /^Cannot convert (-?[0-9]+) to a BigInt$/.exec(e.message);
   if (!match) {
+   if (e.message === "Cannot convert undefined to a BigInt" && depth < 8) {
+    for (var j = 0; j < args.length; j++) {
+     if (args[j] !== undefined) {
+      continue;
+     }
+     var undefinedRetryArgs = args.slice();
+     undefinedRetryArgs[j] = 0n;
+     return callWasmFunctionWithI64Fallback(func, undefinedRetryArgs, depth + 1);
+    }
+    var appendedRetryArgs = args.slice();
+    appendedRetryArgs.push(0n);
+    return callWasmFunctionWithI64Fallback(func, appendedRetryArgs, depth + 1);
+   }
    throw e;
   }
   var value = Number(match[1]);
@@ -582,7 +599,7 @@ function callWasmFunctionWithI64Fallback(func, args) {
    var retryArgs = args.slice();
    retryArgs[i] = BigInt(retryArgs[i]);
    try {
-    return callWasmFunctionWithI64Fallback(func, retryArgs);
+    return callWasmFunctionWithI64Fallback(func, retryArgs, depth + 1);
    } catch (retryError) {
     if (retryError instanceof TypeError && retryError.message === "Cannot convert a BigInt value to a number") {
      continue;
