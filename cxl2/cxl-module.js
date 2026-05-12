@@ -154,6 +154,7 @@ const CXL_WEB_CONFIG = (() => {
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const nodefaults = params.get('nodefaults') === '1';
+    const rtc = params.get('rtc') === 'off' ? 'off' : 'vm';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -176,13 +177,14 @@ const CXL_WEB_CONFIG = (() => {
         diskBus,
         hpet,
         nodefaults,
+        rtc,
         cxlRootPortReserve,
         extraKernelArgs,
         tcg: {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-board-timer',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-rtc-probe',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -527,7 +529,6 @@ function buildQemuArguments() {
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
         '-accel', accel,
-        '-rtc', 'base=utc,clock=vm',
         '-L', CXL_WEB_CONFIG.image.rom,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
@@ -535,6 +536,10 @@ function buildQemuArguments() {
         '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22',
         '-device', 'virtio-rng-pci'
     ];
+    if (CXL_WEB_CONFIG.rtc !== 'off') {
+        const rtcIndex = args.indexOf('-L');
+        args.splice(rtcIndex, 0, '-rtc', 'base=utc,clock=vm');
+    }
     if (CXL_WEB_CONFIG.nodefaults) {
         args.splice(1, 0, '-nodefaults');
     }
