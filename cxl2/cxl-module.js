@@ -138,7 +138,12 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
-    const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
+    const apicParam = params.get('apic') || params.get('irq_mode') || '';
+    const apicMode = qemuCxlEnabled && apicParam !== 'ioapic' ? 'noapic' : 'ioapic';
+    const diskBusParam = params.get('disk_bus') || '';
+    const diskBus = diskBusParam === 'legacy' || (qemuCxlEnabled && apicMode === 'noapic' && diskBusParam !== 'virtio')
+        ? 'legacy'
+        : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
     const image = parseImageConfig(params);
@@ -160,11 +165,12 @@ const CXL_WEB_CONFIG = (() => {
         startTimeoutSec,
         qemuCore,
         diskBus,
+        apicMode,
         tcg: {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-hpet-input',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-noapic-ide-input',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -447,7 +453,8 @@ function buildQemuArguments() {
         'random.trust_cpu=on',
         'log_buf_len=256K',
         'printk.time=0',
-        'pci=realloc'
+        ...(CXL_WEB_CONFIG.qemuCxlEnabled ? ['pci=realloc'] : []),
+        ...(CXL_WEB_CONFIG.apicMode === 'noapic' ? ['noapic'] : [])
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -496,7 +503,7 @@ function buildQemuArguments() {
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
     const machine = CXL_WEB_CONFIG.qemuCxlEnabled
-        ? 'q35,cxl=on,hpet=on'
+        ? 'q35,cxl=on,hpet=off'
         : (CXL_WEB_CONFIG.acpiEnabled ? 'q35,hpet=off' : 'q35,acpi=off,hpet=off');
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
