@@ -52,7 +52,7 @@ const CXL_WEB_CONFIG = (() => {
         fastBoot,
         acpiEnabled,
         qemuCxlEnabled,
-        assetVersion: '20260512-acpioff',
+        assetVersion: '20260512-cxlguard',
         assetBase: '/cxl/images/alpine-x86_64/',
         image: {
             rom: '/pack-rom/',
@@ -362,7 +362,7 @@ function buildQemuArguments() {
         }
     }
 
-    if (profileHas('type3')) {
+    if (type3Enabled) {
         args.push(
             '-object', 'memory-backend-ram,id=vmem0,share=on,size=128M',
             '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=0',
