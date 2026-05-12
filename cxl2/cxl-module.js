@@ -115,7 +115,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-boottrim',
+        assetVersion: '20260512-udevtrim',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -349,6 +349,8 @@ function buildQemuArguments() {
         'systemd.mask=systemd-journald-dev-log.socket',
         'systemd.mask=systemd-journald.service',
         'systemd.mask=systemd-journald.socket',
+        'systemd.mask=systemd-udev-settle.service',
+        'systemd.mask=systemd-udev-trigger.service',
         'systemd.mask=systemd-rfkill.socket',
         'systemd.mask=modprobe@drm.service'
     ] : [];
@@ -402,7 +404,7 @@ function buildQemuArguments() {
         ...runtimeAppend,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
-    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
+    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '30s' : '60s';
     const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
     const systemdAppend = [
         ...baseAppend,
