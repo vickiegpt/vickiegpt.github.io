@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl-serial',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -501,6 +501,8 @@ function buildQemuArguments() {
         '-nographic',
         '-nodefaults',
         '-no-user-config',
+        '-serial', 'stdio',
+        '-monitor', 'none',
         '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
