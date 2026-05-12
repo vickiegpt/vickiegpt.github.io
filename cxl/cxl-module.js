@@ -99,7 +99,8 @@ const CXL_WEB_CONFIG = (() => {
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
-    const fastLogin = params.get('fast_login') !== '0';
+    const directShellParam = params.get('fast_login') || params.get('direct_shell') || '';
+    const fastLogin = directShellParam === '1' || directShellParam === 'true';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
@@ -114,7 +115,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-fastlogin2',
+        assetVersion: '20260512-cxlinit',
         assetBase: '/cxl/images/alpine-x86_64/',
         image,
         network: {
@@ -338,23 +339,7 @@ function buildQemuArguments() {
         'systemd.mask=systemd-hwdb-update.service',
         'systemd.mask=systemd-journal-catalog-update.service',
         'systemd.mask=systemd-journal-flush.service',
-        'systemd.mask=systemd-journald-audit.socket',
-        'systemd.mask=systemd-journald-dev-log.socket',
-        'systemd.mask=systemd-journald.service',
-        'systemd.mask=systemd-journald.socket',
         'systemd.mask=systemd-rfkill.socket',
-        'systemd.mask=systemd-udev-settle.service',
-        'systemd.mask=systemd-udev-trigger.service',
-        'systemd.mask=systemd-udevd-control.socket',
-        'systemd.mask=systemd-udevd-kernel.socket',
-        'systemd.mask=systemd-udevd.service',
-        'systemd.mask=cxl-monitor.service',
-        'systemd.mask=cxl-numa-setup.service',
-        'systemd.mask=ndctl-monitor.service',
-        'systemd.mask=cron.service',
-        'systemd.mask=dbus.service',
-        'systemd.mask=ssh.service',
-        'systemd.mask=systemd-logind.service',
         'systemd.mask=modprobe@drm.service'
     ] : [];
     const cxlDebug = [
@@ -374,31 +359,18 @@ function buildQemuArguments() {
         'loglevel=3',
         'systemd.show_status=auto'
     ];
-    const directShellAppend = [
-        'root=/dev/sda',
-        'rootwait',
-        'rw',
-        'console=ttyS0,115200',
-        'devtmpfs.mount=1',
-        'init=/bin/sh',
+    const directBootLogArgs = CXL_WEB_CONFIG.debug ? ['loglevel=8'] : [
         'quiet',
         'loglevel=3'
     ];
-    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
-    const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
-    const systemdAppend = [
+    const baseAppend = [
         'root=/dev/sda',
         'rootwait',
         'rw',
         'console=ttyS0,115200',
-        'devtmpfs.mount=1',
-        'systemd.unit=multi-user.target',
-        ...bootLogArgs,
-        'nokaslr',
-        'nowatchdog',
-        'nosoftlockup',
-        `systemd.default_timeout_start_sec=${startTimeout}`,
-        `systemd.default_timeout_stop_sec=${stopTimeout}`,
+        'devtmpfs.mount=1'
+    ];
+    const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
         `qemu.cxl=${CXL_WEB_CONFIG.qemuCxlEnabled ? 'on' : 'off'}`,
         `cxl.profile=${CXL_WEB_CONFIG.profile}`,
@@ -411,7 +383,27 @@ function buildQemuArguments() {
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
-        `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`
+    ];
+    const directShellAppend = [
+        ...baseAppend,
+        'init=/bin/sh',
+        ...directBootLogArgs,
+        ...runtimeAppend,
+        ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
+    ];
+    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
+    const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
+    const systemdAppend = [
+        ...baseAppend,
+        'systemd.unit=multi-user.target',
+        ...bootLogArgs,
+        'nokaslr',
+        'nowatchdog',
+        'nosoftlockup',
+        `systemd.default_timeout_start_sec=${startTimeout}`,
+        `systemd.default_timeout_stop_sec=${stopTimeout}`,
+        ...runtimeAppend,
         ...fastBootMasks,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
