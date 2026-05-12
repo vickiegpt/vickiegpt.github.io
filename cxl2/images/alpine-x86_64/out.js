@@ -559,6 +559,41 @@ function unbox_small_structs(type_ptr) {
  return [ type_ptr, type_id ];
 }
 
+function toWasmBigInt(value) {
+ return typeof value === "bigint" ? value : BigInt(value);
+}
+
+function callWasmFunctionWithI64Fallback(func, args) {
+ try {
+  return (0, func.apply(null, args));
+ } catch (e) {
+  if (!(e instanceof TypeError)) {
+   throw e;
+  }
+  var match = /^Cannot convert (-?[0-9]+) to a BigInt$/.exec(e.message);
+  if (!match) {
+   throw e;
+  }
+  var value = Number(match[1]);
+  for (var i = 0; i < args.length; i++) {
+   if (typeof args[i] !== "number" || args[i] !== value) {
+    continue;
+   }
+   var retryArgs = args.slice();
+   retryArgs[i] = BigInt(retryArgs[i]);
+   try {
+    return callWasmFunctionWithI64Fallback(func, retryArgs);
+   } catch (retryError) {
+    if (retryError instanceof TypeError && retryError.message === "Cannot convert a BigInt value to a number") {
+     continue;
+    }
+    throw retryError;
+   }
+  }
+  throw e;
+ }
+}
+
 function ffi_call_js(cif, fn, rvalue, avalue) {
  var abi = HEAPU32[(cif >> 2) + 0 >>> 0];
  var nargs = HEAPU32[(cif >> 2) + 1 >>> 0];
@@ -724,7 +759,7 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
  }
  stackRestore(cur_stack_ptr);
  stackAlloc(0);
- var result = (0, getWasmTableEntry(fn).apply(null, args));
+ var result = callWasmFunctionWithI64Fallback(getWasmTableEntry(fn), args);
  stackRestore(orig_stack_ptr);
  if (ret_by_arg) {
   return;
@@ -760,7 +795,7 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
 
  case 11:
  case 12:
-  HEAPU64[(rvalue >> 3) + 0] = result;
+  HEAPU64[(rvalue >> 3) + 0] = toWasmBigInt(result);
   break;
 
  case 15:
@@ -955,15 +990,15 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 12:
     ((cur_ptr -= (8)), (cur_ptr &= (~((8) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU64[(cur_ptr >> 3) + 0] = cur_arg;
+    HEAPU64[(cur_ptr >> 3) + 0] = toWasmBigInt(cur_arg);
     break;
 
    case 4:
     ((cur_ptr -= (16)), (cur_ptr &= (~((8) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU64[(cur_ptr >> 3) + 0] = cur_arg;
+    HEAPU64[(cur_ptr >> 3) + 0] = toWasmBigInt(cur_arg);
     cur_arg = args[jsarg_idx++];
-    HEAPU64[(cur_ptr >> 3) + 1] = cur_arg;
+    HEAPU64[(cur_ptr >> 3) + 1] = toWasmBigInt(cur_arg);
     break;
    }
   }

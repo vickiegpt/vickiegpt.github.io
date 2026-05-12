@@ -139,7 +139,7 @@ const CXL_WEB_CONFIG = (() => {
         qemuCxlEnabled,
         debug,
         startTimeoutSec,
-        assetVersion: '20260512-fpcast',
+        assetVersion: '20260512-ffi64',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
