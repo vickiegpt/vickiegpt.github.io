@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl-logcap',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-pci-input',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -446,7 +446,8 @@ function buildQemuArguments() {
         'fsck.repair=no',
         'random.trust_cpu=on',
         'log_buf_len=256K',
-        'printk.time=0'
+        'printk.time=0',
+        'pci=realloc'
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -461,11 +462,7 @@ function buildQemuArguments() {
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
-        `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
-        `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
-        `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
-        `CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
-        `CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`
+        `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
     const directShellAppend = [
         ...baseAppend,
@@ -488,6 +485,9 @@ function buildQemuArguments() {
         `systemd.default_timeout_stop_sec=${stopTimeout}`,
         `systemd.setenv=CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `systemd.setenv=CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
+        `systemd.setenv=CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
+        `systemd.setenv=CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `systemd.setenv=CXL_MEMSIM_TRANSPORT=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
         'systemd.default_device_timeout_sec=3s',
         'systemd.wants=console-getty.service',
         ...runtimeAppend,
@@ -563,8 +563,8 @@ function buildQemuArguments() {
     if (type3Enabled) {
         args.push(
             '-object', 'memory-backend-ram,id=vmem0,share=on,size=128M',
-            '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=0',
-            '-device', 'cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0',
+            '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2',
+            '-device', 'cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0,sn=0x1',
             '-M', 'cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=256M'
         );
     }

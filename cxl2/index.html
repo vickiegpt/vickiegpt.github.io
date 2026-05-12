@@ -99,6 +99,26 @@ button:disabled {
     background: #05080b;
 }
 
+.command-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--line);
+    background: #0d1319;
+}
+
+.command-bar textarea {
+    min-width: 0;
+    height: 38px;
+    resize: vertical;
+    border: 1px solid var(--line);
+    background: #081018;
+    color: var(--text);
+    padding: 8px 10px;
+    font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 .side {
     min-width: 0;
     padding: 16px;
@@ -205,6 +225,10 @@ pre {
     #terminal {
         min-height: 460px;
     }
+
+    .command-bar {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 </head>
@@ -218,6 +242,12 @@ pre {
             <button id="reset">Reset</button>
         </div>
         <div id="terminal"></div>
+        <div class="command-bar">
+            <textarea id="command-input" spellcheck="false" placeholder="Command"></textarea>
+            <button id="send-command" type="button">Send</button>
+            <button id="send-cxl-probe" type="button">Probe CXL</button>
+            <button id="send-break" type="button">Ctrl-C</button>
+        </div>
     </main>
     <aside class="side">
         <section class="section">
@@ -294,7 +324,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-fastcxl-logcap"></script>
+<script src="./cxl-module.js?v=20260512-cxl-pci-input"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -313,6 +343,10 @@ const cxlmemsimLabel = document.getElementById("cxlmemsim-label");
 const fastbootLabel = document.getElementById("fastboot-label");
 const activeArgs = document.getElementById("active-args");
 const webgpuStatus = document.getElementById("webgpu-status");
+const commandInput = document.getElementById("command-input");
+const sendCommandButton = document.getElementById("send-command");
+const sendCxlProbeButton = document.getElementById("send-cxl-probe");
+const sendBreakButton = document.getElementById("send-break");
 let booted = false;
 
 const term = new Terminal({
@@ -355,12 +389,12 @@ const config = window.CXL_WEB_CONFIG || {
         port: 9999
     },
     qemuCore: "fast",
-    assetVersion: "20260512-fastcxl-logcap",
+    assetVersion: "20260512-cxl-pci-input",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-fastcxl-logcap");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-cxl-pci-input");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
@@ -406,6 +440,7 @@ probeWebGPU();
 const { master, slave } = openpty();
 term.loadAddon(master);
 Module.pty = slave;
+window.CXL_WEB_PTY = { master, slave };
 Module.print = (text) => term.writeln(text);
 Module.printErr = (text) => term.writeln(text);
 Module.setStatus = (text) => {
@@ -416,6 +451,40 @@ function setStatus(text, ready = false) {
     status.textContent = text;
     status.classList.toggle("ready", ready);
 }
+
+function sendGuestText(text, options = {}) {
+    if (!text) {
+        return;
+    }
+    const payload = options.raw || text.endsWith("\n") ? text : `${text}\n`;
+    term.focus();
+    if (typeof term.paste === "function") {
+        term.paste(payload);
+        return;
+    }
+    if (master && typeof master.write === "function") {
+        master.write(payload);
+    }
+}
+
+function sendCxlProbe() {
+    sendGuestText([
+        "mount -t proc proc /proc 2>/dev/null || true",
+        "mount -t sysfs sysfs /sys 2>/dev/null || true",
+        "mount -t devtmpfs devtmpfs /dev 2>/dev/null || true",
+        "echo CXL_PROBE_START",
+        "cat /proc/cmdline",
+        "echo CXL_DEVICES",
+        "find /sys/bus/cxl/devices -maxdepth 1 -type l -printf '%f\\n' 2>/dev/null | sort",
+        "echo PCI_CXL",
+        "for d in /sys/bus/pci/devices/*; do [ -r \"$d/vendor\" ] || continue; v=$(cat \"$d/vendor\"); c=$(cat \"$d/class\"); dev=$(cat \"$d/device\"); if [ \"$v\" = 0x1b36 ] || [ \"$v\" = 0x8086 ] || [ \"$c\" = 0x050210 ]; then drv=$(basename $(readlink \"$d/driver\" 2>/dev/null) 2>/dev/null); echo \"${d##*/} vendor=$v device=$dev class=$c driver=$drv\"; fi; done",
+        "echo DMESG_CXL",
+        "timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|0d:00|pci=realloc|resource' | tail -n 80 || true",
+        "echo CXL_PROBE_DONE"
+    ].join("\n") + "\n", { raw: true });
+}
+
+window.CXL_WEB_SEND = sendGuestText;
 
 async function reloadForCrossOriginIsolation() {
     setStatus("isolating");
@@ -503,14 +572,6 @@ async function start() {
         startBrowserNetwork();
         const initEmscriptenModule = await initEmscriptenModulePromise;
         await initEmscriptenModule(Module);
-        const oldPoll = Module.TTY.stream_ops.poll;
-        const pty = Module.pty;
-        Module.TTY.stream_ops.poll = function(stream, timeout) {
-            if (!pty.readable) {
-                return (pty.readable ? 1 : 0) | (pty.writable ? 4 : 0);
-            }
-            return oldPoll.call(stream, timeout);
-        };
         setStatus("running", true);
     } catch (error) {
         term.writeln("");
@@ -523,6 +584,21 @@ async function start() {
 
 startButton.addEventListener("click", start);
 resetButton.addEventListener("click", () => location.reload());
+sendCommandButton.addEventListener("click", () => sendGuestText(commandInput.value));
+sendCxlProbeButton.addEventListener("click", sendCxlProbe);
+sendBreakButton.addEventListener("click", () => {
+    if (Module.pty && typeof Module.pty.signal === "function") {
+        Module.pty.signal("SIGINT");
+    } else {
+        sendGuestText("\x03", { raw: true });
+    }
+});
+commandInput.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        sendGuestText(commandInput.value);
+    }
+});
 </script>
 </body>
 </html>
