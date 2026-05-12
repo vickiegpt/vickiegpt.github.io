@@ -115,7 +115,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-boottrim',
+        assetVersion: '20260512-o3',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -483,7 +483,9 @@ window.CXL_WEB_CONFIG.command = Module['arguments'].map((arg) => {
 }).join(' ');
 Module['locateFile'] = function(path, prefix) {
     const url = new URL(path, new URL(CXL_WEB_CONFIG.assetBase, location.href));
-    if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.wasm') {
+    if (path === 'qemu-system-x86_64.worker.js'
+        || path === 'qemu-system-x86_64.js'
+        || path === 'qemu-system-x86_64.wasm') {
         url.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
     }
     return url.href;
