@@ -691,6 +691,13 @@ function toWasmBigInt(value) {
  return typeof value === "bigint" ? value : BigInt(value);
 }
 
+function toWasmNumber(value) {
+ if (value === undefined || value === null) {
+  return 0;
+ }
+ return typeof value === "bigint" ? Number(BigInt.asUintN(32, value)) : value;
+}
+
 function callWasmFunctionWithI64Fallback(func, args, depth) {
  depth = depth || 0;
  try {
@@ -930,7 +937,7 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
  case 9:
  case 10:
  case 14:
-  HEAPU32[(rvalue >> 2) + 0 >>> 0] = result;
+  HEAPU32[(rvalue >> 2) + 0 >>> 0] = toWasmNumber(result);
   break;
 
  case 2:
@@ -943,12 +950,12 @@ function ffi_call_js(cif, fn, rvalue, avalue) {
 
  case 5:
  case 6:
-  HEAPU8[rvalue + 0 >>> 0] = result;
+  HEAPU8[rvalue + 0 >>> 0] = toWasmNumber(result);
   break;
 
  case 7:
  case 8:
-  HEAPU16[(rvalue >> 1) + 0 >>> 0] = result;
+  HEAPU16[(rvalue >> 1) + 0 >>> 0] = toWasmNumber(result);
   break;
 
  case 11:
@@ -1107,14 +1114,14 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 6:
     ((cur_ptr -= (1)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU8[cur_ptr + 0 >>> 0] = cur_arg;
+    HEAPU8[cur_ptr + 0 >>> 0] = toWasmNumber(cur_arg);
     break;
 
    case 7:
    case 8:
     ((cur_ptr -= (2)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU16[(cur_ptr >> 1) + 0 >>> 0] = cur_arg;
+    HEAPU16[(cur_ptr >> 1) + 0 >>> 0] = toWasmNumber(cur_arg);
     break;
 
    case 1:
@@ -1123,7 +1130,7 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
    case 14:
     ((cur_ptr -= (4)), (cur_ptr &= (~((4) - 1))));
     HEAPU32[(args_ptr >> 2) + carg_idx >>> 0] = cur_ptr;
-    HEAPU32[(cur_ptr >> 2) + 0 >>> 0] = cur_arg;
+    HEAPU32[(cur_ptr >> 2) + 0 >>> 0] = toWasmNumber(cur_arg);
     break;
 
    case 13:
@@ -1160,7 +1167,7 @@ function ffi_prep_closure_loc_js(closure, cif, fun, user_data, codeloc) {
     break;
    }
   }
-  var varargs = args[args.length - 1];
+  var varargs = toWasmNumber(args[args.length - 1]);
   for (;carg_idx < nargs; carg_idx++) {
    var arg_type_id = unboxed_arg_type_id_list[carg_idx];
    var arg_type_info = unboxed_arg_type_info_list[carg_idx];
