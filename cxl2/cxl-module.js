@@ -115,7 +115,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-udevtrim',
+        assetVersion: '20260512-udevdmask',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -349,9 +349,15 @@ function buildQemuArguments() {
         'systemd.mask=systemd-journald-dev-log.socket',
         'systemd.mask=systemd-journald.service',
         'systemd.mask=systemd-journald.socket',
+        'systemd.mask=systemd-logind.service',
+        'systemd.mask=systemd-udevd-control.socket',
+        'systemd.mask=systemd-udevd-kernel.socket',
+        'systemd.mask=systemd-udevd.service',
         'systemd.mask=systemd-udev-settle.service',
         'systemd.mask=systemd-udev-trigger.service',
         'systemd.mask=systemd-rfkill.socket',
+        'systemd.mask=ssh.service',
+        'systemd.mask=sshd.service',
         'systemd.mask=modprobe@drm.service'
     ] : [];
     const cxlDebug = [
