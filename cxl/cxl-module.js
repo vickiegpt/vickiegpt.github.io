@@ -48,7 +48,7 @@ const CXL_WEB_CONFIG = (() => {
         backend,
         nativeType2,
         fastBoot,
-        assetVersion: '20260511-worker-url',
+        assetVersion: '20260512-fpcast',
         assetBase: '/cxl/images/alpine-x86_64/',
         image: {
             rom: '/pack-rom/',
