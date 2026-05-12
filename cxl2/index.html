@@ -268,7 +268,7 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         <section class="section">
             <h2>Runtime</h2>
             <p class="note"><span class="warn">Note:</span> This page uses the x86_64 QEMU wasm assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL devices can be re-enabled with `?acpi=on&qemu_cxl=1`.</p>
-            <p class="note"><span class="warn">Boot:</span> Fast boot masks background package and filesystem maintenance jobs that are too IO-heavy for browser QEMU. Add `fast_boot=0` to the URL to restore the guest defaults.</p>
+            <p class="note"><span class="warn">Boot:</span> Fast login starts `/bin/sh` directly and skips systemd. Add `fast_login=0` to boot the trimmed systemd path, or `fast_boot=0` to restore the guest defaults.</p>
             <p class="note"><span class="warn">Network:</span> The browser network stack is connected through `-netdev socket` and the c2w fetch proxy. Inside the guest, use `http_proxy`/`https_proxy` with `http://192.168.127.253:80` for outbound HTTP(S).</p>
         </section>
     </aside>
@@ -281,13 +281,13 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-boottrim"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
+<script src="./cxl-module.js?v=20260512-fastlogin"></script>
+<script src="./images/alpine-x86_64/load-rom.js?v=20260512-fastlogin"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-boottrim";
-import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-boottrim";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-fastlogin";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-fastlogin";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
@@ -320,7 +320,7 @@ const term = new Terminal({
 
 term.open(document.getElementById("terminal"));
 term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
-term.writeln("Press Start VM, then login as root when Alpine reaches the prompt.");
+term.writeln("Press Start VM. Fast login starts a root shell directly; no systemd login prompt is required.");
 term.writeln("");
 
 const config = window.CXL_WEB_CONFIG || {
@@ -350,7 +350,7 @@ kernelPathLabel.textContent = config.image?.kernelUrl || "/about/bzImage";
 diskPathLabel.textContent = config.image?.diskUrl || "/about/qemu.img";
 networkStatus.textContent = config.network?.mode === "browser" ? "browser/c2w idle" : "disabled";
 cxlmemsimLabel.textContent = `${config.cxlmemsim?.host || "127.0.0.1"}:${config.cxlmemsim?.port || 9999}`;
-fastbootLabel.textContent = config.fastBoot === false ? "off" : "on";
+fastbootLabel.textContent = config.fastLogin === false ? (config.fastBoot === false ? "systemd/full" : "systemd/trimmed") : "direct shell";
 activeArgs.textContent = (config.arguments || []).map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(" ");

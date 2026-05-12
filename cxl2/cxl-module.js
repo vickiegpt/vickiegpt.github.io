@@ -99,6 +99,7 @@ const CXL_WEB_CONFIG = (() => {
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
+    const fastLogin = params.get('fast_login') !== '0';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
@@ -108,11 +109,12 @@ const CXL_WEB_CONFIG = (() => {
         profile,
         backend,
         nativeType2,
+        fastLogin,
         fastBoot,
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-boottrim',
+        assetVersion: '20260512-fastlogin',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -376,9 +378,11 @@ function buildQemuArguments() {
     const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
     const append = [
         'root=/dev/sda',
+        'rootwait',
         'rw',
         'console=ttyS0,115200',
-        'systemd.unit=multi-user.target',
+        'devtmpfs.mount=1',
+        ...(CXL_WEB_CONFIG.fastLogin ? ['init=/bin/sh'] : ['systemd.unit=multi-user.target']),
         ...bootLogArgs,
         'nokaslr',
         'nowatchdog',
@@ -398,7 +402,7 @@ function buildQemuArguments() {
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
-        ...fastBootMasks,
+        ...(CXL_WEB_CONFIG.fastLogin ? [] : fastBootMasks),
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ].join(' ');
 
