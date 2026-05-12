@@ -576,7 +576,7 @@ function callWasmFunctionWithI64Fallback(func, args, depth) {
   }
   var match = /^Cannot convert (-?[0-9]+) to a BigInt$/.exec(e.message);
   if (!match) {
-   if (e.message === "Cannot convert undefined to a BigInt" && depth < 8) {
+   if (e.message === "Cannot convert undefined to a BigInt" && depth < 64) {
     for (var j = 0; j < args.length; j++) {
      if (args[j] !== undefined) {
       continue;
