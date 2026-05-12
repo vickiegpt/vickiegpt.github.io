@@ -600,6 +600,14 @@ function wrapWasmHelperImport(func, sig) {
  return convertJsFunctionToWasm(wrapper, sig);
 }
 
+function wrapWasm32TbStart(func) {
+ var sig = "jjjjjjjjjjjjjjjjj";
+ var wrapper = function(a0) {
+  return toWasmBigInt(func(Number(BigInt.asUintN(32, toWasmBigInt(a0)))));
+ };
+ return convertJsFunctionToWasm(wrapper, sig);
+}
+
 function instantiate_wasm() {
  const memory_v = new DataView(HEAP8.buffer);
  const tb_ptr = memory_v.getInt32(Module.__wasm32_tb.tb_ptr_ptr, true);
@@ -628,7 +636,7 @@ function instantiate_wasm() {
   "helper": helper
  });
  Module.__wasm32_tb.inst_gc_registry.register(inst, "instance");
- const fidx = addFunction(inst.exports.start, "ii");
+ const fidx = addFunction(wrapWasm32TbStart(inst.exports.start), "jjjjjjjjjjjjjjjjj");
  return fidx;
 }
 
