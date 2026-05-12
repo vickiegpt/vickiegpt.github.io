@@ -96,6 +96,16 @@ function parseIntegerParam(params, names, fallback, min, max) {
     return fallback;
 }
 
+function parseExtraKernelArgs(params) {
+    const value = params.get('extra_kernel_args') || params.get('kernel_args') || '';
+    return String(value)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((arg) => /^[A-Za-z0-9_.:+/@=,-]+$/.test(arg))
+        .slice(0, 32);
+}
+
 function parseImageConfig(params) {
     const imageDirParam = params.get('file_dir')
         || params.get('local_dir')
@@ -141,6 +151,9 @@ const CXL_WEB_CONFIG = (() => {
     const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
+    const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
+    const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
+    const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
     const startTimeoutSec = parseTimeoutSeconds(
@@ -160,11 +173,14 @@ const CXL_WEB_CONFIG = (() => {
         startTimeoutSec,
         qemuCore,
         diskBus,
+        hpet,
+        cxlRootPortReserve,
+        extraKernelArgs,
         tcg: {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-rp-reserve-input',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-timer-probe',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -446,7 +462,8 @@ function buildQemuArguments() {
         'fsck.repair=no',
         'random.trust_cpu=on',
         'log_buf_len=256K',
-        'printk.time=0'
+        'printk.time=0',
+        ...CXL_WEB_CONFIG.extraKernelArgs
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
@@ -495,8 +512,8 @@ function buildQemuArguments() {
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
     const machine = CXL_WEB_CONFIG.qemuCxlEnabled
-        ? 'q35,cxl=on,hpet=off'
-        : (CXL_WEB_CONFIG.acpiEnabled ? 'q35,hpet=off' : 'q35,acpi=off,hpet=off');
+        ? `q35,cxl=on,hpet=${CXL_WEB_CONFIG.hpet}`
+        : (CXL_WEB_CONFIG.acpiEnabled ? `q35,hpet=${CXL_WEB_CONFIG.hpet}` : `q35,acpi=off,hpet=${CXL_WEB_CONFIG.hpet}`);
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
     const args = [
@@ -560,9 +577,20 @@ function buildQemuArguments() {
     }
 
     if (type3Enabled) {
+        const rootPortOptions = [
+            'cxl-rp',
+            'port=0',
+            'bus=cxl.1',
+            'id=root_port13',
+            'chassis=0',
+            'slot=2'
+        ];
+        if (CXL_WEB_CONFIG.cxlRootPortReserve) {
+            rootPortOptions.push('mem-reserve=64M', 'pref64-reserve=256M', 'io-reserve=4K');
+        }
         args.push(
             '-object', 'memory-backend-ram,id=vmem0,share=on,size=128M',
-            '-device', 'cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2,mem-reserve=64M,pref64-reserve=256M,io-reserve=4K',
+            '-device', rootPortOptions.join(','),
             '-device', 'cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0,sn=0x1',
             '-M', 'cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=256M'
         );
