@@ -43,12 +43,16 @@ const CXL_WEB_CONFIG = (() => {
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
     const fastBoot = params.get('fast_boot') !== '0';
+    const acpiEnabled = params.get('acpi') === 'on';
+    const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     return {
         profile,
         backend,
         nativeType2,
         fastBoot,
-        assetVersion: '20260512-fpcast',
+        acpiEnabled,
+        qemuCxlEnabled,
+        assetVersion: '20260512-acpioff',
         assetBase: '/cxl/images/alpine-x86_64/',
         image: {
             rom: '/pack-rom/',
@@ -261,7 +265,7 @@ function profileHas(name) {
 }
 
 function buildQemuArguments() {
-    const type3Enabled = profileHas('type3');
+    const type3Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type3');
     const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
         'systemd.mask=apt-daily.service',
         'systemd.mask=apt-daily.timer',
@@ -297,10 +301,12 @@ function buildQemuArguments() {
         'nosoftlockup',
         'systemd.default_timeout_start_sec=20s',
         'systemd.default_timeout_stop_sec=10s',
+        `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
+        `qemu.cxl=${CXL_WEB_CONFIG.qemuCxlEnabled ? 'on' : 'off'}`,
         `cxl.profile=${CXL_WEB_CONFIG.profile}`,
-        profileHas('type1') ? 'cxl.type1=on' : 'cxl.type1=off',
+        CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type1') ? 'cxl.type1=on' : 'cxl.type1=off',
         profileHas('type2') ? 'cxl.type2=on' : 'cxl.type2=off',
-        profileHas('type3') ? 'cxl.type3=on' : 'cxl.type3=off',
+        type3Enabled ? 'cxl.type3=on' : 'cxl.type3=off',
         `hetgpu.backend=${CXL_WEB_CONFIG.backend}`,
         'hetgpu.device=hetgpu0',
         'cxlmemsim.transport=tcp',
@@ -314,7 +320,7 @@ function buildQemuArguments() {
 
     const args = [
         '-nographic',
-        '-M', 'q35,cxl=on',
+        '-M', CXL_WEB_CONFIG.qemuCxlEnabled ? 'q35,cxl=on' : (CXL_WEB_CONFIG.acpiEnabled ? 'q35' : 'q35,acpi=off'),
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
         '-accel', 'tcg,tb-size=500,thread=multi',
@@ -323,12 +329,15 @@ function buildQemuArguments() {
         '-append', append,
         '-drive', `file=${CXL_WEB_CONFIG.image.disk},index=0,media=disk,format=raw`,
         '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
-        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22',
-        '-device', 'pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1'
+        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22'
     ];
 
+    if (CXL_WEB_CONFIG.qemuCxlEnabled) {
+        args.push('-device', 'pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1');
+    }
+
     if (profileHas('type2')) {
-        if (CXL_WEB_CONFIG.nativeType2) {
+        if (CXL_WEB_CONFIG.qemuCxlEnabled && CXL_WEB_CONFIG.nativeType2) {
             args.push(
                 '-device', 'cxl-rp,port=1,bus=cxl.1,id=root_port14,chassis=0,slot=1',
                 '-device', [
