@@ -263,7 +263,11 @@ udhcpc -i eth0 2>/dev/null || true
 export http_proxy=http://192.168.127.253:80
 export https_proxy=http://192.168.127.253:80
 wget -O - http://example.com 2>/dev/null | head
-dmesg | grep -i cxl
+if command -v timeout >/dev/null 2>&1; then
+  timeout 5 dmesg 2>/dev/null | tail -n 300 | grep -Ei 'cxl|dax|numa|memsim|hetgpu' | tail -n 80
+else
+  dmesg 2>/dev/null | tail -n 300 | grep -Ei 'cxl|dax|numa|memsim|hetgpu' | tail -n 80
+fi
 find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
@@ -290,7 +294,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-fastcxl-console"></script>
+<script src="./cxl-module.js?v=20260512-fastcxl-logcap"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -351,12 +355,12 @@ const config = window.CXL_WEB_CONFIG || {
         port: 9999
     },
     qemuCore: "fast",
-    assetVersion: "20260512-fastcxl-console",
+    assetVersion: "20260512-fastcxl-logcap",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-fastcxl-console");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-fastcxl-logcap");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
