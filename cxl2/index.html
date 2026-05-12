@@ -268,7 +268,7 @@ find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
-            <p class="note">Default boot keeps systemd, udev, journald, CXL, ndctl, and network services. With `fast_login=1`, these commands restore the basic shell environment before probing.</p>
+            <p class="note">Default boot keeps systemd, udev, CXL, ndctl, and network services. With `fast_login=1`, these commands restore the basic shell environment before probing.</p>
         </section>
         <section class="section">
             <h2>Active QEMU Args</h2>
@@ -290,13 +290,13 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-cxlinit"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260512-cxlinit"></script>
+<script src="./cxl-module.js?v=20260512-boottrim"></script>
+<script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-cxlinit";
-import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-cxlinit";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-boottrim";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-boottrim";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");

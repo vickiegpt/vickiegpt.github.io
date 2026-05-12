@@ -115,7 +115,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-cxlinit',
+        assetVersion: '20260512-boottrim',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -336,9 +336,19 @@ function buildQemuArguments() {
         'systemd.mask=logrotate.service',
         'systemd.mask=logrotate.timer',
         'systemd.mask=ldconfig.service',
+        'systemd.mask=proc-sys-fs-binfmt_misc.automount',
+        'systemd.mask=proc-sys-fs-binfmt_misc.mount',
+        'systemd.mask=serial-getty@ttyS0.service',
+        'systemd.mask=sys-fs-fuse-connections.mount',
+        'systemd.mask=sys-kernel-config.mount',
+        'systemd.mask=systemd-binfmt.service',
         'systemd.mask=systemd-hwdb-update.service',
         'systemd.mask=systemd-journal-catalog-update.service',
         'systemd.mask=systemd-journal-flush.service',
+        'systemd.mask=systemd-journald-audit.socket',
+        'systemd.mask=systemd-journald-dev-log.socket',
+        'systemd.mask=systemd-journald.service',
+        'systemd.mask=systemd-journald.socket',
         'systemd.mask=systemd-rfkill.socket',
         'systemd.mask=modprobe@drm.service'
     ] : [];
@@ -403,6 +413,7 @@ function buildQemuArguments() {
         'nosoftlockup',
         `systemd.default_timeout_start_sec=${startTimeout}`,
         `systemd.default_timeout_stop_sec=${stopTimeout}`,
+        'systemd.default_device_timeout_sec=3s',
         ...runtimeAppend,
         ...fastBootMasks,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
