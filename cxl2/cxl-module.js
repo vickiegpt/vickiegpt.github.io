@@ -139,7 +139,7 @@ const CXL_WEB_CONFIG = (() => {
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' || (coreParam !== 'fast' && qemuCxlEnabled) ? 'fpcast' : 'fast';
     const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
-    const tcgThread = params.get('tcg_thread') === 'multi' ? 'multi' : 'single';
+    const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -492,6 +492,9 @@ function buildQemuArguments() {
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
+    const machine = CXL_WEB_CONFIG.qemuCxlEnabled
+        ? 'q35,cxl=on,hpet=off'
+        : (CXL_WEB_CONFIG.acpiEnabled ? 'q35,hpet=off' : 'q35,acpi=off,hpet=off');
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
     const args = [
@@ -500,12 +503,11 @@ function buildQemuArguments() {
         '-display', 'none',
         '-serial', 'stdio',
         '-monitor', 'none',
-        '-M', CXL_WEB_CONFIG.qemuCxlEnabled ? 'q35,cxl=on' : (CXL_WEB_CONFIG.acpiEnabled ? 'q35' : 'q35,acpi=off'),
+        '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
         '-accel', accel,
         '-rtc', 'base=utc,clock=vm',
-        '-no-hpet',
         '-L', CXL_WEB_CONFIG.image.rom,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
