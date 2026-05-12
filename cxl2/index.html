@@ -268,7 +268,7 @@ find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
-            <p class="note">Default boot keeps systemd, CXL, ndctl, and network services while skipping browser-slow udev, login, and SSH daemons. Use `fast_boot=0` for the full service set.</p>
+            <p class="note">Default boot keeps systemd, CXL, ndctl, and network services while skipping browser-slow udev, login, and SSH daemons. Use `cxl_setup_timeout=300` to extend CXL setup time or `fast_boot=0` for the full service set.</p>
         </section>
         <section class="section">
             <h2>Active QEMU Args</h2>
@@ -290,13 +290,13 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-udevdmask"></script>
+<script src="./cxl-module.js?v=20260512-cxltimeout"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-udevdmask";
-import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-udevdmask";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-cxltimeout";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-cxltimeout";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
@@ -351,6 +351,7 @@ const config = window.CXL_WEB_CONFIG || {
         host: "127.0.0.1",
         port: 9999
     },
+    startTimeoutSec: 180,
     arguments: []
 };
 profileLabel.textContent = config.profile;
@@ -359,7 +360,9 @@ kernelPathLabel.textContent = config.image?.kernelUrl || "/about/bzImage";
 diskPathLabel.textContent = config.image?.diskUrl || "/about/qemu.img";
 networkStatus.textContent = config.network?.mode === "browser" ? "browser/c2w idle" : "disabled";
 cxlmemsimLabel.textContent = `${config.cxlmemsim?.host || "127.0.0.1"}:${config.cxlmemsim?.port || 9999}`;
-fastbootLabel.textContent = config.fastLogin === false ? (config.fastBoot === false ? "systemd/full" : "systemd/trimmed") : "direct shell";
+fastbootLabel.textContent = config.fastLogin === false
+    ? `${config.fastBoot === false ? "systemd/full" : "systemd/trimmed"} (${config.startTimeoutSec || 180}s start timeout)`
+    : "direct shell";
 activeArgs.textContent = (config.arguments || []).map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(" ");

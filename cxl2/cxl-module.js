@@ -64,6 +64,24 @@ function firstUrlParam(params, names) {
     return null;
 }
 
+function parseTimeoutSeconds(params, names, fallback) {
+    for (const name of names) {
+        const raw = params.get(name);
+        if (!raw) {
+            continue;
+        }
+        const match = String(raw).trim().match(/^(\d+)(?:s|sec|seconds?)?$/i);
+        if (!match) {
+            continue;
+        }
+        const value = Number(match[1]);
+        if (Number.isInteger(value) && value >= 10 && value <= 3600) {
+            return value;
+        }
+    }
+    return fallback;
+}
+
 function parseImageConfig(params) {
     const imageDirParam = params.get('file_dir')
         || params.get('local_dir')
@@ -106,6 +124,11 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
+    const startTimeoutSec = parseTimeoutSeconds(
+        params,
+        ['cxl_setup_timeout', 'cxlmem_setup_timeout', 'service_timeout', 'start_timeout'],
+        fastBoot ? 180 : 300
+    );
     return {
         profile,
         backend,
@@ -115,7 +138,8 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-udevdmask',
+        startTimeoutSec,
+        assetVersion: '20260512-cxltimeout',
         assetBase: '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -400,8 +424,12 @@ function buildQemuArguments() {
         'cxlmemsim.transport=tcp',
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
+        `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
-        `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`
+        `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
+        `CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
     const directShellAppend = [
         ...baseAppend,
@@ -410,7 +438,7 @@ function buildQemuArguments() {
         ...runtimeAppend,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
-    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '30s' : '60s';
+    const startTimeout = `${CXL_WEB_CONFIG.startTimeoutSec}s`;
     const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
     const systemdAppend = [
         ...baseAppend,
@@ -421,6 +449,8 @@ function buildQemuArguments() {
         'nosoftlockup',
         `systemd.default_timeout_start_sec=${startTimeout}`,
         `systemd.default_timeout_stop_sec=${stopTimeout}`,
+        `systemd.setenv=CXL_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
+        `systemd.setenv=CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
         'systemd.default_device_timeout_sec=3s',
         ...runtimeAppend,
         ...fastBootMasks,
