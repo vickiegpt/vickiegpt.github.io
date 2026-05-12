@@ -245,8 +245,7 @@ pre {
         </section>
         <section class="section">
             <h2>Guest Probe</h2>
-            <pre>root
-uname -a
+            <pre>uname -a
 cat /proc/cmdline
 mount | head
 ip addr show
@@ -259,7 +258,7 @@ find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
-            <p class="note">Login as <strong>root</strong> after the prompt appears.</p>
+            <p class="note">Fast login is already a root shell. With `fast_login=0`, log in as <strong>root</strong> first.</p>
         </section>
         <section class="section">
             <h2>Active QEMU Args</h2>
@@ -281,13 +280,13 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-fastlogin"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260512-fastlogin"></script>
+<script src="./cxl-module.js?v=20260512-fastlogin2"></script>
+<script src="./images/alpine-x86_64/load-rom.js?v=20260512-fastlogin2"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-fastlogin";
-import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-fastlogin";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-fastlogin2";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-fastlogin2";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");

@@ -114,7 +114,7 @@ const CXL_WEB_CONFIG = (() => {
         acpiEnabled,
         qemuCxlEnabled,
         debug,
-        assetVersion: '20260512-fastlogin',
+        assetVersion: '20260512-fastlogin2',
         assetBase: '/cxl/images/alpine-x86_64/',
         image,
         network: {
@@ -374,15 +374,25 @@ function buildQemuArguments() {
         'loglevel=3',
         'systemd.show_status=auto'
     ];
-    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
-    const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
-    const append = [
+    const directShellAppend = [
         'root=/dev/sda',
         'rootwait',
         'rw',
         'console=ttyS0,115200',
         'devtmpfs.mount=1',
-        ...(CXL_WEB_CONFIG.fastLogin ? ['init=/bin/sh'] : ['systemd.unit=multi-user.target']),
+        'init=/bin/sh',
+        'quiet',
+        'loglevel=3'
+    ];
+    const startTimeout = CXL_WEB_CONFIG.fastBoot ? '6s' : '20s';
+    const stopTimeout = CXL_WEB_CONFIG.fastBoot ? '3s' : '10s';
+    const systemdAppend = [
+        'root=/dev/sda',
+        'rootwait',
+        'rw',
+        'console=ttyS0,115200',
+        'devtmpfs.mount=1',
+        'systemd.unit=multi-user.target',
         ...bootLogArgs,
         'nokaslr',
         'nowatchdog',
@@ -402,9 +412,10 @@ function buildQemuArguments() {
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
-        ...(CXL_WEB_CONFIG.fastLogin ? [] : fastBootMasks),
+        ...fastBootMasks,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
-    ].join(' ');
+    ];
+    const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
 
     const args = [
         '-nographic',
