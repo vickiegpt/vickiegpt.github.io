@@ -35,6 +35,63 @@ function parseCxlmemsimEndpoint(params) {
     return { host, port };
 }
 
+function normalizeFetchUrl(value) {
+    const text = String(value || '').trim();
+    if (!text) {
+        return null;
+    }
+    if (/^file:/i.test(text)) {
+        throw new Error('file:// URLs cannot be fetched from this page; serve the directory over localhost HTTP instead');
+    }
+    return new URL(text, location.href).href;
+}
+
+function normalizeDirectoryUrl(value) {
+    const url = normalizeFetchUrl(value);
+    if (!url) {
+        return null;
+    }
+    return url.endsWith('/') ? url : `${url}/`;
+}
+
+function firstUrlParam(params, names) {
+    for (const name of names) {
+        const value = normalizeFetchUrl(params.get(name));
+        if (value) {
+            return value;
+        }
+    }
+    return null;
+}
+
+function parseImageConfig(params) {
+    const imageDirParam = params.get('file_dir')
+        || params.get('local_dir')
+        || params.get('image_dir')
+        || params.get('img_dir')
+        || params.get('image_base');
+    const localImageRequested = params.get('local_img') === '1' || Boolean(imageDirParam);
+    const localDiskRequested = localImageRequested
+        || params.get('local_disk') === '1'
+        || params.get('local_qemu_img') === '1';
+    const imageDir = normalizeDirectoryUrl(
+        imageDirParam || (localDiskRequested ? 'http://127.0.0.1:8787/' : '')
+    );
+    const kernelUrl = firstUrlParam(params, ['kernel_url', 'bzimage_url', 'bzImage_url'])
+        || (localImageRequested && imageDir ? new URL('bzImage', imageDir).href : '/about/bzImage');
+    const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
+        || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
+    return {
+        rom: '/pack-rom/',
+        kernelUrl,
+        diskUrl,
+        kernel: '/remote/bzImage',
+        disk: '/remote/qemu.img',
+        source: localDiskRequested && imageDir ? 'local' : 'remote',
+        imageDir
+    };
+}
+
 const CXL_WEB_CONFIG = (() => {
     const params = new URLSearchParams(location.search);
     const validProfiles = new Set(['all', 'type1', 'type2', 'type3']);
@@ -45,6 +102,7 @@ const CXL_WEB_CONFIG = (() => {
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
+    const image = parseImageConfig(params);
     return {
         profile,
         backend,
@@ -52,15 +110,9 @@ const CXL_WEB_CONFIG = (() => {
         fastBoot,
         acpiEnabled,
         qemuCxlEnabled,
-        assetVersion: '20260512-cxlguard',
+        assetVersion: '20260512-localdisk',
         assetBase: '/cxl2/images/alpine-x86_64/',
-        image: {
-            rom: '/pack-rom/',
-            kernelUrl: '/about/bzImage',
-            diskUrl: '/about/qemu.img',
-            kernel: '/remote/bzImage',
-            disk: '/remote/qemu.img'
-        },
+        image,
         network: {
             mode: 'browser',
             websocketUrl: 'http://localhost:9999/',

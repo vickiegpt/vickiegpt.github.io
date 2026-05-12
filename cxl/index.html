@@ -281,13 +281,13 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-cxlguard"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260512-cxlguard"></script>
+<script src="./cxl-module.js?v=20260512-localdisk"></script>
+<script src="./images/alpine-x86_64/load-rom.js?v=20260512-localdisk"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
-import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-cxlguard";
-import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-cxlguard";
+import initEmscriptenModule from "./images/alpine-x86_64/out.js?v=20260512-localdisk";
+import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-localdisk";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
