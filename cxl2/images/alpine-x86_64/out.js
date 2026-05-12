@@ -485,6 +485,121 @@ function createWasm() {
  return {};
 }
 
+function readWasmUleb(bytes, state) {
+ var result = 0;
+ var shift = 0;
+ while (state.pos < bytes.length) {
+  var value = bytes[state.pos++];
+  result |= (value & 127) << shift;
+  if ((value & 128) === 0) return result >>> 0;
+  shift += 7;
+ }
+ throw new Error("truncated wasm uleb");
+}
+
+function readWasmName(bytes, state) {
+ var size = readWasmUleb(bytes, state);
+ var begin = state.pos;
+ state.pos += size;
+ var text = "";
+ for (var i = begin; i < begin + size; i++) {
+  text += String.fromCharCode(bytes[i]);
+ }
+ return text;
+}
+
+function skipWasmLimits(bytes, state) {
+ var flags = readWasmUleb(bytes, state);
+ readWasmUleb(bytes, state);
+ if (flags & 1) readWasmUleb(bytes, state);
+}
+
+function wasmValueTypeToSig(type) {
+ switch (type) {
+ case 127:
+  return "i";
+ case 126:
+  return "j";
+ case 125:
+  return "f";
+ case 124:
+  return "d";
+ case 111:
+  return "e";
+ default:
+  throw new Error("unsupported wasm value type " + type);
+ }
+}
+
+function parseWasmFunctionImportSigs(bytes) {
+ var state = { pos: 8 };
+ var types = [];
+ var imports = [];
+ while (state.pos < bytes.length) {
+  var section = bytes[state.pos++];
+  var sectionSize = readWasmUleb(bytes, state);
+  var sectionEnd = state.pos + sectionSize;
+  if (section === 1) {
+   var typeCount = readWasmUleb(bytes, state);
+   for (var i = 0; i < typeCount; i++) {
+    if (bytes[state.pos++] !== 96) throw new Error("unsupported wasm type form");
+    var paramCount = readWasmUleb(bytes, state);
+    var params = "";
+    for (var p = 0; p < paramCount; p++) params += wasmValueTypeToSig(bytes[state.pos++]);
+    var resultCount = readWasmUleb(bytes, state);
+    var result = "v";
+    if (resultCount > 0) {
+     result = wasmValueTypeToSig(bytes[state.pos++]);
+     for (var r = 1; r < resultCount; r++) wasmValueTypeToSig(bytes[state.pos++]);
+    }
+    types.push(result + params);
+   }
+  } else if (section === 2) {
+   var importCount = readWasmUleb(bytes, state);
+   for (var j = 0; j < importCount; j++) {
+    var moduleName = readWasmName(bytes, state);
+    var fieldName = readWasmName(bytes, state);
+    var kind = bytes[state.pos++];
+    if (kind === 0) {
+     imports.push({ module: moduleName, name: fieldName, sig: types[readWasmUleb(bytes, state)] });
+    } else if (kind === 1) {
+     state.pos++;
+     skipWasmLimits(bytes, state);
+    } else if (kind === 2) {
+     skipWasmLimits(bytes, state);
+    } else if (kind === 3) {
+     state.pos += 2;
+    }
+   }
+  }
+  state.pos = sectionEnd;
+ }
+ return imports;
+}
+
+function normalizeWasmReturn(value, sig) {
+ switch (sig[0]) {
+ case "v":
+  return undefined;
+ case "j":
+  return toWasmBigInt(value);
+ case "i":
+ case "p":
+  return typeof value === "bigint" ? Number(BigInt.asUintN(32, value)) : value;
+ default:
+  return value;
+ }
+}
+
+function wrapWasmHelperImport(func, sig) {
+ if (!sig) return func;
+ var wrapper = function() {
+  var args = Array.prototype.slice.call(arguments);
+  return normalizeWasmReturn(callWasmFunctionWithI64Fallback(func, args), sig);
+ };
+ return convertJsFunctionToWasm(wrapper, sig);
+}
+
 function instantiate_wasm() {
  const memory_v = new DataView(HEAP8.buffer);
  const tb_ptr = memory_v.getInt32(Module.__wasm32_tb.tb_ptr_ptr, true);
@@ -499,9 +614,11 @@ function instantiate_wasm() {
  const import_vec_size = memory_v.getInt32(wasm_begin + wasm_size, true);
  const import_vec_begin = wasm_begin + wasm_size + 4;
  const wasmBytes = new Uint8Array(HEAP8.slice(wasm_begin, wasm_begin + wasm_size));
+ const importSigs = parseWasmFunctionImportSigs(wasmBytes);
  var helper = {};
  for (var i = 0; i < import_vec_size / 4; i++) {
-  helper[i] = wasmTable.get(memory_v.getInt32(import_vec_begin + i * 4, true));
+  var importSig = importSigs.find(importInfo => importInfo.module === "helper" && importInfo.name === String(i));
+  helper[i] = wrapWasmHelperImport(wasmTable.get(memory_v.getInt32(import_vec_begin + i * 4, true)), importSig && importSig.sig);
  }
  const mod = new WebAssembly.Module(wasmBytes);
  const inst = new WebAssembly.Instance(mod, {
@@ -588,6 +705,22 @@ function callWasmFunctionWithI64Fallback(func, args, depth) {
     var appendedRetryArgs = args.slice();
     appendedRetryArgs.push(0n);
     return callWasmFunctionWithI64Fallback(func, appendedRetryArgs, depth + 1);
+   }
+   if (e.message === "Cannot convert a BigInt value to a number" && depth < 64) {
+    for (var b = 0; b < args.length; b++) {
+     if (typeof args[b] !== "bigint") {
+      continue;
+     }
+     var numberRetryArgs = args.slice();
+     numberRetryArgs[b] = Number(BigInt.asUintN(32, args[b]));
+     try {
+      return callWasmFunctionWithI64Fallback(func, numberRetryArgs, depth + 1);
+     } catch (numberRetryError) {
+      if (numberRetryError instanceof TypeError && numberRetryError.message === "Cannot convert undefined to a BigInt") {
+       throw numberRetryError;
+      }
+     }
+    }
    }
    throw e;
   }
