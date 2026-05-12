@@ -137,7 +137,7 @@ const CXL_WEB_CONFIG = (() => {
     const acpiEnabled = params.get('acpi') === 'on';
     const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
     const coreParam = params.get('qemu_core') || params.get('core') || '';
-    const qemuCore = coreParam === 'fpcast' || (coreParam !== 'fast' && qemuCxlEnabled) ? 'fpcast' : 'fast';
+    const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
     const diskBus = params.get('disk_bus') === 'legacy' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcore',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-fastcxl',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -498,11 +498,9 @@ function buildQemuArguments() {
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
     const args = [
+        '-nographic',
         '-nodefaults',
         '-no-user-config',
-        '-display', 'none',
-        '-serial', 'stdio',
-        '-monitor', 'none',
         '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
