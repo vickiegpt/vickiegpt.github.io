@@ -164,7 +164,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-noapic-input',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-cxl-notimer-input',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -448,7 +448,7 @@ function buildQemuArguments() {
         'log_buf_len=256K',
         'printk.time=0',
         'pci=realloc',
-        'noapic'
+        'no_timer_check'
     ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
