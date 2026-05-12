@@ -153,6 +153,7 @@ const CXL_WEB_CONFIG = (() => {
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 128, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
+    const nodefaults = params.get('nodefaults') === '1';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -174,13 +175,14 @@ const CXL_WEB_CONFIG = (() => {
         qemuCore,
         diskBus,
         hpet,
+        nodefaults,
         cxlRootPortReserve,
         extraKernelArgs,
         tcg: {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-timer-probe',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260512-board-timer',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -518,7 +520,6 @@ function buildQemuArguments() {
 
     const args = [
         '-nographic',
-        '-nodefaults',
         '-no-user-config',
         '-serial', 'stdio',
         '-monitor', 'none',
@@ -534,6 +535,9 @@ function buildQemuArguments() {
         '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22',
         '-device', 'virtio-rng-pci'
     ];
+    if (CXL_WEB_CONFIG.nodefaults) {
+        args.splice(1, 0, '-nodefaults');
+    }
 
     if (virtioDisk) {
         args.push(
