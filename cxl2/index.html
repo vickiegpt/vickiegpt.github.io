@@ -324,7 +324,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260513-qemu82-wasm32-cxlfix"></script>
+<script src="./cxl-module.js?v=20260513-qemu82-pty-cxlfix"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -389,12 +389,12 @@ const config = window.CXL_WEB_CONFIG || {
         port: 9999
     },
     qemuCore: "fast",
-    assetVersion: "20260513-qemu82-wasm32-cxlfix",
+    assetVersion: "20260513-qemu82-pty-cxlfix",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260513-qemu82-wasm32-cxlfix");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260513-qemu82-pty-cxlfix");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
@@ -457,13 +457,14 @@ function sendGuestText(text, options = {}) {
         return;
     }
     const payload = options.raw || text.endsWith("\n") ? text : `${text}\n`;
+    const ptyPayload = payload.replace(/\r?\n/g, "\r");
     term.focus();
-    if (typeof term.paste === "function") {
-        term.paste(payload);
+    if (master?.ldisc && typeof master.ldisc.writeFromLower === "function") {
+        master.ldisc.writeFromLower(ptyPayload);
         return;
     }
-    if (master && typeof master.write === "function") {
-        master.write(payload);
+    if (typeof term.paste === "function") {
+        term.paste(ptyPayload);
     }
 }
 
