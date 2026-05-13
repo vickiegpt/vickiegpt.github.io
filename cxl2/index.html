@@ -310,7 +310,7 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         </section>
         <section class="section">
             <h2>Runtime</h2>
-            <p class="note"><span class="warn">Note:</span> This page uses the fast x86_64 TB/TBI QEMU wasm assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL devices can be enabled with `?acpi=on&qemu_cxl=1`; `qemu_core=fpcast` is only a compatibility fallback.</p>
+            <p class="note"><span class="warn">Note:</span> This page uses the x86_64 wasm32 TCG QEMU assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL devices can be enabled with `?acpi=on&qemu_cxl=1`; `qemu_core=fpcast` is only a compatibility fallback.</p>
             <p class="note"><span class="warn">Boot:</span> Default boot uses trimmed systemd and keeps CXL initialization. Add `fast_login=1` only for a direct `/bin/sh` debug shell, or `fast_boot=0` to restore the guest defaults.</p>
             <p class="note"><span class="warn">Network:</span> The browser network stack is connected through `-netdev socket` and the c2w fetch proxy. Inside the guest, use `http_proxy`/`https_proxy` with `http://192.168.127.253:80` for outbound HTTP(S).</p>
         </section>
@@ -324,7 +324,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260512-heap36800"></script>
+<script src="./cxl-module.js?v=20260513-qemu82-wasm32-cxlfix"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260512-boottrim"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -389,12 +389,12 @@ const config = window.CXL_WEB_CONFIG || {
         port: 9999
     },
     qemuCore: "fast",
-    assetVersion: "20260512-heap36800",
+    assetVersion: "20260513-qemu82-wasm32-cxlfix",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-heap36800");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260513-qemu82-wasm32-cxlfix");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
