@@ -4,35 +4,66 @@ if (typeof Module === 'undefined') {
 
 function parseCxlmemsimEndpoint(params) {
     const endpoint = params.get('cxlmemsim') || params.get('cxlmemsim_server') || params.get('cxlmemsim_tcp');
+    let transport = params.get('cxlmemsim_transport')
+        || params.get('cxl_transport')
+        || params.get('transport')
+        || 'browser';
+    let pool = params.get('cxlmemsim_pool') || params.get('memsim_pool') || 'CXLMemSim';
     let host = params.get('cxlmemsim_host')
         || params.get('cxlmemsim_addr')
         || params.get('cxlmemsim-addr')
-        || '127.0.0.1';
+        || pool;
     let portText = params.get('cxlmemsim_port') || params.get('cxlmemsim-port') || '9999';
 
     if (endpoint) {
-        const urlText = endpoint.includes('://') ? endpoint : `tcp://${endpoint}`;
+        const endpointText = String(endpoint).trim();
+        const lower = endpointText.toLowerCase();
+        let endpointHandled = false;
+        if (['browser', 'sharedworker', 'wasm', 'wasm-shared', 'cxlmemsim'].includes(lower)) {
+            transport = lower === 'cxlmemsim' ? 'browser' : lower;
+            host = pool;
+            endpointHandled = true;
+        }
+        const urlText = endpointText.includes('://') ? endpointText : `tcp://${endpointText}`;
         try {
-            const url = new URL(urlText);
-            if (url.protocol === 'tcp:') {
-                host = url.hostname || host;
-                portText = url.port || portText;
+            if (!endpointHandled) {
+                const url = new URL(urlText);
+                if (url.protocol === 'browser:' || url.protocol === 'sharedworker:' || url.protocol === 'wasm:') {
+                    transport = url.protocol.slice(0, -1);
+                    pool = url.hostname || url.pathname.replace(/^\/+/, '') || pool;
+                    host = pool;
+                    portText = url.port || portText;
+                } else if (url.protocol === 'tcp:') {
+                    transport = 'tcp';
+                    host = url.hostname || host;
+                    portText = url.port || portText;
+                }
             }
         } catch (error) {
-            const separator = endpoint.lastIndexOf(':');
+            const separator = endpointText.lastIndexOf(':');
             if (separator > 0) {
-                host = endpoint.slice(0, separator);
-                portText = endpoint.slice(separator + 1);
+                host = endpointText.slice(0, separator);
+                portText = endpointText.slice(separator + 1);
             } else {
-                host = endpoint;
+                host = endpointText;
             }
         }
     }
 
-    host = String(host || '127.0.0.1').trim().replace(/[,\s]/g, '') || '127.0.0.1';
+    transport = String(transport || 'browser').trim().toLowerCase();
+    if (!['tcp', 'browser', 'sharedworker', 'wasm', 'wasm-shared'].includes(transport)) {
+        transport = 'browser';
+    }
+    if (transport !== 'tcp') {
+        transport = 'browser';
+    }
+    pool = String(pool || host || 'CXLMemSim').trim().replace(/[,\s]/g, '') || 'CXLMemSim';
+    host = transport === 'browser'
+        ? pool
+        : (String(host || '127.0.0.1').trim().replace(/[,\s]/g, '') || '127.0.0.1');
     const portValue = Number(portText);
     const port = Number.isInteger(portValue) && portValue > 0 && portValue <= 65535 ? portValue : 9999;
-    return { host, port };
+    return { transport, host, port, pool };
 }
 
 function normalizeFetchUrl(value) {
@@ -90,6 +121,30 @@ function parseIntegerParam(params, names, fallback, min, max) {
         }
         const value = Number(String(raw).trim());
         if (Number.isInteger(value) && value >= min && value <= max) {
+            return value;
+        }
+    }
+    return fallback;
+}
+
+function parseByteSizeParam(params, names, fallback, min, max) {
+    for (const name of names) {
+        const raw = params.get(name);
+        if (!raw) {
+            continue;
+        }
+        const match = String(raw).trim().match(/^(\d+)(?:\s*([kmgt])i?b?)?$/i);
+        if (!match) {
+            continue;
+        }
+        const scale = {
+            k: 1024,
+            m: 1024 * 1024,
+            g: 1024 * 1024 * 1024,
+            t: 1024 * 1024 * 1024 * 1024
+        }[(match[2] || '').toLowerCase()] || 1;
+        const value = Number(match[1]) * scale;
+        if (Number.isSafeInteger(value) && value >= min && value <= max) {
             return value;
         }
     }
@@ -163,6 +218,13 @@ const CXL_WEB_CONFIG = (() => {
         ['cxl_setup_timeout', 'cxlmem_setup_timeout', 'service_timeout', 'start_timeout'],
         fastBoot ? 180 : 300
     );
+    const cxlmemsimSize = parseByteSizeParam(
+        params,
+        ['cxlmemsim_size', 'memsim_size', 'pool_size'],
+        256 * 1024 * 1024,
+        64 * 1024 * 1024,
+        1024 * 1024 * 1024
+    );
     return {
         profile,
         backend,
@@ -195,9 +257,12 @@ const CXL_WEB_CONFIG = (() => {
             proxyUrl: 'http://192.168.127.253:80'
         },
         cxlmemsim: {
-            transport: 'tcp',
+            transport: cxlmemsim.transport,
             host: cxlmemsim.host,
-            port: cxlmemsim.port
+            port: cxlmemsim.port,
+            pool: cxlmemsim.pool,
+            size: cxlmemsimSize,
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260513-browser-memsim'
         }
     };
 })();
@@ -207,9 +272,15 @@ Module['ENV'] = {
     ...(Module['ENV'] || {}),
     CXL_MEMSIM_HOST: CXL_WEB_CONFIG.cxlmemsim.host,
     CXL_MEMSIM_PORT: String(CXL_WEB_CONFIG.cxlmemsim.port),
+    CXL_MEMSIM_POOL: CXL_WEB_CONFIG.cxlmemsim.pool,
+    CXL_MEMSIM_SIZE: String(CXL_WEB_CONFIG.cxlmemsim.size),
     CXL_MEMSIM_TRANSPORT: CXL_WEB_CONFIG.cxlmemsim.transport,
     CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.transport
 };
+Module['HETGPU_CXL_MEMSIM_WORKER_URL'] = new URL(
+    CXL_WEB_CONFIG.cxlmemsim.workerUrl,
+    location.href
+).href;
 
 function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const FS = mod.FS;
@@ -478,9 +549,10 @@ function buildQemuArguments() {
         type3Enabled ? 'cxl.type3=on' : 'cxl.type3=off',
         `hetgpu.backend=${CXL_WEB_CONFIG.backend}`,
         'hetgpu.device=hetgpu0',
-        'cxlmemsim.transport=tcp',
+        `cxlmemsim.transport=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `cxlmemsim.pool=${CXL_WEB_CONFIG.cxlmemsim.pool}`,
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
@@ -507,7 +579,10 @@ function buildQemuArguments() {
         `systemd.setenv=CXLMEM_SETUP_TIMEOUT_SEC=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `systemd.setenv=CXL_MEMSIM_HOST=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `systemd.setenv=CXL_MEMSIM_PORT=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+        `systemd.setenv=CXL_MEMSIM_POOL=${CXL_WEB_CONFIG.cxlmemsim.pool}`,
+        `systemd.setenv=CXL_MEMSIM_SIZE=${CXL_WEB_CONFIG.cxlmemsim.size}`,
         `systemd.setenv=CXL_MEMSIM_TRANSPORT=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
+        `systemd.setenv=CXL_TRANSPORT_MODE=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
         'systemd.default_device_timeout_sec=3s',
         'systemd.wants=console-getty.service',
         ...runtimeAppend,
