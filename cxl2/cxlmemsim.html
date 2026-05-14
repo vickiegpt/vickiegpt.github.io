@@ -251,8 +251,17 @@ events.onmessage = (event) => {
         simFields.mode.textContent = "error";
         return;
     }
+    if (msg.type === "bridge-ready") {
+        simFields.mode.textContent = "wasm";
+        return;
+    }
     if (msg.type !== "stats") return;
     const sim = msg.sim || {};
+    if (Object.keys(sim).length > 0 && !simFields.mode.textContent.startsWith("degraded")) {
+        simFields.mode.textContent = "wasm";
+    } else if (Object.keys(sim).length === 0 && simFields.mode.textContent === "connecting") {
+        simFields.mode.textContent = "flat-pool";
+    }
     simFields.reads.textContent = sim.total_reads || 0;
     simFields.writes.textContent = sim.total_writes || 0;
     simFields.atomics.textContent = sim.total_atomics || 0;
@@ -271,7 +280,7 @@ if (!window.crossOriginIsolated) {
 } else if (typeof SharedWorker === "undefined" || typeof SharedArrayBuffer === "undefined") {
     setStatus("unsupported", false);
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-wasm-bridge", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-bridge-ready", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
