@@ -195,6 +195,7 @@ const CXL_WEB_CONFIG = (() => {
     const profile = validProfiles.has(params.get('cxl')) ? params.get('cxl') : 'all';
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
+    const nativeType1 = params.get('native_type1') === '1' || params.get('cxl_type1') === 'native';
     const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
     const directShellParam = params.get('fast_login') || params.get('direct_shell') || '';
     const fastLogin = directShellParam === '1' || directShellParam === 'true';
@@ -228,6 +229,7 @@ const CXL_WEB_CONFIG = (() => {
     return {
         profile,
         backend,
+        nativeType1,
         nativeType2,
         fastLogin,
         fastBoot,
@@ -262,7 +264,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-bridge-ready'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-cxl-types'
         }
     };
 })();
@@ -632,6 +634,21 @@ function buildQemuArguments() {
 
     if (CXL_WEB_CONFIG.qemuCxlEnabled) {
         args.push('-device', 'pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1');
+    }
+
+    if (profileHas('type1') && CXL_WEB_CONFIG.qemuCxlEnabled && CXL_WEB_CONFIG.nativeType1) {
+        args.push(
+            '-device', 'cxl-rp,port=2,bus=cxl.1,id=root_port15,chassis=0,slot=3',
+            '-device', [
+                'cxl-type1',
+                'bus=root_port15',
+                'size=256M',
+                'cache-size=64M',
+                `cxlmemsim-addr=${CXL_WEB_CONFIG.cxlmemsim.host}`,
+                `cxlmemsim-port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
+                'id=cxl-type1-accel0'
+            ].join(',')
+        );
     }
 
     if (profileHas('type2')) {
