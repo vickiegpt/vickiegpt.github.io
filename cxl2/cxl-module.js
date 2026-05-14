@@ -264,7 +264,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-cxl-types'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-rebroadcast'
         }
     };
 })();
