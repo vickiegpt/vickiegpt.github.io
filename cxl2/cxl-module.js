@@ -262,7 +262,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260513-browser-memsim'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-wasm-bridge'
         }
     };
 })();

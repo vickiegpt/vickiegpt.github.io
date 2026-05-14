@@ -229,7 +229,7 @@ if (!window.crossOriginIsolated) {
 } else if (typeof SharedWorker === "undefined" || typeof SharedArrayBuffer === "undefined") {
     setStatus("unsupported", false);
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260513-browser-memsim", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-wasm-bridge", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
