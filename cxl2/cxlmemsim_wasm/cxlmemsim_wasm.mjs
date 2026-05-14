@@ -1,6 +1,8 @@
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+/* Patched: removed top-level `import { createRequire } from 'module';`
+ * which browsers/SharedWorkers cannot resolve. The Node-only branches
+ * gated by ENVIRONMENT_IS_NODE never execute in a browser. */
+var require = typeof globalThis.require === 'function' ? globalThis.require : (() => { throw new Error('require not available in this environment'); });
 
 var createCxlMemSim = (() => {
   var _scriptName = import.meta.url;
