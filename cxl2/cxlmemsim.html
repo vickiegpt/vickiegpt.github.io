@@ -191,7 +191,7 @@ pre {
 </main>
 <script>
 window.coi = {
-    coepCredentialless: () => true,
+    coepCredentialless: () => false,
     quiet: true
 };
 </script>
@@ -281,7 +281,7 @@ if (!window.crossOriginIsolated) {
     setStatus("unsupported", false);
     simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-wlog", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-corp", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
