@@ -665,7 +665,10 @@ function buildQemuArguments() {
                     `cxlmemsim-port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
                     'coherency-enabled=true',
                     'gpu-mode=2',
-                    `hetgpu-backend=${CXL_WEB_CONFIG.backend}`,
+                    /* QEMU hetgpu-backend is UINT32 enum (cxl_hetgpu.h):
+                     *   0=AUTO 1=INTEL 2=AMD 3=NVIDIA 4=TENSTORRENT 5=SIMULATION
+                     * Browser env has no native GPU → use SIMULATION. */
+                    `hetgpu-backend=${({intel:1,amd:2,nvidia:3,tenstorrent:4,simulation:5,webgpu:5,sim:5,auto:0})[String(CXL_WEB_CONFIG.backend).toLowerCase()] ?? 5}`,
                     'hetgpu-device=0',
                     'id=cxl-type2-hetgpu0'
                 ].join(',')
