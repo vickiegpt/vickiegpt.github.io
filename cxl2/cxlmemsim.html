@@ -247,8 +247,9 @@ simFields.mode.textContent = "connecting";
 const events = new BroadcastChannel("cxlmemsim-events");
 events.onmessage = (event) => {
     const msg = event.data || {};
+    console.log("[cxlmemsim] event", msg.type, msg);
     if (msg.type === "error") {
-        simFields.mode.textContent = "error";
+        simFields.mode.textContent = `error: ${msg.reason || "unknown"}`;
         return;
     }
     if (msg.type === "bridge-ready") {
@@ -280,15 +281,21 @@ if (!window.crossOriginIsolated) {
     setStatus("unsupported", false);
     simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-isolation-hint", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-diag", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
     fields.pool.textContent = pool;
     fields.size.textContent = formatBytes(size);
 
+    console.log("[cxlmemsim] SharedWorker constructed", worker);
+    worker.addEventListener("error", (event) => {
+        console.error("[cxlmemsim] SharedWorker error", event);
+        simFields.mode.textContent = "worker error (see console)";
+    });
     port.onmessage = (event) => {
         const msg = event.data || {};
+        console.log("[cxlmemsim] port", msg.type, msg);
         if (msg.type === "connected") {
             setStatus("ready", true);
             return;

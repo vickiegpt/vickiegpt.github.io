@@ -49,7 +49,7 @@ document.getElementById("run").onclick = async () => {
         log("FAIL: page is not cross-origin isolated"); return;
     }
     const worker = new SharedWorker(
-        "/cxl2/cxlmemsim-pool-worker.js?v=20260514-isolation-hint",
+        "/cxl2/cxlmemsim-pool-worker.js?v=20260514-diag",
         "hetgpu-cxlmemsim");
     worker.port.start();
     worker.port.postMessage({ type:"connect", role:"qemu",
