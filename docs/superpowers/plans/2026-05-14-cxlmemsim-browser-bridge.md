@@ -2071,6 +2071,153 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 ---
 
+## Task 11: End-to-end QEMU verification
+
+This task puts a real QEMU WASM instance on the new WASM-driven bridge
+and verifies the bridge survives real traffic. QEMU is already wired
+up: `cxl-module.js` sets `Module.ENV.CXL_MEMSIM_TRANSPORT=browser` and
+`Module.HETGPU_CXL_MEMSIM_WORKER_URL` to the SharedWorker URL, and the
+QEMU CXL backend already speaks the `sync-request` / `qemu-message`
+shapes the worker accepts. Because Task 7 preserves the wire format,
+no QEMU-side changes should be needed; this task is verification.
+
+**Files:**
+- Modify: `victoryang00.github.io/cxl2/test_cross_tab.html` — add a
+  "with QEMU" hint at the bottom.
+- Modify: `victoryang00.github.io/cxl2/cxlmemsim.html` — render the
+  connected clients' `role` and `device` so a real QEMU client is
+  visibly distinct from synthetic ones.
+
+- [ ] **Step 1: Confirm the QEMU assets are still served**
+
+```bash
+cd /home/victoryang00/hetGPU_new/victoryang00.github.io
+python3 -m http.server 8000 >/tmp/static.log 2>&1 &
+echo $! > /tmp/static.pid
+sleep 1
+curl -sI 'http://localhost:8000/cxl2/index.html' | head -2
+curl -sI 'http://localhost:8000/cxl2/images/alpine-x86_64/out.js' | head -2
+curl -sI 'http://localhost:8000/cxl2/images/alpine-x86_64/qemu-system-x86_64.wasm' | head -2
+curl -sI 'http://localhost:8000/cxl2/cxlmemsim_wasm/cxlmemsim_wasm.mjs' | head -2
+```
+
+Expected: all four return `HTTP/1.0 200 OK`. If the QEMU assets are
+missing (404), the workstation's `cxl2/images/alpine-x86_64/` is
+incomplete — escalate; do not try to rebuild QEMU here.
+
+- [ ] **Step 2: Boot QEMU against the WASM-driven worker (manual,
+  cannot be automated)**
+
+In Chrome / Chromium with cross-origin isolation:
+
+1. Open `http://localhost:8000/cxl2/index.html?cxl=type2&cxlmemsim=browser&cxlmemsim_pool=CXLMemSim&cxlmemsim_size=256MB&fast_login=1`.
+2. Click **Start VM**. Within ~30 s the xterm pane should reach a
+   `/bin/sh` prompt.
+3. In a second tab, open `http://localhost:8000/cxl2/cxlmemsim.html?pool=CXLMemSim&size=268435456`.
+4. The dashboard's **Mode** tile must read `wasm` (not
+   `degraded: …`). The **Clients** count must be at least 2 (one
+   QEMU `role:'qemu'`, one dashboard `role:'ui'`). The client list
+   (the `<pre id="clients">` panel) must show the QEMU client's
+   `device` string.
+
+If **Mode** reads `degraded`, open DevTools → Application → Shared
+Workers → `hetgpu-cxlmemsim` and check its Console for the WASM
+load error. The flat-pool fallback is doing its job, but the bridge
+needs to be fixed before Step 3 is meaningful.
+
+- [ ] **Step 3: Drive real CXL traffic from the QEMU guest**
+
+In the xterm pane (the QEMU guest), paste the existing **Probe CXL**
+button payload (already on the page; it issues `cat /proc/cmdline`,
+walks `/sys/bus/cxl`, etc.). Then run:
+
+```sh
+# inside the QEMU guest:
+dd if=/dev/zero of=/dev/shm/probe bs=64 count=64 2>/dev/null || true
+dd if=/dev/shm/probe of=/dev/null bs=64 count=64 2>/dev/null || true
+```
+
+Switch back to the dashboard tab. Within ~1 s the **Sim Reads** and
+**Sim Writes** counters must both move past zero, and **Avg Latency**
+must be a non-zero number of nanoseconds. The flat-pool path does
+not update those tiles — if you see them increment, the bridge is
+serving real traffic.
+
+If the counters stay at 0, click **Reset Pool** on the dashboard,
+then re-run `dd`. If still 0, the bridge is not receiving the
+QEMU side's `sync-request` messages — capture a snapshot of the
+DevTools Console from the QEMU tab (look for `Atomics.wait` / pool
+errors) and escalate.
+
+- [ ] **Step 4: Verify QEMU sees invalidations from the synthetic
+  client**
+
+While the QEMU guest is still running, open a third tab:
+`http://localhost:8000/cxl2/test_cross_tab.html`. Click **Run**.
+The harness writes a 64-byte pattern at offset `0x1000`.
+
+Back in the dashboard, the **Sim Inval** tile must increment by at
+least 1 (the worker fans an `INVALIDATE` to every other tab —
+including the QEMU tab — whenever any client writes). The QEMU
+tab will silently drop the invalidation message but `pool.stats.invalidations`
+must reflect it.
+
+- [ ] **Step 5: Add the "with QEMU" hint to the cross-tab page**
+
+In `victoryang00.github.io/cxl2/test_cross_tab.html`, append below
+the existing `<script>` block (just before `</body>`):
+
+```html
+<p style="margin-top:24px;color:#9fb0bd">
+Open <code>/cxl2/index.html?cxl=type2&amp;cxlmemsim=browser&amp;fast_login=1</code>
+in another tab and Start VM. Both this tab and that tab share the
+same SharedWorker-hosted CXLMemSim; writes from <code>dd</code>
+inside the guest will move the dashboard's Sim Reads / Sim Writes
+counters in real time.
+</p>
+```
+
+- [ ] **Step 6: Render client `role` / `device` on the dashboard**
+
+In `victoryang00.github.io/cxl2/cxlmemsim.html`, the
+`<pre id="clients">` panel already receives `msg.clients` from the
+`status` event. Today it does `JSON.stringify`. Replace the line:
+
+```javascript
+fields.clients.textContent = JSON.stringify(msg.clients || [], null, 2);
+```
+
+with:
+
+```javascript
+fields.clients.textContent = (msg.clients || []).map((c) =>
+    `${c.role.padEnd(6)} ${c.id}${c.device ? ` (${c.device})` : ""}`
+).join("\n") || "(no clients)";
+```
+
+This is a one-line readability change so a real QEMU instance shows
+up as `qemu  qemu-… (hetgpu0)` in the dashboard rather than buried
+in a JSON blob.
+
+- [ ] **Step 7: Stop the static server, commit**
+
+```bash
+kill "$(cat /tmp/static.pid)" 2>/dev/null || true
+cd /home/victoryang00/hetGPU_new/victoryang00.github.io
+git add cxl2/test_cross_tab.html cxl2/cxlmemsim.html
+git commit -m "test(cxl2): cover real QEMU end-to-end on the WASM bridge
+
+Adds a hint pointing the cross-tab smoke test at a real QEMU instance
+and renders the dashboard client list as one line per role/id/device.
+The bridge is verified by booting cxl2/index.html in one tab and
+watching the cxl2/cxlmemsim.html dashboard counters move when the
+guest issues dd / cat against /dev/shm.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
+```
+
+---
+
 ## Self-Review
 
 **Spec coverage:**
@@ -2083,6 +2230,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 - Build script → Task 6.
 - Tests → Task 2 (`test_wasm_heap_backend`), Task 3–5 (`test_wasm_bridge`), Task 9 (`test_cross_tab.html`).
 - BroadcastChannel `cxlmemsim-events` → Task 7 + 8.
+- End-to-end QEMU verification → Task 11.
 
 **Placeholder scan:** No "TBD", "TODO", "fill in later" left in the steps. Every code step shows the actual code. Every command step shows the actual command and expected output.
 
