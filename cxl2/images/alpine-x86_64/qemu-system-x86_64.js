@@ -28,7 +28,7 @@ var readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["___indirect_function_table","_cxl_browser_connect_js","_cxl_browser_disconnect_js","_cxl_browser_request_js","_cxl_browser_send_message_js","_cxl_browser_recv_message_js","___em_lib_deps_libffi","_unbox_small_structs","_ffi_call_js","_ffi_closure_alloc_js","_ffi_closure_free_js","_ffi_prep_closure_loc_js","__emscripten_proxy_main","_main","onRuntimeInitialized"].forEach((prop) => {
+["_cxl_browser_connect_js","_cxl_browser_disconnect_js","_cxl_browser_request_js","_cxl_browser_send_message_js","_cxl_browser_recv_message_js","___indirect_function_table","___em_lib_deps_libffi","_unbox_small_structs","_ffi_call_js","_ffi_closure_alloc_js","_ffi_closure_free_js","_ffi_prep_closure_loc_js","__emscripten_proxy_main","_main","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(readyPromise, prop)) {
     Object.defineProperty(readyPromise, prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -928,7 +928,7 @@ function findWasmBinary() {
     return f;
   }
   // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
-  return new URL('qemu-system-x86_64.wasm?v=20260514-cxl123', import.meta.url).href;
+  return new URL('qemu-system-x86_64.wasm?v=20260513-browser-qemu10-wasmopt1', import.meta.url).href;
 }
 
 var wasmBinaryFile;
@@ -1222,11 +1222,11 @@ function dbg(...args) {
 // === Body ===
 
 var ASM_CONSTS = {
-  9924784: () => { if (typeof console !== 'undefined') { console.log('[hetGPU WebGPU] backend selected'); } return 0; },  
- 9924887: () => { if (typeof navigator !== 'undefined' && navigator.gpu) { return 1; } return 1; },  
- 9924970: ($0) => { if (typeof console !== 'undefined') { console.log('[hetGPU WebGPU] module load, bytes=' + $0); } },  
- 9925071: ($0, $1) => { if (typeof console !== 'undefined') { var n = UTF8ToString($1); console.log('[hetGPU WebGPU] get function module=' + $0 + ' name=' + n); } },  
- 9925214: ($0, $1, $2, $3, $4, $5, $6, $7, $8) => { if (typeof console !== 'undefined') { var n = UTF8ToString($1); console.log('[hetGPU WebGPU] launch kernel=' + $0 + ' name=' + n + ' grid=(' + $2 + ',' + $3 + ',' + $4 + ')' + ' block=(' + $5 + ',' + $6 + ',' + $7 + ')' + ' shared=' + $8); } }
+  9896124: () => { if (typeof console !== 'undefined') { console.log('[hetGPU WebGPU] backend selected'); } return 0; },  
+ 9896227: () => { if (typeof navigator !== 'undefined' && navigator.gpu) { return 1; } return 1; },  
+ 9896310: ($0) => { if (typeof console !== 'undefined') { console.log('[hetGPU WebGPU] module load, bytes=' + $0); } },  
+ 9896411: ($0, $1) => { if (typeof console !== 'undefined') { var n = UTF8ToString($1); console.log('[hetGPU WebGPU] get function module=' + $0 + ' name=' + n); } },  
+ 9896554: ($0, $1, $2, $3, $4, $5, $6, $7, $8) => { if (typeof console !== 'undefined') { var n = UTF8ToString($1); console.log('[hetGPU WebGPU] launch kernel=' + $0 + ' name=' + n + ' grid=(' + $2 + ',' + $3 + ',' + $4 + ')' + ' block=(' + $5 + ',' + $6 + ',' + $7 + ')' + ' shared=' + $8); } }
 };
 function cxl_browser_connect_js(device_ptr,pool_ptr,port,size_lo,size_hi) { function text(ptr, fallback) { return ptr ? UTF8ToString(ptr) : fallback; } const device = text(device_ptr, 'qemu'); const pool = text(pool_ptr, 'CXLMemSim') || 'CXLMemSim'; const size = Number(size_lo >>> 0) + Number(size_hi >>> 0) * 4294967296; const root = globalThis; const state = root.__HETGPU_CXL_BROWSER_MEMSIM || (root.__HETGPU_CXL_BROWSER_MEMSIM = { connected: false, queue: [], clientId: 'qemu-' + Math.random().toString(16).slice(2), pool: pool, device: device, port: null, worker: null, requestSab: null }); state.pool = pool; state.device = device; if (state.connected && state.port) { return 0; } if (typeof SharedWorker === 'undefined' || typeof SharedArrayBuffer === 'undefined' || typeof Atomics === 'undefined') { console.error('CXLMemSim browser transport requires SharedWorker and SharedArrayBuffer'); return -1; } let workerUrl = null; if (typeof Module !== 'undefined' && Module['HETGPU_CXL_MEMSIM_WORKER_URL']) { workerUrl = Module['HETGPU_CXL_MEMSIM_WORKER_URL']; } else { workerUrl = new URL('/cxl2/cxlmemsim-pool-worker.js?v=20260514-bridge-ready', globalThis.location.origin).href; } try { state.worker = new SharedWorker(workerUrl, 'hetgpu-cxlmemsim'); state.port = state.worker.port; state.port.onmessage = (event) => { const msg = event.data || {}; if (msg.type === 'message' && msg.bytes) { state.queue.push(new Uint8Array(msg.bytes)); } else if (msg.type === 'connected' && msg.clientId) { state.clientId = msg.clientId; } else if (msg.type === 'error') { console.error('CXLMemSim worker:', msg.message || msg); } }; state.port.start(); state.port.postMessage({ type: 'connect', role: 'qemu', clientId: state.clientId, device, pool, port, size: size || 268435456 }); state.connected = true; return 0; } catch (error) { console.error('Failed to connect CXLMemSim SharedWorker:', error); state.connected = false; state.port = null; return -1; } }
 function cxl_browser_disconnect_js(device_ptr) { const state = globalThis.__HETGPU_CXL_BROWSER_MEMSIM; if (!state || !state.port) { return; } const device = device_ptr ? UTF8ToString(device_ptr) : state.device; state.port.postMessage({ type: 'disconnect', clientId: state.clientId, device: device || state.device, pool: state.pool }); }
@@ -1665,7 +1665,7 @@ function ffi_prep_closure_loc_js(closure,cif,fun,user_data,codeloc) { closure = 
         // instead of just using new URL(import.meta.url) because bundler's only recognize
         // the first case in their bundling step. The latter ends up producing an invalid
         // URL to import from the server (e.g., for webpack the file:// path).
-        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260514-cxl123', import.meta.url), workerOptions);
+        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260513-browser-qemu10-wasmopt1', import.meta.url), workerOptions);
         PThread.unusedWorkers.push(worker);
       },
   getNewWorker() {
@@ -8720,7 +8720,7 @@ function assignWasmImports() {
     /** @export */
     invoke_iiii,
     /** @export */
-    invoke_iiiii,
+    invoke_iiiiii,
     /** @export */
     invoke_iiiiiii,
     /** @export */
@@ -8778,30 +8778,26 @@ var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
-var dynCall_v = Module['dynCall_v'] = createExportWrapper('dynCall_v', 1);
-var dynCall_vii = Module['dynCall_vii'] = createExportWrapper('dynCall_vii', 3);
-var dynCall_iiii = Module['dynCall_iiii'] = createExportWrapper('dynCall_iiii', 4);
-var dynCall_ji = Module['dynCall_ji'] = createExportWrapper('dynCall_ji', 2);
-var dynCall_viii = Module['dynCall_viii'] = createExportWrapper('dynCall_viii', 4);
-var dynCall_vi = Module['dynCall_vi'] = createExportWrapper('dynCall_vi', 2);
-var dynCall_vji = Module['dynCall_vji'] = createExportWrapper('dynCall_vji', 3);
-var dynCall_ijiii = Module['dynCall_ijiii'] = createExportWrapper('dynCall_ijiii', 5);
-var dynCall_iji = Module['dynCall_iji'] = createExportWrapper('dynCall_iji', 3);
-var dynCall_viji = Module['dynCall_viji'] = createExportWrapper('dynCall_viji', 4);
 var dynCall_iii = Module['dynCall_iii'] = createExportWrapper('dynCall_iii', 3);
-var dynCall_viiii = Module['dynCall_viiii'] = createExportWrapper('dynCall_viiii', 5);
-var dynCall_viiiii = Module['dynCall_viiiii'] = createExportWrapper('dynCall_viiiii', 6);
-var dynCall_iiiii = Module['dynCall_iiiii'] = createExportWrapper('dynCall_iiiii', 5);
-var dynCall_ij = Module['dynCall_ij'] = createExportWrapper('dynCall_ij', 2);
+var dynCall_vii = Module['dynCall_vii'] = createExportWrapper('dynCall_vii', 3);
 var dynCall_ii = Module['dynCall_ii'] = createExportWrapper('dynCall_ii', 2);
-var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji', 4);
-var dynCall_vijji = Module['dynCall_vijji'] = createExportWrapper('dynCall_vijji', 5);
-var dynCall_viid = Module['dynCall_viid'] = createExportWrapper('dynCall_viid', 4);
+var dynCall_vi = Module['dynCall_vi'] = createExportWrapper('dynCall_vi', 2);
+var dynCall_iiii = Module['dynCall_iiii'] = createExportWrapper('dynCall_iiii', 4);
+var dynCall_viiii = Module['dynCall_viiii'] = createExportWrapper('dynCall_viiii', 5);
+var dynCall_viii = Module['dynCall_viii'] = createExportWrapper('dynCall_viii', 4);
+var dynCall_iiiii = Module['dynCall_iiiii'] = createExportWrapper('dynCall_iiiii', 5);
 var dynCall_iiiiii = Module['dynCall_iiiiii'] = createExportWrapper('dynCall_iiiiii', 6);
-var dynCall_iijiii = Module['dynCall_iijiii'] = createExportWrapper('dynCall_iijiii', 6);
-var dynCall_iijjii = Module['dynCall_iijjii'] = createExportWrapper('dynCall_iijjii', 6);
+var dynCall_v = Module['dynCall_v'] = createExportWrapper('dynCall_v', 1);
+var dynCall_ji = Module['dynCall_ji'] = createExportWrapper('dynCall_ji', 2);
+var dynCall_viiiii = Module['dynCall_viiiii'] = createExportWrapper('dynCall_viiiii', 6);
+var dynCall_iiiji = Module['dynCall_iiiji'] = createExportWrapper('dynCall_iiiji', 5);
+var dynCall_iiij = Module['dynCall_iiij'] = createExportWrapper('dynCall_iiij', 4);
+var dynCall_viid = Module['dynCall_viid'] = createExportWrapper('dynCall_viid', 4);
+var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji', 4);
 var dynCall_iij = Module['dynCall_iij'] = createExportWrapper('dynCall_iij', 3);
+var dynCall_viji = Module['dynCall_viji'] = createExportWrapper('dynCall_viji', 4);
 var dynCall_iiiiiii = Module['dynCall_iiiiiii'] = createExportWrapper('dynCall_iiiiiii', 7);
+var dynCall_vijji = Module['dynCall_vijji'] = createExportWrapper('dynCall_vijji', 5);
 var dynCall_iiiiiiiiiiii = Module['dynCall_iiiiiiiiiiii'] = createExportWrapper('dynCall_iiiiiiiiiiii', 12);
 var dynCall_i = Module['dynCall_i'] = createExportWrapper('dynCall_i', 1);
 var dynCall_viiiiiii = Module['dynCall_viiiiiii'] = createExportWrapper('dynCall_viiiiiii', 8);
@@ -8812,34 +8808,42 @@ var dynCall_iiji = Module['dynCall_iiji'] = createExportWrapper('dynCall_iiji', 
 var dynCall_jiijj = Module['dynCall_jiijj'] = createExportWrapper('dynCall_jiijj', 5);
 var dynCall_vijiii = Module['dynCall_vijiii'] = createExportWrapper('dynCall_vijiii', 6);
 var dynCall_vij = Module['dynCall_vij'] = createExportWrapper('dynCall_vij', 3);
-var dynCall_vjiii = Module['dynCall_vjiii'] = createExportWrapper('dynCall_vjiii', 5);
-var dynCall_viijii = Module['dynCall_viijii'] = createExportWrapper('dynCall_viijii', 6);
-var dynCall_viiiijjii = Module['dynCall_viiiijjii'] = createExportWrapper('dynCall_viiiijjii', 9);
-var dynCall_iijji = Module['dynCall_iijji'] = createExportWrapper('dynCall_iijji', 5);
-var dynCall_iijj = Module['dynCall_iijj'] = createExportWrapper('dynCall_iijj', 4);
 var dynCall_iijiiiji = Module['dynCall_iijiiiji'] = createExportWrapper('dynCall_iijiiiji', 8);
+var dynCall_viijii = Module['dynCall_viijii'] = createExportWrapper('dynCall_viijii', 6);
+var dynCall_iidiiii = Module['dynCall_iidiiii'] = createExportWrapper('dynCall_iidiiii', 7);
+var dynCall_iijiii = Module['dynCall_iijiii'] = createExportWrapper('dynCall_iijiii', 6);
 var dynCall_iijiiiii = Module['dynCall_iijiiiii'] = createExportWrapper('dynCall_iijiiiii', 8);
 var dynCall_ijijiii = Module['dynCall_ijijiii'] = createExportWrapper('dynCall_ijijiii', 7);
 var dynCall_iiiij = Module['dynCall_iiiij'] = createExportWrapper('dynCall_iiiij', 5);
 var dynCall_jijii = Module['dynCall_jijii'] = createExportWrapper('dynCall_jijii', 5);
 var dynCall_iiiiiiii = Module['dynCall_iiiiiiii'] = createExportWrapper('dynCall_iiiiiiii', 8);
 var dynCall_viiiiii = Module['dynCall_viiiiii'] = createExportWrapper('dynCall_viiiiii', 7);
+var dynCall_iji = Module['dynCall_iji'] = createExportWrapper('dynCall_iji', 3);
+var dynCall_vji = Module['dynCall_vji'] = createExportWrapper('dynCall_vji', 3);
+var dynCall_ijiii = Module['dynCall_ijiii'] = createExportWrapper('dynCall_ijiii', 5);
+var dynCall_j = Module['dynCall_j'] = createExportWrapper('dynCall_j', 1);
+var dynCall_jiii = Module['dynCall_jiii'] = createExportWrapper('dynCall_jiii', 4);
+var dynCall_vj = Module['dynCall_vj'] = createExportWrapper('dynCall_vj', 2);
+var dynCall_iiiiji = Module['dynCall_iiiiji'] = createExportWrapper('dynCall_iiiiji', 6);
+var dynCall_iijjii = Module['dynCall_iijjii'] = createExportWrapper('dynCall_iijjii', 6);
+var dynCall_iiijiiiii = Module['dynCall_iiijiiiii'] = createExportWrapper('dynCall_iiijiiiii', 9);
+var dynCall_ijiiiiiii = Module['dynCall_ijiiiiiii'] = createExportWrapper('dynCall_ijiiiiiii', 9);
+var dynCall_iiijijjii = Module['dynCall_iiijijjii'] = createExportWrapper('dynCall_iiijijjii', 9);
+var dynCall_viiiijjii = Module['dynCall_viiiijjii'] = createExportWrapper('dynCall_viiiijjii', 9);
+var dynCall_iijji = Module['dynCall_iijji'] = createExportWrapper('dynCall_iijji', 5);
+var dynCall_iijj = Module['dynCall_iijj'] = createExportWrapper('dynCall_iijj', 4);
 var dynCall_viiiiiiii = Module['dynCall_viiiiiiii'] = createExportWrapper('dynCall_viiiiiiii', 9);
 var dynCall_viiiiiiiiiii = Module['dynCall_viiiiiiiiiii'] = createExportWrapper('dynCall_viiiiiiiiiii', 12);
 var dynCall_viiiiiiiii = Module['dynCall_viiiiiiiii'] = createExportWrapper('dynCall_viiiiiiiii', 10);
 var dynCall_viij = Module['dynCall_viij'] = createExportWrapper('dynCall_viij', 4);
 var dynCall_viiij = Module['dynCall_viiij'] = createExportWrapper('dynCall_viiij', 5);
 var dynCall_jjj = Module['dynCall_jjj'] = createExportWrapper('dynCall_jjj', 3);
-var dynCall_jj = Module['dynCall_jj'] = createExportWrapper('dynCall_jj', 2);
 var dynCall_viiji = Module['dynCall_viiji'] = createExportWrapper('dynCall_viiji', 5);
 var dynCall_vijii = Module['dynCall_vijii'] = createExportWrapper('dynCall_vijii', 5);
 var dynCall_jijjji = Module['dynCall_jijjji'] = createExportWrapper('dynCall_jijjji', 6);
 var dynCall_viijiii = Module['dynCall_viijiii'] = createExportWrapper('dynCall_viijiii', 7);
 var dynCall_iijii = Module['dynCall_iijii'] = createExportWrapper('dynCall_iijii', 5);
 var dynCall_jijji = Module['dynCall_jijji'] = createExportWrapper('dynCall_jijji', 5);
-var dynCall_iiij = Module['dynCall_iiij'] = createExportWrapper('dynCall_iiij', 4);
-var dynCall_j = Module['dynCall_j'] = createExportWrapper('dynCall_j', 1);
-var dynCall_jiii = Module['dynCall_jiii'] = createExportWrapper('dynCall_jiii', 4);
 var dynCall_iiiiiiijiiiii = Module['dynCall_iiiiiiijiiiii'] = createExportWrapper('dynCall_iiiiiiijiiiii', 13);
 var dynCall_jjjji = Module['dynCall_jjjji'] = createExportWrapper('dynCall_jjjji', 5);
 var dynCall_jjji = Module['dynCall_jjji'] = createExportWrapper('dynCall_jjji', 4);
@@ -8849,18 +8853,11 @@ var dynCall_jij = Module['dynCall_jij'] = createExportWrapper('dynCall_jij', 3);
 var dynCall_viijij = Module['dynCall_viijij'] = createExportWrapper('dynCall_viijij', 6);
 var dynCall_vijj = Module['dynCall_vijj'] = createExportWrapper('dynCall_vijj', 4);
 var dynCall_viiiiji = Module['dynCall_viiiiji'] = createExportWrapper('dynCall_viiiiji', 7);
-var dynCall_vj = Module['dynCall_vj'] = createExportWrapper('dynCall_vj', 2);
-var dynCall_iiiiji = Module['dynCall_iiiiji'] = createExportWrapper('dynCall_iiiiji', 6);
 var dynCall_iiijjiii = Module['dynCall_iiijjiii'] = createExportWrapper('dynCall_iiijjiii', 8);
 var dynCall_iijjiii = Module['dynCall_iijjiii'] = createExportWrapper('dynCall_iijjiii', 7);
 var dynCall_iijiiii = Module['dynCall_iijiiii'] = createExportWrapper('dynCall_iijiiii', 7);
 var dynCall_iijjiiii = Module['dynCall_iijjiiii'] = createExportWrapper('dynCall_iijjiiii', 8);
-var dynCall_iiijijjii = Module['dynCall_iiijijjii'] = createExportWrapper('dynCall_iiijijjii', 9);
-var dynCall_iiijiiiii = Module['dynCall_iiijiiiii'] = createExportWrapper('dynCall_iiijiiiii', 9);
 var dynCall_iiijj = Module['dynCall_iiijj'] = createExportWrapper('dynCall_iiijj', 5);
-var dynCall_ijiiiiiii = Module['dynCall_ijiiiiiii'] = createExportWrapper('dynCall_ijiiiiiii', 9);
-var dynCall_iiiji = Module['dynCall_iiiji'] = createExportWrapper('dynCall_iiiji', 5);
-var dynCall_iidiiii = Module['dynCall_iidiiii'] = createExportWrapper('dynCall_iidiiii', 7);
 var _asyncify_start_unwind = createExportWrapper('asyncify_start_unwind', 1);
 var _asyncify_stop_unwind = createExportWrapper('asyncify_stop_unwind', 0);
 var _asyncify_start_rewind = createExportWrapper('asyncify_start_rewind', 1);
@@ -8911,39 +8908,6 @@ function invoke_vii(index,a1,a2) {
   }
 }
 
-function invoke_ii(index,a1) {
-  var sp = stackSave();
-  try {
-    return dynCall_ii(index,a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    dynCall_vi(index,a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_i(index) {
-  var sp = stackSave();
-  try {
-    return dynCall_i(index);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iii(index,a1,a2) {
   var sp = stackSave();
   try {
@@ -8966,10 +8930,54 @@ function invoke_viiii(index,a1,a2,a3,a4) {
   }
 }
 
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    dynCall_vi(index,a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     return dynCall_iiii(index,a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_i(index) {
+  var sp = stackSave();
+  try {
+    return dynCall_i(index);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    dynCall_viii(index,a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ii(index,a1) {
+  var sp = stackSave();
+  try {
+    return dynCall_ii(index,a1);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -8988,10 +8996,10 @@ function invoke_iiij(index,a1,a2,a3) {
   }
 }
 
-function invoke_iiiii(index,a1,a2,a3,a4) {
+function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
-    return dynCall_iiiii(index,a1,a2,a3,a4);
+    return dynCall_iiiiii(index,a1,a2,a3,a4,a5);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -9019,17 +9027,6 @@ function invoke_jiii(index,a1,a2,a3) {
     if (e !== e+0) throw e;
     _setThrew(1, 0);
     return 0n;
-  }
-}
-
-function invoke_viii(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    dynCall_viii(index,a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
   }
 }
 
