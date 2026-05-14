@@ -303,7 +303,9 @@ if (!window.crossOriginIsolated) {
         fields.messages.textContent = stats.messages || 0;
         fields.invalidations.textContent = stats.invalidations || 0;
         fields.errors.textContent = stats.errors || 0;
-        fields.clients.textContent = JSON.stringify(msg.clients || [], null, 2);
+        fields.clients.textContent = (msg.clients || []).map((c) =>
+            `${(c.role || "").padEnd(6)} ${c.id}${c.device ? ` (${c.device})` : ""}`
+        ).join("\n") || "(no clients)";
         setStatus("ready", true);
     };
 
