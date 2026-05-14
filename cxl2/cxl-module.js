@@ -248,7 +248,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260514-fresh',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260513-qemu82-pty-nonblock-cxlfix',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
