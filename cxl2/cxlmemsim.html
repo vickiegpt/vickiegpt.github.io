@@ -169,6 +169,14 @@ pre {
                 <div class="metric"><dt>Write Bytes</dt><dd id="bytes-written">0</dd></div>
                 <div class="metric"><dt>Messages</dt><dd id="messages">0</dd></div>
                 <div class="metric"><dt>Invalidations</dt><dd id="invalidations">0</dd></div>
+                <div class="metric"><dt>Sim Reads</dt><dd id="sim-reads">0</dd></div>
+                <div class="metric"><dt>Sim Writes</dt><dd id="sim-writes">0</dd></div>
+                <div class="metric"><dt>Sim Atomics</dt><dd id="sim-atomics">0</dd></div>
+                <div class="metric"><dt>Sim Inval</dt><dd id="sim-invalidations">0</dd></div>
+                <div class="metric"><dt>Avg Latency</dt><dd id="sim-latency">0 ns</dd></div>
+                <div class="metric"><dt>Pool Used</dt><dd id="sim-capacity">0</dd></div>
+                <div class="metric"><dt>Sim Errors</dt><dd id="sim-errors">0</dd></div>
+                <div class="metric"><dt>Mode</dt><dd id="bridge-mode">…</dd></div>
             </dl>
         </section>
         <aside class="side">
@@ -224,6 +232,40 @@ function setStatus(text, ready) {
     statusEl.classList.toggle("ready", Boolean(ready));
 }
 
+const simFields = {
+    reads: document.getElementById("sim-reads"),
+    writes: document.getElementById("sim-writes"),
+    atomics: document.getElementById("sim-atomics"),
+    invalidations: document.getElementById("sim-invalidations"),
+    latency: document.getElementById("sim-latency"),
+    capacity: document.getElementById("sim-capacity"),
+    errors: document.getElementById("sim-errors"),
+    mode: document.getElementById("bridge-mode")
+};
+simFields.mode.textContent = "connecting";
+
+const events = new BroadcastChannel("cxlmemsim-events");
+events.onmessage = (event) => {
+    const msg = event.data || {};
+    if (msg.type === "error") {
+        simFields.mode.textContent = "error";
+        return;
+    }
+    if (msg.type !== "stats") return;
+    const sim = msg.sim || {};
+    simFields.reads.textContent = sim.total_reads || 0;
+    simFields.writes.textContent = sim.total_writes || 0;
+    simFields.atomics.textContent = sim.total_atomics || 0;
+    simFields.invalidations.textContent = sim.total_invalidations || 0;
+    const totalOps = (sim.total_reads || 0) + (sim.total_writes || 0) +
+                     (sim.total_atomics || 0);
+    const avgNs = totalOps > 0 ? Math.round((sim.total_latency_ns || 0) / totalOps) : 0;
+    simFields.latency.textContent = `${avgNs} ns`;
+    simFields.capacity.textContent = formatBytes(sim.pool_capacity_bytes || 0);
+    simFields.errors.textContent = sim.total_errors || 0;
+    simFields.mode.textContent = "wasm";
+};
+
 if (!window.crossOriginIsolated) {
     setStatus("needs isolation", false);
 } else if (typeof SharedWorker === "undefined" || typeof SharedArrayBuffer === "undefined") {
@@ -240,6 +282,10 @@ if (!window.crossOriginIsolated) {
         const msg = event.data || {};
         if (msg.type === "connected") {
             setStatus("ready", true);
+            return;
+        }
+        if (msg.type === "degraded") {
+            simFields.mode.textContent = `degraded: ${msg.reason || "unknown"}`;
             return;
         }
         if (msg.type !== "status") {
