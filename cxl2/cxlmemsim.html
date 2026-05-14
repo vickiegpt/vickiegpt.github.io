@@ -275,10 +275,12 @@ events.onmessage = (event) => {
 
 if (!window.crossOriginIsolated) {
     setStatus("needs isolation", false);
+    simFields.mode.textContent = "needs isolation — soft-reload page";
 } else if (typeof SharedWorker === "undefined" || typeof SharedArrayBuffer === "undefined") {
     setStatus("unsupported", false);
+    simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-rebroadcast", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-isolation-hint", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
