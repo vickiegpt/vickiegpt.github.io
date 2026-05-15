@@ -250,7 +250,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-cxl-force-default',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-tsc-reliable-cxl',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -266,7 +266,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-cxl-force-default'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-tsc-reliable-cxl'
         }
     };
 })();
@@ -540,6 +540,9 @@ function buildQemuArguments() {
         'fsck.mode=skip',
         'fsck.repair=no',
         'random.trust_cpu=on',
+        'clocksource=tsc',
+        'tsc=reliable',
+        'no_timer_check',
         'log_buf_len=256K',
         'printk.time=0',
         ...CXL_WEB_CONFIG.extraKernelArgs
