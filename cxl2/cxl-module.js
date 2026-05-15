@@ -250,7 +250,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-linuxboot-rom-cxl',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-fwcfg-io-linuxboot',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -266,7 +266,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-linuxboot-rom-cxl'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-fwcfg-io-linuxboot'
         }
     };
 })();
@@ -607,6 +607,7 @@ function buildQemuArguments() {
         '-no-user-config',
         '-serial', 'stdio',
         '-monitor', 'none',
+        '-global', 'fw_cfg_io.dma_enabled=off',
         '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
