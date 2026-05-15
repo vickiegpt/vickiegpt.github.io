@@ -19,7 +19,7 @@
         PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
       }
       var PACKAGE_NAME = 'load-rom.data';
-      var REMOTE_PACKAGE_BASE = 'load-rom.data';
+      var REMOTE_PACKAGE_BASE = 'load-rom.data?v=20260515-linuxboot-rom-cxl';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
         err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
@@ -174,7 +174,6 @@ Module['FS_createPath']("/", "pack-rom", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/pack-rom/bios-256k.bin", "start": 0, "end": 262144}, {"filename": "/pack-rom/efi-virtio.rom", "start": 262144, "end": 422912}, {"filename": "/pack-rom/kvmvapic.bin", "start": 422912, "end": 432128}, {"filename": "/pack-rom/linuxboot_dma.bin", "start": 432128, "end": 433664}, {"filename": "/pack-rom/vgabios-stdvga.bin", "start": 433664, "end": 473088}], "remote_package_size": 473088});
+    loadPackage({"files": [{"filename": "/pack-rom/bios-256k.bin", "start": 0, "end": 262144}, {"filename": "/pack-rom/efi-virtio.rom", "start": 262144, "end": 422912}, {"filename": "/pack-rom/kvmvapic.bin", "start": 422912, "end": 432128}, {"filename": "/pack-rom/linuxboot.bin", "start": 432128, "end": 433152}, {"filename": "/pack-rom/linuxboot_dma.bin", "start": 433152, "end": 434688}, {"filename": "/pack-rom/vgabios-stdvga.bin", "start": 434688, "end": 474112}], "remote_package_size": 474112});
 
   })();
-

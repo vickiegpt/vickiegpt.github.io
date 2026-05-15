@@ -250,7 +250,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-tsc-reliable-cxl',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-linuxboot-rom-cxl',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -266,7 +266,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-tsc-reliable-cxl'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-linuxboot-rom-cxl'
         }
     };
 })();
@@ -611,11 +611,12 @@ function buildQemuArguments() {
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
         '-accel', accel,
+        '-boot', 'menu=off',
         '-L', CXL_WEB_CONFIG.image.rom,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
         '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
-        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22',
+        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22,romfile=',
         '-device', 'virtio-rng-pci'
     ];
     if (CXL_WEB_CONFIG.rtc !== 'off') {
