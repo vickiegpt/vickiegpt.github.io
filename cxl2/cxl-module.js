@@ -200,8 +200,8 @@ const CXL_WEB_CONFIG = (() => {
     const directShellParam = params.get('fast_login') || params.get('direct_shell') || '';
     const fastLogin = directShellParam === '1' || directShellParam === 'true';
     const fastBoot = params.get('fast_boot') !== '0';
-    const acpiEnabled = params.get('acpi') === 'on';
-    const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') === '1';
+    const acpiEnabled = params.get('acpi') !== 'off';
+    const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') !== '0';
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
     const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
@@ -248,7 +248,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260514-may13-stable',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-source-cxl-default',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -264,7 +264,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260514-mjsfix'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-source-cxl-default'
         }
     };
 })();
