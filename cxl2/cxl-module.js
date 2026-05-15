@@ -192,7 +192,9 @@ function parseImageConfig(params) {
 const CXL_WEB_CONFIG = (() => {
     const params = new URLSearchParams(location.search);
     const validProfiles = new Set(['all', 'type1', 'type2', 'type3']);
-    const profile = validProfiles.has(params.get('cxl')) ? params.get('cxl') : 'all';
+    const cxlParam = params.get('cxl') || '';
+    const profile = validProfiles.has(cxlParam) ? cxlParam : 'all';
+    const cxlDisabled = cxlParam === 'off' || cxlParam === 'none' || params.get('no_cxl') === '1';
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType1 = params.get('native_type1') === '1' || params.get('cxl_type1') === 'native';
@@ -201,7 +203,7 @@ const CXL_WEB_CONFIG = (() => {
     const fastLogin = directShellParam === '1' || directShellParam === 'true';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
-    const qemuCxlEnabled = acpiEnabled && params.get('qemu_cxl') !== '0';
+    const qemuCxlEnabled = acpiEnabled && !cxlDisabled;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
     const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
@@ -248,7 +250,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-source-cxl-default',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-cxl-force-default',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -264,7 +266,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-source-cxl-default'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-cxl-force-default'
         }
     };
 })();

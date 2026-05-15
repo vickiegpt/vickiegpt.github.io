@@ -928,7 +928,7 @@ function findWasmBinary() {
     return f;
   }
   // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
-  return new URL('qemu-system-x86_64.wasm?v=20260515-source-cxl-default', import.meta.url).href;
+  return new URL('qemu-system-x86_64.wasm?v=20260515-cxl-force-default', import.meta.url).href;
 }
 
 var wasmBinaryFile;
@@ -1665,7 +1665,7 @@ function ffi_prep_closure_loc_js(closure,cif,fun,user_data,codeloc) { closure = 
         // instead of just using new URL(import.meta.url) because bundler's only recognize
         // the first case in their bundling step. The latter ends up producing an invalid
         // URL to import from the server (e.g., for webpack the file:// path).
-        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260515-source-cxl-default', import.meta.url), workerOptions);
+        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260515-cxl-force-default', import.meta.url), workerOptions);
         PThread.unusedWorkers.push(worker);
       },
   getNewWorker() {
