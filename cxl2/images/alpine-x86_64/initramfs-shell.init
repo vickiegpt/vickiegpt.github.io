@@ -17,4 +17,8 @@ echo "with virtio disk attached: mount -t ext4 -o ro /dev/vda /mnt/root"
 echo "with legacy SATA attached: mount -t ext4 -o ro /dev/sda /mnt/root"
 echo
 
-exec /bin/cttyhack /bin/sh
+echo "starting interactive shell on /dev/console"
+if [ -c /dev/console ]; then
+    exec /bin/sh -i </dev/console >/dev/console 2>&1
+fi
+exec /bin/sh -i

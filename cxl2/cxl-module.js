@@ -291,7 +291,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-type2-bar-safe',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-shell-console',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -639,8 +639,6 @@ function buildQemuArguments() {
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
         CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
         'nokaslr',
-        'idle=poll',
-        'nohlt',
         ...directBootLogArgs,
         ...runtimeAppend,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])

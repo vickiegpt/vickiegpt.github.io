@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260516-type2-bar-safe"></script>
+<script src="./cxl-module.js?v=20260516-shell-console"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -395,12 +395,12 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260516-type2-bar-safe",
+    assetVersion: "20260516-shell-console",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-type2-bar-safe");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-shell-console");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;
@@ -411,8 +411,8 @@ term.writeln(`CXL requested: ${cxlRequested ? "on" : "off"}; CXL devices in QEMU
 term.writeln(`QEMU assets: ${config.assetBase || "/cxl2/images/alpine-x86_64/"} v=${config.assetVersion || "unknown"}`);
 if (config.fastLogin !== false) {
     term.writeln(config.useInitrd === false
-        ? "Direct shell mode: init=/bin/sh idle=poll nohlt is active."
-        : "Initramfs shell mode: rdinit=/init idle=poll nohlt is active.");
+        ? "Direct shell mode: init=/bin/sh is active."
+        : "Initramfs shell mode: rdinit=/init is active.");
 }
 if (cxlRequested && !cxlDeviceArgsPresent) {
     term.writeln("CXL configuration error: QEMU args do not contain pxb-cxl/cxl-rp plus a cxl-type device. Reload with ?cxl=all&acpi=on or reset the page URL.");
