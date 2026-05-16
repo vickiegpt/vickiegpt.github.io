@@ -222,19 +222,19 @@ const CXL_WEB_CONFIG = (() => {
         : (directShellParam === null
             ? true
             : !['0', 'false', 'off', 'no'].includes(String(directShellParam).toLowerCase()));
-    const autoShellProbe = params.get('auto_shell_probe') !== '0';
+    const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
     const qemuCxlEnabled = acpiEnabled && !cxlDisabled;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
-    const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
+    const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const fwCfgDma = params.get('fw_cfg_dma') !== 'off' && params.get('fwcfg_dma') !== 'off';
-    const nodefaults = params.get('nodefaults') === '0' || params.get('defaults') === '1' ? false : true;
+    const nodefaults = params.get('nodefaults') === '1' && params.get('defaults') !== '1';
     const rtc = params.get('rtc') === 'off' ? 'off' : 'vm';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
@@ -598,6 +598,8 @@ function buildQemuArguments() {
         ...baseAppend,
         'init=/bin/sh',
         'nokaslr',
+        'idle=poll',
+        'nohlt',
         ...directBootLogArgs,
         ...runtimeAppend,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
