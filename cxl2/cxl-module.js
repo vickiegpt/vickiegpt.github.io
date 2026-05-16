@@ -227,10 +227,10 @@ const CXL_WEB_CONFIG = (() => {
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
-    const hpet = params.get('hpet') === 'off' ? 'off' : 'on';
+    const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const fwCfgDma = params.get('fw_cfg_dma') !== 'off' && params.get('fwcfg_dma') !== 'off';
     const nodefaults = params.get('nodefaults') === '1';
-    const rtc = params.get('rtc') === 'vm' ? 'vm' : 'off';
+    const rtc = params.get('rtc') === 'off' ? 'off' : 'vm';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -507,7 +507,6 @@ function buildQemuArguments() {
         'systemd.mask=ldconfig.service',
         'systemd.mask=proc-sys-fs-binfmt_misc.automount',
         'systemd.mask=proc-sys-fs-binfmt_misc.mount',
-        'systemd.mask=serial-getty@ttyS0.service',
         'systemd.mask=sys-fs-fuse-connections.mount',
         'systemd.mask=sys-kernel-config.mount',
         'systemd.mask=systemd-binfmt.service',
@@ -559,13 +558,14 @@ function buildQemuArguments() {
         'fsck.mode=skip',
         'fsck.repair=no',
         'random.trust_cpu=on',
-        'clocksource=tsc',
-        'tsc=reliable',
+        'clocksource=acpi_pm',
         'no_timer_check',
-        'idle=poll',
-        'nohlt',
         'nohz=off',
         'highres=off',
+        'nowatchdog',
+        'nmi_watchdog=0',
+        'nosoftlockup',
+        'rcupdate.rcu_cpu_stall_suppress=1',
         'log_buf_len=256K',
         'printk.time=0',
         ...CXL_WEB_CONFIG.extraKernelArgs
@@ -600,8 +600,6 @@ function buildQemuArguments() {
         'systemd.unit=multi-user.target',
         ...bootLogArgs,
         'nokaslr',
-        'nowatchdog',
-        'nosoftlockup',
         ...(CXL_WEB_CONFIG.fastBoot ? ['systemd.volatile=state'] : []),
         `systemd.default_timeout_start_sec=${startTimeout}`,
         `systemd.default_timeout_stop_sec=${stopTimeout}`,
@@ -615,6 +613,7 @@ function buildQemuArguments() {
         `systemd.setenv=CXL_TRANSPORT_MODE=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
         'systemd.default_device_timeout_sec=3s',
         'systemd.wants=console-getty.service',
+        'systemd.wants=serial-getty@ttyS0.service',
         ...runtimeAppend,
         ...fastBootMasks,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
