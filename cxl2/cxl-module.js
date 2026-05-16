@@ -250,7 +250,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260515-fwcfg-io-linuxboot',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-hetgpu-cxl2',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -266,7 +266,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260515-fwcfg-io-linuxboot'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-hetgpu-cxl2'
         }
     };
 })();
