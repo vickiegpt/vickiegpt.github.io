@@ -195,12 +195,16 @@ function parseImageConfig(params) {
         || (localImageRequested && imageDir ? new URL('bzImage', imageDir).href : '/about/bzImage');
     const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
+    const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
+        || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio', location.href).href;
     return {
         rom: '/pack-rom/',
         kernelUrl,
         diskUrl,
+        initrdUrl,
         kernel: '/remote/bzImage',
         disk: '/remote/qemu.img',
+        initrd: '/remote/initramfs-shell.cpio',
         source: localDiskRequested && imageDir ? 'local' : 'remote',
         imageDir
     };
@@ -222,6 +226,8 @@ const CXL_WEB_CONFIG = (() => {
         : (directShellParam === null
             ? true
             : !['0', 'false', 'off', 'no'].includes(String(directShellParam).toLowerCase()));
+    const useInitrd = params.get('initrd') !== 'off' && params.get('initramfs') !== 'off'
+        && params.get('no_initrd') !== '1';
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
@@ -257,6 +263,7 @@ const CXL_WEB_CONFIG = (() => {
         nativeType1,
         nativeType2,
         fastLogin,
+        useInitrd,
         autoShellProbe,
         fastBoot,
         acpiEnabled,
@@ -488,6 +495,12 @@ Module['preRun'].push((mod) => {
         chunkSize: 16 * 1024 * 1024,
         maxChunks: 32
     });
+    if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
+        createRangeBackedFile(mod, '/remote', 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
+            allowFullFallback: true,
+            maxFullFallbackSize: 16 * 1024 * 1024
+        });
+    }
 });
 
 function profileHas(name) {
@@ -554,11 +567,13 @@ function buildQemuArguments() {
     const directBootLogArgs = CXL_WEB_CONFIG.debug ? ['loglevel=8'] : [
         'loglevel=4'
     ];
-    const baseAppend = [
+    const rootAppend = [
         `root=${rootDevice}`,
         'rootfstype=ext4',
         'rootwait',
-        'rw',
+        'rw'
+    ];
+    const commonAppend = [
         'console=ttyS0,115200',
         'devtmpfs.mount=1',
         'fsck.mode=skip',
@@ -578,6 +593,10 @@ function buildQemuArguments() {
         'printk.time=0',
         ...CXL_WEB_CONFIG.extraKernelArgs
     ];
+    const baseAppend = [
+        ...rootAppend,
+        ...commonAppend
+    ];
     const runtimeAppend = [
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
         `qemu.cxl=${CXL_WEB_CONFIG.qemuCxlEnabled ? 'on' : 'off'}`,
@@ -595,8 +614,8 @@ function buildQemuArguments() {
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
     const directShellAppend = [
-        ...baseAppend,
-        'init=/bin/sh',
+        ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
+        CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
         'nokaslr',
         'idle=poll',
         'nohlt',
@@ -652,6 +671,10 @@ function buildQemuArguments() {
         '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22,romfile=',
         '-device', 'virtio-rng-pci'
     ];
+    if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
+        const appendIndex = args.indexOf('-append');
+        args.splice(appendIndex, 0, '-initrd', CXL_WEB_CONFIG.image.initrd);
+    }
     if (CXL_WEB_CONFIG.rtc !== 'off') {
         const rtcIndex = args.indexOf('-L');
         args.splice(rtcIndex, 0, '-rtc', 'base=utc,clock=vm');
