@@ -226,7 +226,14 @@ const CXL_WEB_CONFIG = (() => {
         : (directShellParam === null
             ? true
             : !['0', 'false', 'off', 'no'].includes(String(directShellParam).toLowerCase()));
-    const useInitrd = params.get('initrd') === '1' || params.get('initramfs') === '1';
+    const rootDiskRequested = params.get('rootdisk') === '1'
+        || params.get('root_disk') === '1'
+        || params.get('disk_boot') === '1';
+    const initrdParam = params.get('initrd') || params.get('initramfs');
+    const useInitrd = fastLogin && !rootDiskRequested && (initrdParam === null
+        ? true
+        : !['0', 'false', 'off', 'no'].includes(String(initrdParam).toLowerCase()));
+    const attachDisk = !useInitrd || rootDiskRequested || params.get('attach_disk') === '1';
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
@@ -264,6 +271,7 @@ const CXL_WEB_CONFIG = (() => {
         nativeType2,
         fastLogin,
         useInitrd,
+        attachDisk,
         autoShellProbe,
         fastBoot,
         acpiEnabled,
@@ -495,11 +503,13 @@ Module['preRun'] = Module['preRun'] || [];
 Module['preRun'].push((mod) => {
     mod.FS.mkdir('/remote');
     createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl, { allowFullFallback: true });
-    createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, {
-        writable: true,
-        chunkSize: 16 * 1024 * 1024,
-        maxChunks: 32
-    });
+    if (CXL_WEB_CONFIG.attachDisk) {
+        createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, {
+            writable: true,
+            chunkSize: 16 * 1024 * 1024,
+            maxChunks: 32
+        });
+    }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
         createRangeBackedFile(mod, '/remote', 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
             eager: true,
@@ -515,7 +525,8 @@ function profileHas(name) {
 
 function buildQemuArguments() {
     const type3Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type3');
-    const virtioDisk = CXL_WEB_CONFIG.diskBus !== 'legacy';
+    const virtioDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus !== 'legacy';
+    const legacyDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus === 'legacy';
     const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
     const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
         'systemd.mask=apt-daily.service',
@@ -697,7 +708,7 @@ function buildQemuArguments() {
             '-drive', `file=${CXL_WEB_CONFIG.image.disk},if=none,id=rootfs,format=raw,cache=unsafe`,
             '-device', 'virtio-blk-pci,drive=rootfs,bootindex=1'
         );
-    } else {
+    } else if (legacyDisk) {
         args.push(
             '-drive', `file=${CXL_WEB_CONFIG.image.disk},index=0,media=disk,format=raw,cache=unsafe`
         );
