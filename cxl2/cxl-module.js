@@ -216,8 +216,12 @@ const CXL_WEB_CONFIG = (() => {
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType1 = parseNativeCxlParam(params, ['native_type1', 'cxl_type1'], true);
     const nativeType2 = parseNativeCxlParam(params, ['native_type2', 'cxl_type2'], true);
-    const directShellParam = params.get('fast_login') || params.get('direct_shell') || '';
-    const fastLogin = directShellParam === '1' || directShellParam === 'true';
+    const directShellParam = params.get('fast_login') || params.get('direct_shell');
+    const fullBootRequested = params.get('full_boot') === '1' || params.get('systemd') === '1';
+    const fastLogin = fullBootRequested ? false
+        : (directShellParam === null
+            ? true
+            : !['0', 'false', 'off', 'no'].includes(String(directShellParam).toLowerCase()));
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
     const qemuCxlEnabled = acpiEnabled && !cxlDisabled;

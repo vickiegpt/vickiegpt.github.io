@@ -303,7 +303,7 @@ find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
-            <p class="note">Default boot keeps systemd, CXL, ndctl, and network services while skipping browser-slow udev, login, and SSH daemons. Use `cxl_setup_timeout=300` to extend CXL setup time or `fast_boot=0` for the full service set.</p>
+            <p class="note">Default boot uses a direct shell for browser speed. Run the probe commands manually after the shell appears, or add `full_boot=1` for the slower systemd service path.</p>
         </section>
         <section class="section">
             <h2>Active QEMU Args</h2>
@@ -312,7 +312,7 @@ grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
         <section class="section">
             <h2>Runtime</h2>
             <p class="note"><span class="warn">Note:</span> This page uses the x86_64 wasm32 TCG QEMU assets and range-backed `/about/bzImage` plus `/about/qemu.img`. ACPI-backed QEMU CXL is enabled by default; use `?cxl=off` only for non-CXL debug. `qemu_core=fpcast` is only a compatibility fallback.</p>
-            <p class="note"><span class="warn">Boot:</span> Default boot uses trimmed systemd and keeps CXL initialization. Add `fast_login=1` only for a direct `/bin/sh` debug shell, or `fast_boot=0` to restore the guest defaults.</p>
+            <p class="note"><span class="warn">Boot:</span> Default boot opens a direct `/bin/sh` shell for browser speed. Add `full_boot=1` for systemd, or `fast_login=0` to debug the slower service path.</p>
             <p class="note"><span class="warn">Network:</span> The browser network stack is connected through `-netdev socket` and the c2w fetch proxy. Inside the guest, use `http_proxy`/`https_proxy` with `http://192.168.127.253:80` for outbound HTTP(S).</p>
         </section>
     </aside>
@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260516-tscmulti"></script>
+<script src="./cxl-module.js?v=20260516-fastshell"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -369,7 +369,7 @@ const term = new Terminal({
 
 term.open(document.getElementById("terminal"));
 term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
-term.writeln("Press Start VM. Default boot keeps systemd and CXL initialization; use fast_login=1 only for direct shell debug.");
+term.writeln("Press Start VM. Default boot opens a direct /bin/sh shell; use full_boot=1 for systemd.");
 term.writeln("");
 
 const config = window.CXL_WEB_CONFIG || {
