@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260516-shell-console"></script>
+<script src="./cxl-module.js?v=20260516-type2-shell"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -373,7 +373,7 @@ term.writeln("Press Start VM. Default boot opens the in-memory initramfs shell; 
 term.writeln("");
 
 const config = window.CXL_WEB_CONFIG || {
-    profile: "all",
+    profile: "type2",
     backend: "webgpu",
     assetBase: "/cxl2/images/alpine-x86_64/",
     image: {
@@ -395,12 +395,12 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260516-shell-console",
+    assetVersion: "20260516-type2-shell",
     startTimeoutSec: 180,
     arguments: []
 };
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-shell-console");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-type2-shell");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;

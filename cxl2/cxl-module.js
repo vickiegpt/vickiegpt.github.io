@@ -214,7 +214,7 @@ const CXL_WEB_CONFIG = (() => {
     const params = new URLSearchParams(location.search);
     const validProfiles = new Set(['all', 'type1', 'type2', 'type3']);
     const cxlParam = params.get('cxl') || '';
-    const profile = validProfiles.has(cxlParam) ? cxlParam : 'all';
+    const profile = validProfiles.has(cxlParam) ? cxlParam : 'type2';
     const cxlDisabled = cxlParam === 'off' || cxlParam === 'none' || params.get('no_cxl') === '1';
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
@@ -291,7 +291,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-shell-console',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-type2-shell',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
