@@ -6973,6 +6973,11 @@ var getWasmTableEntry = funcPtr => {
  return func;
 };
 
+var makeDynCall = sig => function() {
+ var func = getWasmTableEntry(arguments[0]);
+ return func.apply(null, Array.prototype.slice.call(arguments, 1));
+};
+
 var setWasmTableEntry = (idx, func) => {
  wasmTable.set(idx, func);
  wasmTableMirror[idx] = wasmTable.get(idx);
@@ -7385,161 +7390,161 @@ var stackRestore = a0 => (stackRestore = wasmExports["stackRestore"])(a0);
 
 var stackAlloc = a0 => (stackAlloc = wasmExports["stackAlloc"])(a0);
 
-var dynCall_v = Module["dynCall_v"] = a0 => (dynCall_v = Module["dynCall_v"] = wasmExports["dynCall_v"])(a0);
+var dynCall_v = Module["dynCall_v"] = makeDynCall("v");
 
-var dynCall_ji = Module["dynCall_ji"] = (a0, a1) => (dynCall_ji = Module["dynCall_ji"] = wasmExports["dynCall_ji"])(a0, a1);
+var dynCall_ji = Module["dynCall_ji"] = makeDynCall("ji");
 
-var dynCall_viii = Module["dynCall_viii"] = (a0, a1, a2, a3) => (dynCall_viii = Module["dynCall_viii"] = wasmExports["dynCall_viii"])(a0, a1, a2, a3);
+var dynCall_viii = Module["dynCall_viii"] = makeDynCall("viii");
 
-var dynCall_iiii = Module["dynCall_iiii"] = (a0, a1, a2, a3) => (dynCall_iiii = Module["dynCall_iiii"] = wasmExports["dynCall_iiii"])(a0, a1, a2, a3);
+var dynCall_iiii = Module["dynCall_iiii"] = makeDynCall("iiii");
 
-var dynCall_ii = Module["dynCall_ii"] = (a0, a1) => (dynCall_ii = Module["dynCall_ii"] = wasmExports["dynCall_ii"])(a0, a1);
+var dynCall_ii = Module["dynCall_ii"] = makeDynCall("ii");
 
-var dynCall_vi = Module["dynCall_vi"] = (a0, a1) => (dynCall_vi = Module["dynCall_vi"] = wasmExports["dynCall_vi"])(a0, a1);
+var dynCall_vi = Module["dynCall_vi"] = makeDynCall("vi");
 
-var dynCall_vii = Module["dynCall_vii"] = (a0, a1, a2) => (dynCall_vii = Module["dynCall_vii"] = wasmExports["dynCall_vii"])(a0, a1, a2);
+var dynCall_vii = Module["dynCall_vii"] = makeDynCall("vii");
 
-var dynCall_iji = Module["dynCall_iji"] = (a0, a1, a2) => (dynCall_iji = Module["dynCall_iji"] = wasmExports["dynCall_iji"])(a0, a1, a2);
+var dynCall_iji = Module["dynCall_iji"] = makeDynCall("iji");
 
-var dynCall_viji = Module["dynCall_viji"] = (a0, a1, a2, a3) => (dynCall_viji = Module["dynCall_viji"] = wasmExports["dynCall_viji"])(a0, a1, a2, a3);
+var dynCall_viji = Module["dynCall_viji"] = makeDynCall("viji");
 
-var dynCall_vji = Module["dynCall_vji"] = (a0, a1, a2) => (dynCall_vji = Module["dynCall_vji"] = wasmExports["dynCall_vji"])(a0, a1, a2);
+var dynCall_vji = Module["dynCall_vji"] = makeDynCall("vji");
 
-var dynCall_ijiii = Module["dynCall_ijiii"] = (a0, a1, a2, a3, a4) => (dynCall_ijiii = Module["dynCall_ijiii"] = wasmExports["dynCall_ijiii"])(a0, a1, a2, a3, a4);
+var dynCall_ijiii = Module["dynCall_ijiii"] = makeDynCall("ijiii");
 
-var dynCall_iii = Module["dynCall_iii"] = (a0, a1, a2) => (dynCall_iii = Module["dynCall_iii"] = wasmExports["dynCall_iii"])(a0, a1, a2);
+var dynCall_iii = Module["dynCall_iii"] = makeDynCall("iii");
 
-var dynCall_viiii = Module["dynCall_viiii"] = (a0, a1, a2, a3, a4) => (dynCall_viiii = Module["dynCall_viiii"] = wasmExports["dynCall_viiii"])(a0, a1, a2, a3, a4);
+var dynCall_viiii = Module["dynCall_viiii"] = makeDynCall("viiii");
 
-var dynCall_viiiii = Module["dynCall_viiiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_viiiii = Module["dynCall_viiiii"] = wasmExports["dynCall_viiiii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_viiiii = Module["dynCall_viiiii"] = makeDynCall("viiiii");
 
-var dynCall_iiiii = Module["dynCall_iiiii"] = (a0, a1, a2, a3, a4) => (dynCall_iiiii = Module["dynCall_iiiii"] = wasmExports["dynCall_iiiii"])(a0, a1, a2, a3, a4);
+var dynCall_iiiii = Module["dynCall_iiiii"] = makeDynCall("iiiii");
 
-var dynCall_ij = Module["dynCall_ij"] = (a0, a1) => (dynCall_ij = Module["dynCall_ij"] = wasmExports["dynCall_ij"])(a0, a1);
+var dynCall_ij = Module["dynCall_ij"] = makeDynCall("ij");
 
-var dynCall_iiiiii = Module["dynCall_iiiiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_iiiiii = Module["dynCall_iiiiii"] = wasmExports["dynCall_iiiiii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_iiiiii = Module["dynCall_iiiiii"] = makeDynCall("iiiiii");
 
-var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iiiiiii = Module["dynCall_iiiiiii"] = wasmExports["dynCall_iiiiiii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = makeDynCall("iiiiiii");
 
-var dynCall_jii = Module["dynCall_jii"] = (a0, a1, a2) => (dynCall_jii = Module["dynCall_jii"] = wasmExports["dynCall_jii"])(a0, a1, a2);
+var dynCall_jii = Module["dynCall_jii"] = makeDynCall("jii");
 
-var dynCall_viij = Module["dynCall_viij"] = (a0, a1, a2, a3) => (dynCall_viij = Module["dynCall_viij"] = wasmExports["dynCall_viij"])(a0, a1, a2, a3);
+var dynCall_viij = Module["dynCall_viij"] = makeDynCall("viij");
 
-var dynCall_iiiiij = Module["dynCall_iiiiij"] = (a0, a1, a2, a3, a4, a5) => (dynCall_iiiiij = Module["dynCall_iiiiij"] = wasmExports["dynCall_iiiiij"])(a0, a1, a2, a3, a4, a5);
+var dynCall_iiiiij = Module["dynCall_iiiiij"] = makeDynCall("iiiiij");
 
-var dynCall_iiij = Module["dynCall_iiij"] = (a0, a1, a2, a3) => (dynCall_iiij = Module["dynCall_iiij"] = wasmExports["dynCall_iiij"])(a0, a1, a2, a3);
+var dynCall_iiij = Module["dynCall_iiij"] = makeDynCall("iiij");
 
-var dynCall_iiiji = Module["dynCall_iiiji"] = (a0, a1, a2, a3, a4) => (dynCall_iiiji = Module["dynCall_iiiji"] = wasmExports["dynCall_iiiji"])(a0, a1, a2, a3, a4);
+var dynCall_iiiji = Module["dynCall_iiiji"] = makeDynCall("iiiji");
 
-var dynCall_jiji = Module["dynCall_jiji"] = (a0, a1, a2, a3) => (dynCall_jiji = Module["dynCall_jiji"] = wasmExports["dynCall_jiji"])(a0, a1, a2, a3);
+var dynCall_jiji = Module["dynCall_jiji"] = makeDynCall("jiji");
 
-var dynCall_vijji = Module["dynCall_vijji"] = (a0, a1, a2, a3, a4) => (dynCall_vijji = Module["dynCall_vijji"] = wasmExports["dynCall_vijji"])(a0, a1, a2, a3, a4);
+var dynCall_vijji = Module["dynCall_vijji"] = makeDynCall("vijji");
 
-var dynCall_viid = Module["dynCall_viid"] = (a0, a1, a2, a3) => (dynCall_viid = Module["dynCall_viid"] = wasmExports["dynCall_viid"])(a0, a1, a2, a3);
+var dynCall_viid = Module["dynCall_viid"] = makeDynCall("viid");
 
-var dynCall_iijiii = Module["dynCall_iijiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_iijiii = Module["dynCall_iijiii"] = wasmExports["dynCall_iijiii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_iijiii = Module["dynCall_iijiii"] = makeDynCall("iijiii");
 
-var dynCall_iijjii = Module["dynCall_iijjii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_iijjii = Module["dynCall_iijjii"] = wasmExports["dynCall_iijjii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_iijjii = Module["dynCall_iijjii"] = makeDynCall("iijjii");
 
-var dynCall_iij = Module["dynCall_iij"] = (a0, a1, a2) => (dynCall_iij = Module["dynCall_iij"] = wasmExports["dynCall_iij"])(a0, a1, a2);
+var dynCall_iij = Module["dynCall_iij"] = makeDynCall("iij");
 
-var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_viiiiiii = Module["dynCall_viiiiiii"] = wasmExports["dynCall_viiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = makeDynCall("viiiiiii");
 
-var dynCall_ijiiii = Module["dynCall_ijiiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_ijiiii = Module["dynCall_ijiiii"] = wasmExports["dynCall_ijiiii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_ijiiii = Module["dynCall_ijiiii"] = makeDynCall("ijiiii");
 
-var dynCall_viijj = Module["dynCall_viijj"] = (a0, a1, a2, a3, a4) => (dynCall_viijj = Module["dynCall_viijj"] = wasmExports["dynCall_viijj"])(a0, a1, a2, a3, a4);
+var dynCall_viijj = Module["dynCall_viijj"] = makeDynCall("viijj");
 
-var dynCall_iiji = Module["dynCall_iiji"] = (a0, a1, a2, a3) => (dynCall_iiji = Module["dynCall_iiji"] = wasmExports["dynCall_iiji"])(a0, a1, a2, a3);
+var dynCall_iiji = Module["dynCall_iiji"] = makeDynCall("iiji");
 
-var dynCall_jiijj = Module["dynCall_jiijj"] = (a0, a1, a2, a3, a4) => (dynCall_jiijj = Module["dynCall_jiijj"] = wasmExports["dynCall_jiijj"])(a0, a1, a2, a3, a4);
+var dynCall_jiijj = Module["dynCall_jiijj"] = makeDynCall("jiijj");
 
-var dynCall_vijiii = Module["dynCall_vijiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_vijiii = Module["dynCall_vijiii"] = wasmExports["dynCall_vijiii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_vijiii = Module["dynCall_vijiii"] = makeDynCall("vijiii");
 
-var dynCall_i = Module["dynCall_i"] = a0 => (dynCall_i = Module["dynCall_i"] = wasmExports["dynCall_i"])(a0);
+var dynCall_i = Module["dynCall_i"] = makeDynCall("i");
 
-var dynCall_vjiii = Module["dynCall_vjiii"] = (a0, a1, a2, a3, a4) => (dynCall_vjiii = Module["dynCall_vjiii"] = wasmExports["dynCall_vjiii"])(a0, a1, a2, a3, a4);
+var dynCall_vjiii = Module["dynCall_vjiii"] = makeDynCall("vjiii");
 
-var dynCall_viijii = Module["dynCall_viijii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_viijii = Module["dynCall_viijii"] = wasmExports["dynCall_viijii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_viijii = Module["dynCall_viijii"] = makeDynCall("viijii");
 
-var dynCall_viiiijjii = Module["dynCall_viiiijjii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_viiiijjii = Module["dynCall_viiiijjii"] = wasmExports["dynCall_viiiijjii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var dynCall_viiiijjii = Module["dynCall_viiiijjii"] = makeDynCall("viiiijjii");
 
-var dynCall_iijji = Module["dynCall_iijji"] = (a0, a1, a2, a3, a4) => (dynCall_iijji = Module["dynCall_iijji"] = wasmExports["dynCall_iijji"])(a0, a1, a2, a3, a4);
+var dynCall_iijji = Module["dynCall_iijji"] = makeDynCall("iijji");
 
-var dynCall_iijj = Module["dynCall_iijj"] = (a0, a1, a2, a3) => (dynCall_iijj = Module["dynCall_iijj"] = wasmExports["dynCall_iijj"])(a0, a1, a2, a3);
+var dynCall_iijj = Module["dynCall_iijj"] = makeDynCall("iijj");
 
-var dynCall_jijii = Module["dynCall_jijii"] = (a0, a1, a2, a3, a4) => (dynCall_jijii = Module["dynCall_jijii"] = wasmExports["dynCall_jijii"])(a0, a1, a2, a3, a4);
+var dynCall_jijii = Module["dynCall_jijii"] = makeDynCall("jijii");
 
-var dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = wasmExports["dynCall_iiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = makeDynCall("iiiiiiii");
 
-var dynCall_viiiiii = Module["dynCall_viiiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_viiiiii = Module["dynCall_viiiiii"] = wasmExports["dynCall_viiiiii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_viiiiii = Module["dynCall_viiiiii"] = makeDynCall("viiiiii");
 
-var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = wasmExports["dynCall_viiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = makeDynCall("viiiiiiii");
 
-var dynCall_vij = Module["dynCall_vij"] = (a0, a1, a2) => (dynCall_vij = Module["dynCall_vij"] = wasmExports["dynCall_vij"])(a0, a1, a2);
+var dynCall_vij = Module["dynCall_vij"] = makeDynCall("vij");
 
-var dynCall_jiii = Module["dynCall_jiii"] = (a0, a1, a2, a3) => (dynCall_jiii = Module["dynCall_jiii"] = wasmExports["dynCall_jiii"])(a0, a1, a2, a3);
+var dynCall_jiii = Module["dynCall_jiii"] = makeDynCall("jiii");
 
-var dynCall_iijiiiii = Module["dynCall_iijiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iijiiiii = Module["dynCall_iijiiiii"] = wasmExports["dynCall_iijiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_iijiiiii = Module["dynCall_iijiiiii"] = makeDynCall("iijiiiii");
 
-var dynCall_vj = Module["dynCall_vj"] = (a0, a1) => (dynCall_vj = Module["dynCall_vj"] = wasmExports["dynCall_vj"])(a0, a1);
+var dynCall_vj = Module["dynCall_vj"] = makeDynCall("vj");
 
-var dynCall_viiji = Module["dynCall_viiji"] = (a0, a1, a2, a3, a4) => (dynCall_viiji = Module["dynCall_viiji"] = wasmExports["dynCall_viiji"])(a0, a1, a2, a3, a4);
+var dynCall_viiji = Module["dynCall_viiji"] = makeDynCall("viiji");
 
-var dynCall_viiijii = Module["dynCall_viiijii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_viiijii = Module["dynCall_viiijii"] = wasmExports["dynCall_viiijii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_viiijii = Module["dynCall_viiijii"] = makeDynCall("viiijii");
 
-var dynCall_viiiijii = Module["dynCall_viiiijii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_viiiijii = Module["dynCall_viiiijii"] = wasmExports["dynCall_viiiijii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_viiiijii = Module["dynCall_viiiijii"] = makeDynCall("viiiijii");
 
-var dynCall_jjjji = Module["dynCall_jjjji"] = (a0, a1, a2, a3, a4) => (dynCall_jjjji = Module["dynCall_jjjji"] = wasmExports["dynCall_jjjji"])(a0, a1, a2, a3, a4);
+var dynCall_jjjji = Module["dynCall_jjjji"] = makeDynCall("jjjji");
 
-var dynCall_jijj = Module["dynCall_jijj"] = (a0, a1, a2, a3) => (dynCall_jijj = Module["dynCall_jijj"] = wasmExports["dynCall_jijj"])(a0, a1, a2, a3);
+var dynCall_jijj = Module["dynCall_jijj"] = makeDynCall("jijj");
 
-var dynCall_vijjjj = Module["dynCall_vijjjj"] = (a0, a1, a2, a3, a4, a5) => (dynCall_vijjjj = Module["dynCall_vijjjj"] = wasmExports["dynCall_vijjjj"])(a0, a1, a2, a3, a4, a5);
+var dynCall_vijjjj = Module["dynCall_vijjjj"] = makeDynCall("vijjjj");
 
-var dynCall_jij = Module["dynCall_jij"] = (a0, a1, a2) => (dynCall_jij = Module["dynCall_jij"] = wasmExports["dynCall_jij"])(a0, a1, a2);
+var dynCall_jij = Module["dynCall_jij"] = makeDynCall("jij");
 
-var dynCall_viijij = Module["dynCall_viijij"] = (a0, a1, a2, a3, a4, a5) => (dynCall_viijij = Module["dynCall_viijij"] = wasmExports["dynCall_viijij"])(a0, a1, a2, a3, a4, a5);
+var dynCall_viijij = Module["dynCall_viijij"] = makeDynCall("viijij");
 
-var dynCall_viiij = Module["dynCall_viiij"] = (a0, a1, a2, a3, a4) => (dynCall_viiij = Module["dynCall_viiij"] = wasmExports["dynCall_viiij"])(a0, a1, a2, a3, a4);
+var dynCall_viiij = Module["dynCall_viiij"] = makeDynCall("viiij");
 
-var dynCall_vijj = Module["dynCall_vijj"] = (a0, a1, a2, a3) => (dynCall_vijj = Module["dynCall_vijj"] = wasmExports["dynCall_vijj"])(a0, a1, a2, a3);
+var dynCall_vijj = Module["dynCall_vijj"] = makeDynCall("vijj");
 
-var dynCall_jjj = Module["dynCall_jjj"] = (a0, a1, a2) => (dynCall_jjj = Module["dynCall_jjj"] = wasmExports["dynCall_jjj"])(a0, a1, a2);
+var dynCall_jjj = Module["dynCall_jjj"] = makeDynCall("jjj");
 
-var dynCall_viiiiji = Module["dynCall_viiiiji"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_viiiiji = Module["dynCall_viiiiji"] = wasmExports["dynCall_viiiiji"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_viiiiji = Module["dynCall_viiiiji"] = makeDynCall("viiiiji");
 
-var dynCall_iijiiiji = Module["dynCall_iijiiiji"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iijiiiji = Module["dynCall_iijiiiji"] = wasmExports["dynCall_iijiiiji"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_iijiiiji = Module["dynCall_iijiiiji"] = makeDynCall("iijiiiji");
 
-var dynCall_vijii = Module["dynCall_vijii"] = (a0, a1, a2, a3, a4) => (dynCall_vijii = Module["dynCall_vijii"] = wasmExports["dynCall_vijii"])(a0, a1, a2, a3, a4);
+var dynCall_vijii = Module["dynCall_vijii"] = makeDynCall("vijii");
 
-var dynCall_jijjji = Module["dynCall_jijjji"] = (a0, a1, a2, a3, a4, a5) => (dynCall_jijjji = Module["dynCall_jijjji"] = wasmExports["dynCall_jijjji"])(a0, a1, a2, a3, a4, a5);
+var dynCall_jijjji = Module["dynCall_jijjji"] = makeDynCall("jijjji");
 
-var dynCall_iijii = Module["dynCall_iijii"] = (a0, a1, a2, a3, a4) => (dynCall_iijii = Module["dynCall_iijii"] = wasmExports["dynCall_iijii"])(a0, a1, a2, a3, a4);
+var dynCall_iijii = Module["dynCall_iijii"] = makeDynCall("iijii");
 
-var dynCall_jijji = Module["dynCall_jijji"] = (a0, a1, a2, a3, a4) => (dynCall_jijji = Module["dynCall_jijji"] = wasmExports["dynCall_jijji"])(a0, a1, a2, a3, a4);
+var dynCall_jijji = Module["dynCall_jijji"] = makeDynCall("jijji");
 
-var dynCall_viiiji = Module["dynCall_viiiji"] = (a0, a1, a2, a3, a4, a5) => (dynCall_viiiji = Module["dynCall_viiiji"] = wasmExports["dynCall_viiiji"])(a0, a1, a2, a3, a4, a5);
+var dynCall_viiiji = Module["dynCall_viiiji"] = makeDynCall("viiiji");
 
-var dynCall_j = Module["dynCall_j"] = a0 => (dynCall_j = Module["dynCall_j"] = wasmExports["dynCall_j"])(a0);
+var dynCall_j = Module["dynCall_j"] = makeDynCall("j");
 
-var dynCall_iiijj = Module["dynCall_iiijj"] = (a0, a1, a2, a3, a4) => (dynCall_iiijj = Module["dynCall_iiijj"] = wasmExports["dynCall_iiijj"])(a0, a1, a2, a3, a4);
+var dynCall_iiijj = Module["dynCall_iiijj"] = makeDynCall("iiijj");
 
-var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = wasmExports["dynCall_iiiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = makeDynCall("iiiiiiiii");
 
-var dynCall_iiijjiii = Module["dynCall_iiijjiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iiijjiii = Module["dynCall_iiijjiii"] = wasmExports["dynCall_iiijjiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_iiijjiii = Module["dynCall_iiijjiii"] = makeDynCall("iiijjiii");
 
-var dynCall_iijjiii = Module["dynCall_iijjiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iijjiii = Module["dynCall_iijjiii"] = wasmExports["dynCall_iijjiii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_iijjiii = Module["dynCall_iijjiii"] = makeDynCall("iijjiii");
 
-var dynCall_iijiiii = Module["dynCall_iijiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iijiiii = Module["dynCall_iijiiii"] = wasmExports["dynCall_iijiiii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_iijiiii = Module["dynCall_iijiiii"] = makeDynCall("iijiiii");
 
-var dynCall_iijjiiii = Module["dynCall_iijjiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iijjiiii = Module["dynCall_iijjiiii"] = wasmExports["dynCall_iijjiiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+var dynCall_iijjiiii = Module["dynCall_iijjiiii"] = makeDynCall("iijjiiii");
 
-var dynCall_iiijijjii = Module["dynCall_iiijijjii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiijijjii = Module["dynCall_iiijijjii"] = wasmExports["dynCall_iiijijjii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var dynCall_iiijijjii = Module["dynCall_iiijijjii"] = makeDynCall("iiijijjii");
 
-var dynCall_iiijiiiii = Module["dynCall_iiijiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiijiiiii = Module["dynCall_iiijiiiii"] = wasmExports["dynCall_iiijiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var dynCall_iiijiiiii = Module["dynCall_iiijiiiii"] = makeDynCall("iiijiiiii");
 
-var dynCall_vijjii = Module["dynCall_vijjii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_vijjii = Module["dynCall_vijjii"] = wasmExports["dynCall_vijjii"])(a0, a1, a2, a3, a4, a5);
+var dynCall_vijjii = Module["dynCall_vijjii"] = makeDynCall("vijjii");
 
-var dynCall_iidiiii = Module["dynCall_iidiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iidiiii = Module["dynCall_iidiiii"] = wasmExports["dynCall_iidiiii"])(a0, a1, a2, a3, a4, a5, a6);
+var dynCall_iidiiii = Module["dynCall_iidiiii"] = makeDynCall("iidiiii");
 
 var _asyncify_start_unwind = a0 => (_asyncify_start_unwind = wasmExports["asyncify_start_unwind"])(a0);
 
