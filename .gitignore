@@ -8,3 +8,4 @@ cdn-cgi/
 wasi*
 node_modules
 dist
+build

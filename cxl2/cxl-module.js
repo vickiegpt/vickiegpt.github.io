@@ -211,6 +211,7 @@ const CXL_WEB_CONFIG = (() => {
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'off' ? 'off' : 'on';
+    const fwCfgDma = params.get('fw_cfg_dma') !== 'off' && params.get('fwcfg_dma') !== 'off';
     const nodefaults = params.get('nodefaults') === '1';
     const rtc = params.get('rtc') === 'vm' ? 'vm' : 'off';
     const extraKernelArgs = parseExtraKernelArgs(params);
@@ -242,6 +243,7 @@ const CXL_WEB_CONFIG = (() => {
         qemuCore,
         diskBus,
         hpet,
+        fwCfgDma,
         nodefaults,
         rtc,
         cxlRootPortReserve,
@@ -250,7 +252,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-hetgpu-cxl2',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-bootdma',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -266,7 +268,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-hetgpu-cxl2'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-bootdma'
         }
     };
 })();
@@ -607,7 +609,6 @@ function buildQemuArguments() {
         '-no-user-config',
         '-serial', 'stdio',
         '-monitor', 'none',
-        '-global', 'fw_cfg_io.dma_enabled=off',
         '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
@@ -626,6 +627,9 @@ function buildQemuArguments() {
     }
     if (CXL_WEB_CONFIG.nodefaults) {
         args.splice(1, 0, '-nodefaults');
+    }
+    if (!CXL_WEB_CONFIG.fwCfgDma) {
+        args.splice(4, 0, '-global', 'fw_cfg_io.dma_enabled=off');
     }
 
     if (virtioDisk) {
