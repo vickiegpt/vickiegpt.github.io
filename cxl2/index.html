@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260516-docker-crssort"></script>
+<script src="./cxl-module.js?v=20260516-nativeclients"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -406,11 +406,11 @@ const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;
 const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-rp(,|$)/.test(arg))
-    && qemuArgs.some((arg) => /(^|,)cxl-type3(,|$)/.test(arg));
+    && qemuArgs.some((arg) => /(^|,)cxl-type[123](,|$)/.test(arg));
 term.writeln(`CXL requested: ${cxlRequested ? "on" : "off"}; CXL devices in QEMU args: ${cxlDeviceArgsPresent ? "yes" : "no"}`);
 term.writeln(`QEMU assets: ${config.assetBase || "/cxl2/images/alpine-x86_64/"} v=${config.assetVersion || "unknown"}`);
 if (cxlRequested && !cxlDeviceArgsPresent) {
-    term.writeln("CXL configuration error: QEMU args do not contain pxb-cxl/cxl-rp/cxl-type3. Reload with ?cxl=all&acpi=on or reset the page URL.");
+    term.writeln("CXL configuration error: QEMU args do not contain pxb-cxl/cxl-rp plus a cxl-type device. Reload with ?cxl=all&acpi=on or reset the page URL.");
 }
 profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;

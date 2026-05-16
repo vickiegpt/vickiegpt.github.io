@@ -164,7 +164,7 @@ pre {
                 <div class="metric"><dt>Reads</dt><dd id="reads">0</dd></div>
                 <div class="metric"><dt>Writes</dt><dd id="writes">0</dd></div>
                 <div class="metric"><dt>Atomics</dt><dd id="atomics">0</dd></div>
-                <div class="metric"><dt>Clients</dt><dd id="clients-count">0</dd></div>
+                <div class="metric"><dt>QEMU Clients</dt><dd id="clients-count">0</dd></div>
                 <div class="metric"><dt>Read Bytes</dt><dd id="bytes-read">0</dd></div>
                 <div class="metric"><dt>Write Bytes</dt><dd id="bytes-written">0</dd></div>
                 <div class="metric"><dt>Messages</dt><dd id="messages">0</dd></div>
@@ -281,7 +281,7 @@ if (!window.crossOriginIsolated) {
     setStatus("unsupported", false);
     simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260514-mjsfix", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260516-nativeclients", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
 
@@ -313,13 +313,15 @@ if (!window.crossOriginIsolated) {
         fields.reads.textContent = stats.reads || 0;
         fields.writes.textContent = stats.writes || 0;
         fields.atomics.textContent = stats.atomics || 0;
-        fields.clientsCount.textContent = (msg.clients || []).length;
+        const clients = msg.clients || [];
+        const qemuClients = clients.filter((c) => c.role !== "ui");
+        fields.clientsCount.textContent = qemuClients.length;
         fields.bytesRead.textContent = formatBytes(stats.bytesRead || 0);
         fields.bytesWritten.textContent = formatBytes(stats.bytesWritten || 0);
         fields.messages.textContent = stats.messages || 0;
         fields.invalidations.textContent = stats.invalidations || 0;
         fields.errors.textContent = stats.errors || 0;
-        fields.clients.textContent = (msg.clients || []).map((c) =>
+        fields.clients.textContent = clients.map((c) =>
             `${(c.role || "").padEnd(6)} ${c.id}${c.device ? ` (${c.device})` : ""}`
         ).join("\n") || "(no clients)";
         setStatus("ready", true);

@@ -151,6 +151,23 @@ function parseByteSizeParam(params, names, fallback, min, max) {
     return fallback;
 }
 
+function parseNativeCxlParam(params, names, fallback) {
+    for (const name of names) {
+        const raw = params.get(name);
+        if (!raw) {
+            continue;
+        }
+        const value = String(raw).trim().toLowerCase();
+        if (['0', 'false', 'off', 'no', 'fallback', 'virtio'].includes(value)) {
+            return false;
+        }
+        if (['1', 'true', 'on', 'yes', 'native', 'cxl'].includes(value)) {
+            return true;
+        }
+    }
+    return fallback;
+}
+
 function parseExtraKernelArgs(params) {
     const value = params.get('extra_kernel_args') || params.get('kernel_args') || '';
     return String(value)
@@ -197,8 +214,8 @@ const CXL_WEB_CONFIG = (() => {
     const cxlDisabled = cxlParam === 'off' || cxlParam === 'none' || params.get('no_cxl') === '1';
     const backend = params.get('hetgpu') || 'webgpu';
     const cxlmemsim = parseCxlmemsimEndpoint(params);
-    const nativeType1 = params.get('native_type1') === '1' || params.get('cxl_type1') === 'native';
-    const nativeType2 = params.get('native_type2') === '1' || params.get('cxl_type2') === 'native';
+    const nativeType1 = parseNativeCxlParam(params, ['native_type1', 'cxl_type1'], true);
+    const nativeType2 = parseNativeCxlParam(params, ['native_type2', 'cxl_type2'], true);
     const directShellParam = params.get('fast_login') || params.get('direct_shell') || '';
     const fastLogin = directShellParam === '1' || directShellParam === 'true';
     const fastBoot = params.get('fast_boot') !== '0';
