@@ -325,6 +325,7 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const chunks = new Map();
     const writes = new Map();
     const writable = options.writable === true;
+    const eager = options.eager === true;
     const allowFullFallback = options.allowFullFallback === true;
     const maxFullFallbackSize = options.maxFullFallbackSize || 64 * 1024 * 1024;
     let fullFile = null;
@@ -365,6 +366,10 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     }
     if (!acceptsRanges && (!allowFullFallback || size > maxFullFallbackSize)) {
         throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
+    }
+    if (eager) {
+        FS.writeFile(`${parent}/${name}`, responseBytes(request('GET', url)), { canOwn: true });
+        return;
     }
 
     function getFullFile() {
@@ -497,6 +502,7 @@ Module['preRun'].push((mod) => {
     });
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
         createRangeBackedFile(mod, '/remote', 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
+            eager: true,
             allowFullFallback: true,
             maxFullFallbackSize: 16 * 1024 * 1024
         });
