@@ -240,7 +240,8 @@ const CXL_WEB_CONFIG = (() => {
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const fwCfgDma = params.get('fw_cfg_dma') !== 'off' && params.get('fwcfg_dma') !== 'off';
     const nodefaults = params.get('nodefaults') === '1' && params.get('defaults') !== '1';
-    const rtc = params.get('rtc') === 'off' ? 'off' : 'vm';
+    const rtcParam = String(params.get('rtc') || '').toLowerCase();
+    const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
@@ -682,7 +683,7 @@ function buildQemuArguments() {
     }
     if (CXL_WEB_CONFIG.rtc !== 'off') {
         const rtcIndex = args.indexOf('-L');
-        args.splice(rtcIndex, 0, '-rtc', 'base=utc,clock=vm');
+        args.splice(rtcIndex, 0, '-rtc', `base=utc,clock=${CXL_WEB_CONFIG.rtc}`);
     }
     if (CXL_WEB_CONFIG.nodefaults) {
         args.splice(1, 0, '-nodefaults');
