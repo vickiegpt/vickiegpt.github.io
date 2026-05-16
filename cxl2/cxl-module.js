@@ -285,7 +285,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-bootdma'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-clientreg'
         }
     };
 })();
@@ -740,6 +740,54 @@ window.CXL_WEB_CONFIG.arguments = Module['arguments'];
 window.CXL_WEB_CONFIG.command = Module['arguments'].map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(' ');
+
+function registerCxlMemsimClients() {
+    if (!window.crossOriginIsolated || typeof SharedWorker === 'undefined') {
+        return [];
+    }
+    if (!CXL_WEB_CONFIG.qemuCxlEnabled || CXL_WEB_CONFIG.cxlmemsim.transport !== 'browser') {
+        return [];
+    }
+
+    const ports = [];
+    const workerUrl = new URL(CXL_WEB_CONFIG.cxlmemsim.workerUrl, location.href).href;
+    const deviceArgs = Module['arguments'].filter((arg) =>
+        /(^|,)cxl-type[12](,|$)/.test(arg) && /(^|,)cxlmemsim-addr=/.test(arg)
+    );
+
+    for (const arg of deviceArgs) {
+        const type = (arg.match(/(^|,)(cxl-type[12])(?=,|$)/) || [])[2] || 'cxl-device';
+        const id = (arg.match(/(^|,)id=([^,]+)/) || [])[2] || `${type}-${ports.length}`;
+        const worker = new SharedWorker(workerUrl, 'hetgpu-cxlmemsim');
+        const port = worker.port;
+        const clientId = `qemu-${id}`;
+
+        port.start();
+        port.postMessage({
+            type: 'connect',
+            role: 'qemu',
+            clientId,
+            device: id,
+            pool: CXL_WEB_CONFIG.cxlmemsim.pool,
+            size: CXL_WEB_CONFIG.cxlmemsim.size
+        });
+        ports.push({ port, clientId, workerUrl });
+    }
+
+    window.addEventListener('pagehide', () => {
+        for (const entry of ports) {
+            entry.port.postMessage({
+                type: 'disconnect',
+                clientId: entry.clientId,
+                pool: CXL_WEB_CONFIG.cxlmemsim.pool
+            });
+        }
+    }, { once: true });
+
+    return ports;
+}
+
+window.CXL_WEB_CONFIG.cxlmemsimClients = registerCxlMemsimClients();
 Module['locateFile'] = function(path, prefix) {
     const url = new URL(path, new URL(CXL_WEB_CONFIG.assetBase, location.href));
     if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.js' || path === 'qemu-system-x86_64.wasm') {
