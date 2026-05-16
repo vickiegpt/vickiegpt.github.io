@@ -224,7 +224,7 @@ const CXL_WEB_CONFIG = (() => {
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
     const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
-    const tcgThread = params.get('tcg_thread') === 'multi' ? 'multi' : 'single';
+    const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
