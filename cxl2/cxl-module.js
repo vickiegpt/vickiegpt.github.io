@@ -562,6 +562,10 @@ function buildQemuArguments() {
         'clocksource=tsc',
         'tsc=reliable',
         'no_timer_check',
+        'idle=poll',
+        'nohlt',
+        'nohz=off',
+        'highres=off',
         'log_buf_len=256K',
         'printk.time=0',
         ...CXL_WEB_CONFIG.extraKernelArgs
