@@ -226,15 +226,14 @@ const CXL_WEB_CONFIG = (() => {
         : (directShellParam === null
             ? true
             : !['0', 'false', 'off', 'no'].includes(String(directShellParam).toLowerCase()));
-    const useInitrd = params.get('initrd') !== 'off' && params.get('initramfs') !== 'off'
-        && params.get('no_initrd') !== '1';
+    const useInitrd = params.get('initrd') === '1' || params.get('initramfs') === '1';
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
     const qemuCxlEnabled = acpiEnabled && !cxlDisabled;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
-    const diskBus = params.get('disk_bus') === 'virtio' ? 'virtio' : 'legacy';
+    const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
