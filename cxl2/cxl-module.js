@@ -251,6 +251,7 @@ const CXL_WEB_CONFIG = (() => {
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
+    const qemuCxlmemsimTransport = cxlmemsim.transport === 'browser' ? 'shm' : cxlmemsim.transport;
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
     const startTimeoutSec = parseTimeoutSeconds(
         params,
@@ -290,7 +291,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-rtc-uip',
+        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-shm-type2',
         assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
         image,
         network: {
@@ -302,6 +303,7 @@ const CXL_WEB_CONFIG = (() => {
         },
         cxlmemsim: {
             transport: cxlmemsim.transport,
+            qemuTransport: qemuCxlmemsimTransport,
             host: cxlmemsim.host,
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
@@ -318,8 +320,8 @@ Module['ENV'] = {
     CXL_MEMSIM_PORT: String(CXL_WEB_CONFIG.cxlmemsim.port),
     CXL_MEMSIM_POOL: CXL_WEB_CONFIG.cxlmemsim.pool,
     CXL_MEMSIM_SIZE: String(CXL_WEB_CONFIG.cxlmemsim.size),
-    CXL_MEMSIM_TRANSPORT: CXL_WEB_CONFIG.cxlmemsim.transport,
-    CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.transport
+    CXL_MEMSIM_TRANSPORT: CXL_WEB_CONFIG.cxlmemsim.qemuTransport,
+    CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.qemuTransport
 };
 Module['HETGPU_CXL_MEMSIM_WORKER_URL'] = new URL(
     CXL_WEB_CONFIG.cxlmemsim.workerUrl,
@@ -524,6 +526,8 @@ function profileHas(name) {
 }
 
 function buildQemuArguments() {
+    const type1Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type1') && CXL_WEB_CONFIG.nativeType1;
+    const type2Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type2') && CXL_WEB_CONFIG.nativeType2;
     const type3Enabled = CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type3');
     const virtioDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus !== 'legacy';
     const legacyDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus === 'legacy';
@@ -618,12 +622,13 @@ function buildQemuArguments() {
         `qemu.acpi=${CXL_WEB_CONFIG.acpiEnabled ? 'on' : 'off'}`,
         `qemu.cxl=${CXL_WEB_CONFIG.qemuCxlEnabled ? 'on' : 'off'}`,
         `cxl.profile=${CXL_WEB_CONFIG.profile}`,
-        CXL_WEB_CONFIG.qemuCxlEnabled && profileHas('type1') ? 'cxl.type1=on' : 'cxl.type1=off',
-        profileHas('type2') ? 'cxl.type2=on' : 'cxl.type2=off',
+        type1Enabled ? 'cxl.type1=on' : 'cxl.type1=off',
+        type2Enabled ? 'cxl.type2=on' : 'cxl.type2=off',
         type3Enabled ? 'cxl.type3=on' : 'cxl.type3=off',
         `hetgpu.backend=${CXL_WEB_CONFIG.backend}`,
         'hetgpu.device=hetgpu0',
         `cxlmemsim.transport=${CXL_WEB_CONFIG.cxlmemsim.transport}`,
+        `cxlmemsim.qemu_transport=${CXL_WEB_CONFIG.cxlmemsim.qemuTransport}`,
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `cxlmemsim.pool=${CXL_WEB_CONFIG.cxlmemsim.pool}`,
@@ -718,7 +723,7 @@ function buildQemuArguments() {
         args.push('-device', 'pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl.1');
     }
 
-    if (profileHas('type1') && CXL_WEB_CONFIG.qemuCxlEnabled && CXL_WEB_CONFIG.nativeType1) {
+    if (type1Enabled) {
         args.push(
             '-device', 'cxl-rp,port=2,bus=cxl.1,id=root_port15,chassis=0,slot=3',
             '-device', [
@@ -734,7 +739,7 @@ function buildQemuArguments() {
     }
 
     if (profileHas('type2')) {
-        if (CXL_WEB_CONFIG.qemuCxlEnabled && CXL_WEB_CONFIG.nativeType2) {
+        if (type2Enabled) {
             args.push(
                 '-device', 'cxl-rp,port=1,bus=cxl.1,id=root_port14,chassis=0,slot=1',
                 '-device', [
@@ -755,7 +760,7 @@ function buildQemuArguments() {
                     'id=cxl-type2-hetgpu0'
                 ].join(',')
             );
-        } else {
+        } else if (CXL_WEB_CONFIG.qemuCxlEnabled) {
             args.push(
                 '-device', 'virtio-gpu-pci,bus=pcie.0,id=hetgpu0'
             );
