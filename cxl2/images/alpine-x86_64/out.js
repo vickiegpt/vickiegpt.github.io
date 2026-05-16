@@ -7559,9 +7559,9 @@ var _asyncify_start_rewind = a0 => (_asyncify_start_rewind = wasmExports["asynci
 
 var _asyncify_stop_rewind = () => (_asyncify_stop_rewind = wasmExports["asyncify_stop_rewind"])();
 
-var ___start_em_js = Module["___start_em_js"] = 9972536;
+var ___start_em_js = Module["___start_em_js"] = 9972600;
 
-var ___stop_em_js = Module["___stop_em_js"] = 9985241;
+var ___stop_em_js = Module["___stop_em_js"] = 9985305;
 
 function invoke_ii(index, a1) {
  var sp = stackSave();
