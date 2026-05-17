@@ -678,7 +678,7 @@ function buildQemuArguments() {
     ];
     const directShellAppend = [
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
-        ...(CXL_WEB_CONFIG.useInitrd && !CXL_WEB_CONFIG.fastShellMicrovm ? q35FastShellAppend : []),
+        ...(!CXL_WEB_CONFIG.fastShellMicrovm ? q35FastShellAppend : []),
         CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
         'nokaslr',
         ...directBootLogArgs,
