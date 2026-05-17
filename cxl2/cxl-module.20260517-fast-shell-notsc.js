@@ -312,7 +312,7 @@ const CXL_WEB_CONFIG = (() => {
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260517-fast-shell-notsc',
+        })[qemuCore] || '20260517-fast-shell-timer',
         assetBase: ({
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
             build: '/cxl2/images/alpine-x86_64-build/',
@@ -707,7 +707,8 @@ function buildQemuArguments() {
     // WASM microvm lacks a reliable early timer reference for TSC calibration.
     const microvmTimerAppend = [
         'notsc',
-        'lpj=1000000'
+        'lpj=1000000',
+        'nolapic_timer'
     ];
     if (CXL_WEB_CONFIG.fastShellMicrovm) {
         const microvmShellAppend = [
