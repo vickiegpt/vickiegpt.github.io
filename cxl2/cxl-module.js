@@ -260,7 +260,7 @@ const CXL_WEB_CONFIG = (() => {
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const kernelExplicit = ['kernel_url', 'bzimage_url', 'bzImage_url'].some((name) => params.get(name));
-    if (fastLogin && useInitrd && !attachDisk && !kernelExplicit) {
+    if (fastShellMicrovm && !kernelExplicit) {
         image.kernelUrl = new URL('/cxl2/images/hetgpu-webgpu/load-kernel.data', location.href).href;
     }
     const qemuCxlmemsimTransport = cxlmemsim.transport === 'browser' ? 'shm' : cxlmemsim.transport;

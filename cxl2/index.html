@@ -330,12 +330,12 @@ if (!location.search) {
     const fastShellParams = new URLSearchParams({
         cxl: "type2",
         fast_shell_machine: "q35",
-        kernel_url: "/cxl2/images/hetgpu-webgpu/load-kernel.data"
+        kernel_url: "/about/bzImage"
     });
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module.js?v=20260517-cxl-fast-shell"></script>
+<script src="./cxl-module.js?v=20260517-cxl-kernel-fast-shell"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -533,12 +533,14 @@ function sendCxlProbe() {
         "mount -t devtmpfs devtmpfs /dev 2>/dev/null || true",
         "echo CXL_PROBE_START",
         "cat /proc/cmdline",
+        "echo CXL_SYSFS",
+        "find /sys/bus/cxl -maxdepth 3 -print 2>/dev/null | sort",
         "echo CXL_DEVICES",
         "find /sys/bus/cxl/devices -maxdepth 1 -type l -printf '%f\\n' 2>/dev/null | sort",
         "echo PCI_CXL",
-        "for d in /sys/bus/pci/devices/*; do [ -r \"$d/vendor\" ] || continue; v=$(cat \"$d/vendor\"); c=$(cat \"$d/class\"); dev=$(cat \"$d/device\"); if [ \"$v\" = 0x1b36 ] || [ \"$v\" = 0x8086 ] || [ \"$c\" = 0x050210 ]; then drv=$(basename $(readlink \"$d/driver\" 2>/dev/null) 2>/dev/null); echo \"${d##*/} vendor=$v device=$dev class=$c driver=$drv\"; fi; done",
+        "for d in /sys/bus/pci/devices/*; do [ -r \"$d/vendor\" ] || continue; v=$(cat \"$d/vendor\"); c=$(cat \"$d/class\"); dev=$(cat \"$d/device\"); if [ \"$v\" = 0x1b36 ] || [ \"$v\" = 0x1e98 ] || [ \"$v\" = 0x8086 ] || [ \"$c\" = 0x050210 ] || [ \"$c\" = 0x0b4000 ]; then drv=$(basename $(readlink \"$d/driver\" 2>/dev/null) 2>/dev/null); echo \"${d##*/} vendor=$v device=$dev class=$c driver=$drv\"; fi; done",
         "echo DMESG_CXL",
-        "timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|0d:00|resource' | tail -n 80 || true",
+        "timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|0c:00|0d:00|resource|host supports' | tail -n 100 || true",
         "echo CXL_PROBE_DONE_$(cut -c1-8 /proc/sys/kernel/random/boot_id 2>/dev/null || date +%s)"
     ].join("\n") + "\n", { raw: true });
 }
