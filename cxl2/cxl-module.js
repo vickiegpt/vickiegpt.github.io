@@ -312,7 +312,7 @@ const CXL_WEB_CONFIG = (() => {
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260517-fast-shell-alpine',
+        })[qemuCore] || '20260517-fast-shell-notsc',
         assetBase: ({
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
             build: '/cxl2/images/alpine-x86_64-build/',
@@ -704,6 +704,11 @@ function buildQemuArguments() {
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
+    // WASM microvm lacks a reliable early timer reference for TSC calibration.
+    const microvmTimerAppend = [
+        'notsc',
+        'lpj=1000000'
+    ];
     if (CXL_WEB_CONFIG.fastShellMicrovm) {
         const microvmShellAppend = [
             'console=ttyS0,115200',
@@ -712,6 +717,7 @@ function buildQemuArguments() {
             'nokaslr',
             'loglevel=8',
             'earlyprintk=serial,ttyS0,115200',
+            ...microvmTimerAppend,
             ...CXL_WEB_CONFIG.extraKernelArgs
         ].join(' ');
         return [
@@ -744,6 +750,7 @@ function buildQemuArguments() {
             'nokaslr',
             'loglevel=8',
             'earlyprintk=serial,ttyS0,115200',
+            ...(simpleMachine === 'microvm' ? microvmTimerAppend : []),
             ...CXL_WEB_CONFIG.extraKernelArgs
         ] : [
             'console=ttyS0,115200',

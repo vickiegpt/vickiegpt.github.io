@@ -337,7 +337,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module.20260517-fast-shell-alpine.js"></script>
+<script src="./cxl-module.20260517-fast-shell-notsc.js"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -408,7 +408,7 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260517-fast-shell-alpine",
+    assetVersion: "20260517-fast-shell-notsc",
     startTimeoutSec: 180,
     arguments: []
 };
@@ -427,7 +427,7 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-alpine");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-notsc");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;
