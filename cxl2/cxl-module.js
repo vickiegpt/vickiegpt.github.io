@@ -197,14 +197,18 @@ function parseImageConfig(params) {
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
         || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio', location.href).href;
+    const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
+        || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
     return {
         rom: '/pack-rom/',
         kernelUrl,
         diskUrl,
         initrdUrl,
+        biosUrl,
         kernel: '/remote/bzImage',
         disk: '/remote/qemu.img',
         initrd: '/remote/initramfs-shell.cpio',
+        bios: '/remote/bios-microvm.bin',
         source: localDiskRequested && imageDir ? 'local' : 'remote',
         imageDir
     };
@@ -234,12 +238,16 @@ const CXL_WEB_CONFIG = (() => {
         ? true
         : !['0', 'false', 'off', 'no'].includes(String(initrdParam).toLowerCase()));
     const attachDisk = !useInitrd || rootDiskRequested || params.get('attach_disk') === '1';
+    const fastShellMachine = String(params.get('fast_shell_machine') || params.get('shell_machine') || '').toLowerCase();
+    const fastShellMicrovm = fastLogin && useInitrd && !attachDisk
+        && !['q35', 'pc'].includes(fastShellMachine);
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
     const acpiEnabled = params.get('acpi') !== 'off';
-    const qemuCxlEnabled = acpiEnabled && !cxlDisabled;
+    const qemuCxlEnabled = acpiEnabled && !cxlDisabled && !fastShellMicrovm;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
-    const qemuCore = coreParam === 'fpcast' ? 'fpcast' : 'fast';
+    const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
+    const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : 'fast';
     const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
@@ -251,8 +259,13 @@ const CXL_WEB_CONFIG = (() => {
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
+    const kernelExplicit = ['kernel_url', 'bzimage_url', 'bzImage_url'].some((name) => params.get(name));
+    if (fastShellMicrovm && !kernelExplicit) {
+        image.kernelUrl = new URL('/cxl2/images/hetgpu-webgpu/load-kernel.data', location.href).href;
+    }
     const qemuCxlmemsimTransport = cxlmemsim.transport === 'browser' ? 'shm' : cxlmemsim.transport;
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
+    const simpleBoot = params.get('simple_boot') === '1';
     const startTimeoutSec = parseTimeoutSeconds(
         params,
         ['cxl_setup_timeout', 'cxlmem_setup_timeout', 'service_timeout', 'start_timeout'],
@@ -273,11 +286,13 @@ const CXL_WEB_CONFIG = (() => {
         fastLogin,
         useInitrd,
         attachDisk,
+        fastShellMicrovm,
         autoShellProbe,
         fastBoot,
         acpiEnabled,
         qemuCxlEnabled,
         debug,
+        simpleBoot,
         startTimeoutSec,
         qemuCore,
         diskBus,
@@ -291,8 +306,20 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
-        assetVersion: qemuCore === 'fpcast' ? '20260512-numfix' : '20260516-type2-shell',
-        assetBase: qemuCore === 'fpcast' ? '/cxl2/images/alpine-x86_64-fpcast/' : '/cxl2/images/alpine-x86_64/',
+        assetVersion: ({
+            fpcast: '20260512-numfix',
+            build: '20260516-build',
+            safe: '20260512-safe',
+            relfix: '20260512-relfix',
+            'o3-clean': '20260512-o3-clean'
+        })[qemuCore] || '20260517-fast-shell-alpine',
+        assetBase: ({
+            fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
+            build: '/cxl2/images/alpine-x86_64-build/',
+            safe: '/cxl2/images/alpine-x86_64-safe/',
+            relfix: '/cxl2/images/alpine-x86_64-relfix/',
+            'o3-clean': '/cxl2/images/alpine-x86_64-o3-clean/'
+        })[qemuCore] || '/cxl2/images/alpine-x86_64/',
         image,
         network: {
             mode: 'browser',
@@ -343,11 +370,11 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     function request(method, requestUrl, start, end) {
         const xhr = new XMLHttpRequest();
         xhr.open(method, requestUrl, false);
+        if (method !== 'HEAD' && xhr.overrideMimeType) {
+            xhr.overrideMimeType('text/plain; charset=x-user-defined');
+        }
         if (start !== undefined) {
             xhr.setRequestHeader('Range', `bytes=${start}-${end}`);
-            if (xhr.overrideMimeType) {
-                xhr.overrideMimeType('text/plain; charset=x-user-defined');
-            }
         }
         xhr.send(null);
         if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) {
@@ -500,6 +527,7 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         }
     };
 }
+window.CXL_createRangeBackedFile = createRangeBackedFile;
 
 Module['preRun'] = Module['preRun'] || [];
 Module['preRun'].push((mod) => {
@@ -519,6 +547,10 @@ Module['preRun'].push((mod) => {
             maxFullFallbackSize: 16 * 1024 * 1024
         });
     }
+    createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
+        allowFullFallback: true,
+        maxFullFallbackSize: 1024 * 1024
+    });
 });
 
 function profileHas(name) {
@@ -605,6 +637,8 @@ function buildQemuArguments() {
         'no_timer_check',
         'nohz=off',
         'highres=off',
+        'clk_ignore_unused',
+        'pd_ignore_unused',
         'mitigations=off',
         'nowatchdog',
         'nmi_watchdog=0',
@@ -669,16 +703,104 @@ function buildQemuArguments() {
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
+    const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
+    if (CXL_WEB_CONFIG.fastShellMicrovm) {
+        const microvmShellAppend = [
+            'console=ttyS0,115200',
+            'rdinit=/init',
+            'devtmpfs.mount=1',
+            'nokaslr',
+            'loglevel=8',
+            'earlyprintk=serial,ttyS0,115200',
+            ...CXL_WEB_CONFIG.extraKernelArgs
+        ].join(' ');
+        return [
+            '-display', 'none',
+            '-nodefaults',
+            '-M', 'microvm,pic=on,pit=on,rtc=on',
+            '-m', '512M',
+            '-accel', accel,
+            '-rtc', 'base=utc,clock=vm',
+            '-L', CXL_WEB_CONFIG.image.rom,
+            '-bios', CXL_WEB_CONFIG.image.bios,
+            '-serial', 'mon:stdio',
+            '-kernel', CXL_WEB_CONFIG.image.kernel,
+            '-initrd', CXL_WEB_CONFIG.image.initrd,
+            '-append', microvmShellAppend
+        ];
+    }
+    if (CXL_WEB_CONFIG.simpleBoot) {
+        const simpleMinimal = new URLSearchParams(location.search).get('simple_minimal') === '1';
+        const simpleNodefaults = new URLSearchParams(location.search).get('simple_nodefaults') === '1';
+        const simpleMachineParam = new URLSearchParams(location.search).get('simple_machine') || '';
+        const simpleMachine = simpleMachineParam === 'microvm' ? 'microvm'
+            : (simpleMachineParam === 'pc' ? 'pc' : 'q35');
+        const simpleMachineArg = simpleMachine === 'microvm' ? 'microvm,pic=on,pit=on,rtc=on'
+            : (simpleMachine === 'pc' ? 'pc,hpet=on' : 'q35,hpet=on');
+        const simpleAppend = simpleMinimal ? [
+            'console=ttyS0,115200',
+            'rdinit=/init',
+            'devtmpfs.mount=1',
+            'nokaslr',
+            'loglevel=8',
+            'earlyprintk=serial,ttyS0,115200',
+            ...CXL_WEB_CONFIG.extraKernelArgs
+        ] : [
+            'console=ttyS0,115200',
+            'rdinit=/init',
+            'devtmpfs.mount=1',
+            'clocksource=tsc',
+            'tsc=reliable',
+            'no_timer_check',
+            'nohz=off',
+            'highres=off',
+            'clk_ignore_unused',
+            'pd_ignore_unused',
+            'nowatchdog',
+            'nmi_watchdog=0',
+            'nosoftlockup',
+            'nokaslr',
+            'loglevel=8',
+            'earlyprintk=serial,ttyS0,115200',
+            ...CXL_WEB_CONFIG.extraKernelArgs
+        ];
+        if (simpleNodefaults) {
+            return [
+                '-display', 'none',
+                '-nodefaults',
+                '-M', simpleMachineArg,
+                '-m', '512M',
+                '-accel', accel,
+                '-rtc', 'base=utc,clock=vm',
+                '-L', CXL_WEB_CONFIG.image.rom,
+                ...(simpleMachine === 'microvm' ? ['-bios', CXL_WEB_CONFIG.image.bios] : []),
+                '-serial', 'mon:stdio',
+                '-kernel', CXL_WEB_CONFIG.image.kernel,
+                '-initrd', CXL_WEB_CONFIG.image.initrd,
+                '-append', simpleAppend.join(' ')
+            ];
+        }
+        return [
+            '-nographic',
+            '-M', simpleMachineArg,
+            '-m', '512M',
+            '-accel', accel,
+            '-rtc', 'base=utc,clock=vm',
+            '-L', CXL_WEB_CONFIG.image.rom,
+            ...(simpleMachine === 'microvm' ? ['-bios', CXL_WEB_CONFIG.image.bios] : []),
+            '-nic', 'none',
+            '-kernel', CXL_WEB_CONFIG.image.kernel,
+            '-initrd', CXL_WEB_CONFIG.image.initrd,
+            '-append', simpleAppend.join(' ')
+        ];
+    }
     const machine = CXL_WEB_CONFIG.qemuCxlEnabled
         ? `q35,cxl=on,hpet=${CXL_WEB_CONFIG.hpet}`
         : (CXL_WEB_CONFIG.acpiEnabled ? `q35,hpet=${CXL_WEB_CONFIG.hpet}` : `q35,acpi=off,hpet=${CXL_WEB_CONFIG.hpet}`);
-    const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
 
     const args = [
         '-nographic',
         '-no-user-config',
-        '-serial', 'stdio',
-        '-monitor', 'none',
         '-M', machine,
         '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
@@ -842,6 +964,14 @@ function registerCxlMemsimClients() {
 
 window.CXL_WEB_CONFIG.cxlmemsimClients = registerCxlMemsimClients();
 Module['locateFile'] = function(path, prefix) {
+    if (path === 'load-rom.data' || path.startsWith('load-rom.data?')) {
+        return new URL(path, new URL('/cxl2/images/alpine-x86_64/', location.href)).href;
+    }
+    if (path === 'qemu-system-x86_64.wasm' && new URLSearchParams(location.search).get('build_wasm') === '1') {
+        const url = new URL('qemu-system-x86_64.build.wasm', new URL(CXL_WEB_CONFIG.assetBase, location.href));
+        url.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
+        return url.href;
+    }
     const url = new URL(path, new URL(CXL_WEB_CONFIG.assetBase, location.href));
     if (path === 'qemu-system-x86_64.worker.js' || path === 'qemu-system-x86_64.js' || path === 'qemu-system-x86_64.wasm') {
         url.searchParams.set('v', CXL_WEB_CONFIG.assetVersion);
