@@ -107,6 +107,17 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
         if (!check) throw msg + new Error().stack;
       }
 Module['FS_createPath']("/", "pack-rom", true, true);
+if (typeof window === 'object'
+    && window.CXL_WEB_CONFIG
+    && window.CXL_WEB_CONFIG.image
+    && window.CXL_WEB_CONFIG.image.biosUrl
+    && typeof window.CXL_createRangeBackedFile === 'function'
+    && !Module['FS'].analyzePath('/pack-rom/bios-microvm.bin').exists) {
+  window.CXL_createRangeBackedFile(Module, '/pack-rom', 'bios-microvm.bin', window.CXL_WEB_CONFIG.image.biosUrl, {
+    allowFullFallback: true,
+    maxFullFallbackSize: 1024 * 1024
+  });
+}
 
       /** @constructor */
       function DataRequest(start, end, audio) {

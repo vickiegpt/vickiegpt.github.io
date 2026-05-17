@@ -325,8 +325,20 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260516-type2-shell"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
+<script>
+if (!location.search) {
+    const fastShellParams = new URLSearchParams({
+        cxl: "off",
+        kernel_url: "/cxl2/images/hetgpu-webgpu/load-kernel.data",
+        simple_boot: "1",
+        simple_machine: "microvm",
+        simple_minimal: "1"
+    });
+    history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
+}
+</script>
+<script src="./cxl-module.js?v=20260517-fast-shell-alpine"></script>
+<script src="./images/alpine-x86_64/load-rom.js?v=20260517-microvm-bios-range"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
@@ -368,6 +380,7 @@ const term = new Terminal({
 });
 
 term.open(document.getElementById("terminal"));
+window.CXL_WEB_TERM = term;
 term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
 term.writeln("Press Start VM. Default boot opens the in-memory initramfs shell; use rootdisk=1 for /about/qemu.img.");
 term.writeln("");
@@ -395,12 +408,26 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260516-type2-shell",
+    assetVersion: "20260517-fast-shell-alpine",
     startTimeoutSec: 180,
     arguments: []
 };
+Module.preRun = Module.preRun || [];
+Module.preRun.push((mod) => {
+    const createRangeBackedFile = window.CXL_createRangeBackedFile;
+    const biosUrl = config.image && config.image.biosUrl;
+    if (!createRangeBackedFile || !biosUrl || !mod.FS.analyzePath("/pack-rom").exists) {
+        return;
+    }
+    if (!mod.FS.analyzePath("/pack-rom/bios-microvm.bin").exists) {
+        createRangeBackedFile(mod, "/pack-rom", "bios-microvm.bin", biosUrl, {
+            allowFullFallback: true,
+            maxFullFallbackSize: 1024 * 1024
+        });
+    }
+});
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-type2-shell");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-alpine");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;
