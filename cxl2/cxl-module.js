@@ -260,7 +260,7 @@ const CXL_WEB_CONFIG = (() => {
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const kernelExplicit = ['kernel_url', 'bzimage_url', 'bzImage_url'].some((name) => params.get(name));
-    if (fastShellMicrovm && !kernelExplicit) {
+    if (fastLogin && useInitrd && !attachDisk && !kernelExplicit) {
         image.kernelUrl = new URL('/cxl2/images/hetgpu-webgpu/load-kernel.data', location.href).href;
     }
     const qemuCxlmemsimTransport = cxlmemsim.transport === 'browser' ? 'shm' : cxlmemsim.transport;
@@ -669,8 +669,16 @@ function buildQemuArguments() {
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
+    const q35FastShellAppend = [
+        'noapic',
+        'notsc',
+        'lpj=1000000',
+        'nolapic_timer',
+        'initcall_blacklist=ahci_pci_driver_init'
+    ];
     const directShellAppend = [
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
+        ...(CXL_WEB_CONFIG.useInitrd && !CXL_WEB_CONFIG.fastShellMicrovm ? q35FastShellAppend : []),
         CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
         'nokaslr',
         ...directBootLogArgs,

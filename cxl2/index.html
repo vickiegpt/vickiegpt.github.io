@@ -328,16 +328,14 @@ window.coi = {
 <script>
 if (!location.search) {
     const fastShellParams = new URLSearchParams({
-        cxl: "off",
-        kernel_url: "/cxl2/images/hetgpu-webgpu/load-kernel.data",
-        simple_boot: "1",
-        simple_machine: "microvm",
-        simple_minimal: "1"
+        cxl: "type2",
+        fast_shell_machine: "q35",
+        kernel_url: "/cxl2/images/hetgpu-webgpu/load-kernel.data"
     });
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module.js?v=20260517-fast-shell-lapic"></script>
+<script src="./cxl-module.js?v=20260517-cxl-fast-shell"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
