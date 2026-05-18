@@ -367,7 +367,7 @@ const CXL_WEB_CONFIG = (() => {
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260517-fast-shell-timer',
+        })[qemuCore] || '20260518-worker-import1',
         assetBase: ({
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
             build: '/cxl2/images/alpine-x86_64-build/',
