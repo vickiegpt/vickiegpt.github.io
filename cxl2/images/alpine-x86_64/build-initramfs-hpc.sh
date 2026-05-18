@@ -84,6 +84,24 @@ copy_to() {
     cp -a "$src" "$WORKDIR$dst"
 }
 
+write_loader_wrapper() {
+    dst=$1
+    target=$2
+    mkdir -p "$(dirname "$WORKDIR$dst")"
+    {
+        printf '%s\n' '#!/bin/sh'
+        printf '%s\n' 'export PATH=/opt/tigon/bin:/opt/gromacs-cxl/bin:/opt/llama.cpp:/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}'
+        printf '%s\n' 'export LD_LIBRARY_PATH=/opt/cxlmpi/lib:/opt/cxlcuda/lib:/opt/cxlcuda/bin:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-}'
+        printf 'target=%s\n' "$target"
+        printf '%s\n' 'loader=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2'
+        printf '%s\n' 'if [ -x "$loader" ]; then'
+        printf '%s\n' '    exec "$loader" "$target" "$@"'
+        printf '%s\n' 'fi'
+        printf '%s\n' 'exec "$target" "$@"'
+    } > "$WORKDIR$dst"
+    chmod 0755 "$WORKDIR$dst"
+}
+
 normalize_usrmerge() {
     mkdir -p "$WORKDIR/usr/lib" "$WORKDIR/usr/lib64" "$WORKDIR/usr/lib/x86_64-linux-gnu"
 
@@ -172,6 +190,7 @@ chmod 0755 \
     "$WORKDIR/usr/bin/gromacs-cxl-run" \
     "$WORKDIR/usr/bin/tigon-smoke" \
     "$WORKDIR/usr/bin/tigon-ycsb-tiny" \
+    "$WORKDIR/usr/bin/hpc-fix-paths" \
     "$WORKDIR/usr/bin/cxlcuda-run" \
     "$WORKDIR/usr/bin/cxl-dax-setup" \
     "$WORKDIR/usr/bin/cxl-type2-test" \
@@ -251,13 +270,13 @@ fi
 LLAMA_DIR=${LLAMA_DIR:-/home/victoryang00/hetGPU_new/CXLMemSim/workloads/llama.cpp}
 if [ -x "$LLAMA_DIR/main" ]; then
     copy_to "$LLAMA_DIR/main" /opt/llama.cpp/main
-    ln -sf /opt/llama.cpp/main "$WORKDIR/usr/bin/llama-cli"
+    write_loader_wrapper /usr/bin/llama-cli /opt/llama.cpp/main
 else
     echo "warning: llama.cpp main is not built at $LLAMA_DIR/main" >&2
 fi
 if [ -x "$LLAMA_DIR/llama-bench" ]; then
     copy_to "$LLAMA_DIR/llama-bench" /opt/llama.cpp/llama-bench
-    ln -sf /opt/llama.cpp/llama-bench "$WORKDIR/usr/bin/llama-bench"
+    write_loader_wrapper /usr/bin/llama-bench /opt/llama.cpp/llama-bench
 else
     echo "warning: llama-bench is not built at $LLAMA_DIR/llama-bench" >&2
 fi
@@ -283,8 +302,8 @@ for item in bench_ycsb bench_tpcc; do
         echo "warning: Tigon binary missing: $TIGON_DIR/build/$item" >&2
     fi
 done
-ln -sf /opt/tigon/bin/bench_ycsb "$WORKDIR/usr/bin/tigon-ycsb"
-ln -sf /opt/tigon/bin/bench_tpcc "$WORKDIR/usr/bin/tigon-tpcc"
+write_loader_wrapper /usr/bin/tigon-ycsb /opt/tigon/bin/bench_ycsb
+write_loader_wrapper /usr/bin/tigon-tpcc /opt/tigon/bin/bench_tpcc
 
 CXL_CUDA_DIR=${CXL_CUDA_DIR:-/home/victoryang00/CXLMemSim/qemu_integration/guest_libcuda}
 if [ -e "$CXL_CUDA_DIR/libcuda.so.1" ]; then
@@ -351,7 +370,7 @@ if [ -d "$GROMACS_CXL_DIR" ]; then
             # AVX/CLWB/etc. codegen from the build host.
             # shellcheck disable=SC2086
             if mpicc $MPI_TEST_CFLAGS -o "$WORKDIR/opt/gromacs-cxl/bin/$name" "$src" -lm; then
-                ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
+                write_loader_wrapper "/usr/bin/$name" "/opt/gromacs-cxl/bin/$name"
             else
                 echo "warning: failed to compile GROMACS CXL test: $src" >&2
                 rm -f "$WORKDIR/opt/gromacs-cxl/bin/$name"
@@ -359,7 +378,7 @@ if [ -d "$GROMACS_CXL_DIR" ]; then
         elif [ -x "$GROMACS_CXL_DIR/$name" ]; then
             echo "warning: using prebuilt GROMACS CXL test without generic rebuild: $GROMACS_CXL_DIR/$name" >&2
             copy_to "$GROMACS_CXL_DIR/$name" "/opt/gromacs-cxl/bin/$name"
-            ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
+            write_loader_wrapper "/usr/bin/$name" "/opt/gromacs-cxl/bin/$name"
         else
             echo "warning: GROMACS CXL test source missing or mpicc unavailable: $src" >&2
         fi
@@ -394,7 +413,7 @@ gzip -c "$OUT_ARCHIVE" > "$OUT_ARCHIVE.gz"
 echo "rebuilt $OUT_ARCHIVE"
 du -h "$OUT_ARCHIVE" "$OUT_ARCHIVE.gz"
 echo "included commands:"
-for cmd in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided timeout ldd strace readelf bash cxl daxctl ndctl modprobe insmod depmod lsmod cxl-dax-setup llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
+for cmd in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided timeout ldd strace readelf bash cxl daxctl ndctl modprobe insmod depmod lsmod hpc-fix-paths cxl-dax-setup llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
     if [ -e "$WORKDIR/usr/bin/$cmd" ] || [ -L "$WORKDIR/usr/bin/$cmd" ]; then
         echo "  $cmd"
     fi

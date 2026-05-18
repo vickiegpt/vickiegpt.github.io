@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-tigon1' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-tigon1';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-wrap1' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-wrap1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
