@@ -178,6 +178,19 @@ function parseExtraKernelArgs(params) {
         .slice(0, 32);
 }
 
+function parseInitrdProfile(params) {
+    const raw = params.get('initrd_profile')
+        || params.get('initramfs_profile')
+        || params.get('toolset')
+        || params.get('tools')
+        || (params.get('hpc') === '1' ? 'hpc' : '');
+    const value = String(raw || '').trim().toLowerCase();
+    if (['hpc', 'full', 'mpi', 'openmpi', 'gromacs', 'gmx', 'llama', 'tigon'].includes(value)) {
+        return 'hpc';
+    }
+    return 'shell';
+}
+
 function parseImageConfig(params) {
     const imageDirParam = params.get('file_dir')
         || params.get('local_dir')
@@ -195,8 +208,15 @@ function parseImageConfig(params) {
         || (localImageRequested && imageDir ? new URL('bzImage', imageDir).href : '/about/bzImage');
     const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
+    const explicitInitrdText = params.get('initrd_url') || params.get('initramfs_url') || '';
+    let initrdProfile = parseInitrdProfile(params);
+    if (initrdProfile === 'shell' && /hpc|mpi|openmpi|gromacs|gmx|llama|tigon/i.test(explicitInitrdText)) {
+        initrdProfile = 'hpc';
+    }
+    const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc' : '20260518-tools2';
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
-        || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio?v=20260518-tools', location.href).href;
+        || new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
         || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
     return {
@@ -207,7 +227,9 @@ function parseImageConfig(params) {
         biosUrl,
         kernel: '/remote/bzImage',
         disk: '/remote/qemu.img',
-        initrd: '/remote/initramfs-shell.cpio',
+        initrd: `/remote/${initrdName}`,
+        initrdName,
+        initrdProfile,
         bios: '/remote/bios-microvm.bin',
         source: localDiskRequested && imageDir ? 'local' : 'remote',
         imageDir
@@ -541,16 +563,20 @@ Module['preRun'].push((mod) => {
         });
     }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
-        createRangeBackedFile(mod, '/remote', 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
+        createRangeBackedFile(mod, '/remote', CXL_WEB_CONFIG.image.initrdName || 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
             eager: true,
             allowFullFallback: true,
-            maxFullFallbackSize: 16 * 1024 * 1024
+            maxFullFallbackSize: CXL_WEB_CONFIG.image.initrdProfile === 'hpc'
+                ? 512 * 1024 * 1024
+                : 16 * 1024 * 1024
         });
     }
-    createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
-        allowFullFallback: true,
-        maxFullFallbackSize: 1024 * 1024
-    });
+    if ((CXL_WEB_CONFIG.arguments || []).includes('-bios')) {
+        createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
+            allowFullFallback: true,
+            maxFullFallbackSize: 1024 * 1024
+        });
+    }
 });
 
 function profileHas(name) {

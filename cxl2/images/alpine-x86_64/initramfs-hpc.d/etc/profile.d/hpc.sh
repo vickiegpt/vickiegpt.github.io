@@ -1,0 +1,22 @@
+#!/bin/sh
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/x86_64-linux-gnu/openmpi/bin:$PATH
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export OPAL_PREFIX=/usr
+export OMPI_ALLOW_RUN_AS_ROOT=1
+export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+export OMPI_MCA_mpi_warn_on_fork=0
+export OMPI_MCA_opal_warn_on_missing_libcuda=0
+export OMPI_MCA_mca_base_component_show_load_errors=0
+export OMPI_MCA_hwloc_base_binding_policy=none
+export OMPI_MCA_hwloc_base_mem_alloc_policy=none
+export OMPI_MCA_btl=self,sm,tcp
+export OMPI_MCA_pml=ob1
+export OMPI_MCA_mtl='^ofi,psm,psm2'
+export OMPI_MCA_osc='^ucx'
+export OMPI_MCA_coll='^hcoll,ucc'
+export OMPI_MCA_oob=tcp
+export OMPI_MCA_routed=radix
+export PRTE_MCA_rmaps_default_mapping_policy=slot
+export PRTE_MCA_hwloc_default_binding_policy=none
+export PMIX_MCA_psec=native
+export PMIX_MCA_ptl=tcp
