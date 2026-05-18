@@ -227,8 +227,9 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix4' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix4';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix5' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix5';
+    const pcBiosVersion = '20260518-bios256-1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
@@ -243,18 +244,25 @@ function parseImageConfig(params) {
         || defaultInitrdUrl;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
         || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
+    const defaultPcBiosUrl = /^asplos\.dev$/i.test(location.hostname)
+        ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bios-256k.bin?v=${pcBiosVersion}`
+        : new URL(`/cxl2/images/alpine-x86_64/bios-256k.bin?v=${pcBiosVersion}`, location.href).href;
+    const pcBiosUrl = firstUrlParam(params, ['pc_bios_url', 'bios256_url', 'seabios_url'])
+        || defaultPcBiosUrl;
     return {
         rom: '/pack-rom/',
         kernelUrl,
         diskUrl,
         initrdUrl,
         biosUrl,
+        pcBiosUrl,
         kernel: '/remote/bzImage',
         disk: '/remote/qemu.img',
         initrd: `/remote/${initrdName}`,
         initrdName,
         initrdProfile,
         bios: '/remote/bios-microvm.bin',
+        pcBios: '/remote/bios-256k.bin',
         source: localDiskRequested && imageDir ? 'local' : 'remote',
         imageDir
     };
@@ -605,11 +613,20 @@ Module['preRun'].push((mod) => {
                 : 16 * 1024 * 1024
         });
     }
-    if ((CXL_WEB_CONFIG.arguments || []).includes('-bios')) {
-        createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
-            allowFullFallback: true,
-            maxFullFallbackSize: 1024 * 1024
-        });
+    const biosIndex = (CXL_WEB_CONFIG.arguments || []).indexOf('-bios');
+    if (biosIndex >= 0) {
+        const biosPath = (CXL_WEB_CONFIG.arguments || [])[biosIndex + 1] || '';
+        if (/bios-256k\.bin$/.test(biosPath)) {
+            createRangeBackedFile(mod, '/remote', 'bios-256k.bin', CXL_WEB_CONFIG.image.pcBiosUrl, {
+                allowFullFallback: true,
+                maxFullFallbackSize: 1024 * 1024
+            });
+        } else {
+            createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
+                allowFullFallback: true,
+                maxFullFallbackSize: 1024 * 1024
+            });
+        }
     }
 });
 
@@ -849,7 +866,7 @@ function buildQemuArguments() {
                 '-accel', accel,
                 '-rtc', 'base=utc,clock=vm',
                 '-L', CXL_WEB_CONFIG.image.rom,
-                ...(simpleMachine === 'microvm' ? ['-bios', CXL_WEB_CONFIG.image.bios] : []),
+                '-bios', simpleMachine === 'microvm' ? CXL_WEB_CONFIG.image.bios : CXL_WEB_CONFIG.image.pcBios,
                 '-serial', 'mon:stdio',
                 '-kernel', CXL_WEB_CONFIG.image.kernel,
                 '-initrd', CXL_WEB_CONFIG.image.initrd,
@@ -863,7 +880,7 @@ function buildQemuArguments() {
             '-accel', accel,
             '-rtc', 'base=utc,clock=vm',
             '-L', CXL_WEB_CONFIG.image.rom,
-            ...(simpleMachine === 'microvm' ? ['-bios', CXL_WEB_CONFIG.image.bios] : []),
+            '-bios', simpleMachine === 'microvm' ? CXL_WEB_CONFIG.image.bios : CXL_WEB_CONFIG.image.pcBios,
             '-nic', 'none',
             '-kernel', CXL_WEB_CONFIG.image.kernel,
             '-initrd', CXL_WEB_CONFIG.image.initrd,
@@ -883,6 +900,7 @@ function buildQemuArguments() {
         '-accel', accel,
         '-boot', 'menu=off',
         '-L', CXL_WEB_CONFIG.image.rom,
+        '-bios', CXL_WEB_CONFIG.image.pcBios,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
         '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
