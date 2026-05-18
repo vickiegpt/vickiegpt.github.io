@@ -703,7 +703,7 @@ function buildQemuArguments() {
         'notsc',
         'lpj=1000000',
         'nolapic_timer',
-        'initcall_blacklist=ahci_pci_driver_init'
+        ...(legacyDisk ? [] : ['initcall_blacklist=ahci_pci_driver_init'])
     ];
     const directShellAppend = [
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
