@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix5' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix5';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix6' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix6';
     const pcBiosVersion = '20260518-bios256-1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
@@ -306,6 +306,8 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
     const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : 'fast';
     const qemuCpu = parseQemuCpuParam(params);
+    const netParam = String(params.get('net') || params.get('network') || '').toLowerCase();
+    const qemuNetworkEnabled = ['1', 'on', 'true', 'yes', 'browser', 'c2w'].includes(netParam);
     const clientLabel = parseClientLabelParam(params);
     const clientToken = `${clientLabel || 'tab'}-${Math.random().toString(16).slice(2, 10)}`;
     const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
@@ -356,6 +358,7 @@ const CXL_WEB_CONFIG = (() => {
         startTimeoutSec,
         qemuCore,
         qemuCpu,
+        qemuNetworkEnabled,
         clientLabel,
         clientToken,
         diskBus,
@@ -385,7 +388,7 @@ const CXL_WEB_CONFIG = (() => {
         })[qemuCore] || '/cxl2/images/alpine-x86_64/',
         image,
         network: {
-            mode: 'browser',
+            mode: qemuNetworkEnabled ? 'browser' : 'disabled',
             websocketUrl: 'http://localhost:9999/',
             stackWorker: '/cxl2/images/alpine-x86_64/dist/stack-worker.js',
             stackImage: '/cxl2/images/alpine-x86_64/c2w-net-proxy.wasm.gzip',
@@ -903,10 +906,16 @@ function buildQemuArguments() {
         '-bios', CXL_WEB_CONFIG.image.pcBios,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
         '-append', append,
-        '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
-        '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22,romfile=',
         '-device', 'virtio-rng-pci'
     ];
+    if (CXL_WEB_CONFIG.qemuNetworkEnabled) {
+        args.push(
+            '-netdev', 'socket,id=vmnic,connect=127.0.0.1:8888',
+            '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22,romfile='
+        );
+    } else {
+        args.push('-nic', 'none');
+    }
     if (CXL_WEB_CONFIG.qemuCpu) {
         const accelIndex = args.indexOf('-accel');
         args.splice(accelIndex, 0, '-cpu', CXL_WEB_CONFIG.qemuCpu);
