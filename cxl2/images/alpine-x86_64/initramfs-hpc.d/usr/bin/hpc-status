@@ -1,13 +1,14 @@
 #!/bin/sh
 echo "hpc tools: OpenMPI/GROMACS/llama.cpp/Tigon/CXL-CUDA optional initramfs is active."
 printf "available:"
-for tool in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
+for tool in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided cxl daxctl ndctl cxl-dax-setup llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
     if command -v "$tool" >/dev/null 2>&1; then
         printf " %s" "$tool"
     fi
 done
 echo
-echo "safe checks: llama-smoke; mpi-smoke; gromacs-cxl-smoke; tigon-smoke; cxl-type2-test; cxl-type3-test"
+echo "safe checks: cxl-dax-setup; cxl-type2-test; cxl-type3-test; llama-smoke; mpi-smoke; gromacs-cxl-smoke; tigon-smoke"
+echo "CXL-DAX: use cxl-dax-setup --try-region after booting the 6.18 CXL kernel."
 echo "CXL-CUDA: use cxlcuda-run <program> to LD_PRELOAD /opt/cxlcuda/lib/libcuda.so.1."
 echo "CXL-MPI: use mpi-cxl-run <program> to LD_PRELOAD /opt/cxlmpi/lib/libmpi_cxl_shim.so."
 echo "MPI local: use mpi-local-run -np 2 <program> to set loopback/PMIx-safe defaults."

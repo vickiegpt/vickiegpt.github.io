@@ -27,6 +27,14 @@ echo "PCI CXL/accelerator devices:"
 lspci -nn 2>/dev/null | grep -Ei 'cxl|0b40|0d92|8086:0d92' || true
 
 echo
+echo "CXL/DAX driver setup:"
+if command -v cxl-dax-setup >/dev/null 2>&1; then
+    cxl-dax-setup --quiet || true
+else
+    echo "WARN: cxl-dax-setup is missing"
+fi
+
+echo
 echo "CXL sysfs:"
 find /sys/bus/cxl/devices -maxdepth 2 -print 2>/dev/null | sort || true
 

@@ -64,6 +64,18 @@ copy_command() {
     copy_path "$path"
 }
 
+copy_kernel_module() {
+    rel=$1
+    [ -n "${CXL_KERNEL_RELEASE:-}" ] || return 0
+    [ -n "${CXL_KERNEL_DIR:-}" ] || return 0
+    src="$CXL_KERNEL_DIR/$rel"
+    if [ -e "$src" ]; then
+        copy_to "$src" "/lib/modules/$CXL_KERNEL_RELEASE/kernel/$rel"
+    else
+        echo "warning: CXL kernel module missing: $src" >&2
+    fi
+}
+
 copy_to() {
     src=$1
     dst=$2
@@ -161,6 +173,7 @@ chmod 0755 \
     "$WORKDIR/usr/bin/tigon-smoke" \
     "$WORKDIR/usr/bin/tigon-ycsb-tiny" \
     "$WORKDIR/usr/bin/cxlcuda-run" \
+    "$WORKDIR/usr/bin/cxl-dax-setup" \
     "$WORKDIR/usr/bin/cxl-type2-test" \
     "$WORKDIR/usr/bin/cxl-type3-test" \
     2>/dev/null || true
@@ -195,9 +208,44 @@ done
 for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash ip ifconfig; do
     copy_command "$cmd"
 done
+for cmd in cxl daxctl ndctl modprobe insmod depmod lsmod; do
+    copy_command "$cmd"
+done
 if [ -e "$WORKDIR/usr/bin/bash" ] || [ -L "$WORKDIR/usr/bin/bash" ]; then
     mkdir -p "$WORKDIR/bin"
     ln -sf /usr/bin/bash "$WORKDIR/bin/bash"
+fi
+
+CXL_KERNEL_DIR=${CXL_KERNEL_DIR:-/home/victoryang00/cxl}
+CXL_KERNEL_RELEASE=${CXL_KERNEL_RELEASE:-}
+if [ -z "$CXL_KERNEL_RELEASE" ] && [ -e "$CXL_KERNEL_DIR/drivers/cxl/core/cxl_core.ko" ] && command -v modinfo >/dev/null 2>&1; then
+    CXL_KERNEL_RELEASE=$(modinfo -F vermagic "$CXL_KERNEL_DIR/drivers/cxl/core/cxl_core.ko" 2>/dev/null | awk 'NR == 1 { print $1 }')
+fi
+if [ -n "$CXL_KERNEL_RELEASE" ] && [ -d "$CXL_KERNEL_DIR" ]; then
+    for ko in \
+        drivers/acpi/apei/einj.ko \
+        drivers/cxl/core/cxl_core.ko \
+        drivers/cxl/cxl_acpi.ko \
+        drivers/cxl/cxl_pci.ko \
+        drivers/cxl/cxl_port.ko \
+        drivers/cxl/cxl_mem.ko \
+        drivers/cxl/cxl_pmem.ko \
+        drivers/cxl/cxl_cache.ko \
+        drivers/cxl/cxl_type2_accel.ko \
+        drivers/dax/device_dax.ko \
+        drivers/dax/dax_cxl.ko \
+        drivers/dax/dax_pmem.ko \
+        drivers/dax/hmem/dax_hmem.ko \
+        drivers/dax/kmem.ko \
+        drivers/perf/cxl_pmu.ko
+    do
+        copy_kernel_module "$ko"
+    done
+    if command -v depmod >/dev/null 2>&1; then
+        depmod -b "$WORKDIR" "$CXL_KERNEL_RELEASE" 2>/dev/null || true
+    fi
+else
+    echo "warning: unable to infer CXL kernel release from $CXL_KERNEL_DIR" >&2
 fi
 
 LLAMA_DIR=${LLAMA_DIR:-/home/victoryang00/hetGPU_new/CXLMemSim/workloads/llama.cpp}
@@ -346,8 +394,9 @@ gzip -c "$OUT_ARCHIVE" > "$OUT_ARCHIVE.gz"
 echo "rebuilt $OUT_ARCHIVE"
 du -h "$OUT_ARCHIVE" "$OUT_ARCHIVE.gz"
 echo "included commands:"
-for cmd in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided timeout ldd strace readelf bash llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
+for cmd in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided timeout ldd strace readelf bash cxl daxctl ndctl modprobe insmod depmod lsmod cxl-dax-setup llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
     if [ -e "$WORKDIR/usr/bin/$cmd" ] || [ -L "$WORKDIR/usr/bin/$cmd" ]; then
         echo "  $cmd"
     fi
 done
+echo "included CXL kernel release: ${CXL_KERNEL_RELEASE:-none}"

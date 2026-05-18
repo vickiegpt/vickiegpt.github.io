@@ -219,8 +219,6 @@ function parseImageConfig(params) {
     const imageDir = normalizeDirectoryUrl(
         imageDirParam || (localDiskRequested ? 'http://127.0.0.1:8787/' : '')
     );
-    const kernelUrl = firstUrlParam(params, ['kernel_url', 'bzimage_url', 'bzImage_url'])
-        || (localImageRequested && imageDir ? new URL('bzImage', imageDir).href : '/about/bzImage');
     const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
     const explicitInitrdText = params.get('initrd_url') || params.get('initramfs_url') || '';
@@ -229,7 +227,15 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc' : '20260518-tools2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-cxldax1' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-cxldax1';
+    const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
+        ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
+        : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
+    const kernelUrl = firstUrlParam(params, ['kernel_url', 'bzimage_url', 'bzImage_url'])
+        || (localImageRequested && imageDir
+            ? new URL('bzImage', imageDir).href
+            : (initrdProfile === 'hpc' ? defaultHpcKernelUrl : '/about/bzImage'));
     const defaultInitrdUrl = initrdProfile === 'hpc' && /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
