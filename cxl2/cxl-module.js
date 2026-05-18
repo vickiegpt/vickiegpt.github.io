@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix6' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix6';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix7' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix7';
     const pcBiosVersion = '20260518-bios256-1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
@@ -304,7 +304,8 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCxlEnabled = acpiEnabled && !cxlDisabled && !fastShellMicrovm;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
-    const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : 'fast';
+    const defaultQemuCore = profile === 'type3' ? 'fpcast' : 'fast';
+    const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : defaultQemuCore;
     const qemuCpu = parseQemuCpuParam(params);
     const netParam = String(params.get('net') || params.get('network') || '').toLowerCase();
     const qemuNetworkEnabled = ['1', 'on', 'true', 'yes', 'browser', 'c2w'].includes(netParam);
