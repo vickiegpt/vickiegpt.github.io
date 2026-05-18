@@ -151,8 +151,15 @@ if [ -d "$SCRIPT_DIR/initramfs-hpc.d" ]; then
 fi
 chmod 0755 \
     "$WORKDIR/usr/bin/hpc-status" \
+    "$WORKDIR/usr/bin/mpi-local-run" \
     "$WORKDIR/usr/bin/mpi-smoke" \
     "$WORKDIR/usr/bin/mpi-cxl-run" \
+    "$WORKDIR/usr/bin/llama-smoke" \
+    "$WORKDIR/usr/bin/llama-mpi-smoke" \
+    "$WORKDIR/usr/bin/gromacs-cxl-smoke" \
+    "$WORKDIR/usr/bin/gromacs-cxl-run" \
+    "$WORKDIR/usr/bin/tigon-smoke" \
+    "$WORKDIR/usr/bin/tigon-ycsb-tiny" \
     "$WORKDIR/usr/bin/cxlcuda-run" \
     "$WORKDIR/usr/bin/cxl-type2-test" \
     "$WORKDIR/usr/bin/cxl-type3-test" \
@@ -185,7 +192,7 @@ do
     copy_tree "$dir"
 done
 
-for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash; do
+for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash ip ifconfig; do
     copy_command "$cmd"
 done
 if [ -e "$WORKDIR/usr/bin/bash" ] || [ -L "$WORKDIR/usr/bin/bash" ]; then
@@ -207,7 +214,11 @@ else
     echo "warning: llama-bench is not built at $LLAMA_DIR/llama-bench" >&2
 fi
 
-TIGON_KERNEL_DIR=${TIGON_KERNEL_DIR:-/home/victoryang00/hetGPU_new/CXLMemSim/workloads/tigon/dependencies/kernel_module}
+TIGON_DIR=${TIGON_DIR:-/home/victoryang00/CXLMemSim/workloads/tigon}
+if [ ! -d "$TIGON_DIR" ] && [ -d /home/victoryang00/hetGPU_new/CXLMemSim/workloads/tigon ]; then
+    TIGON_DIR=/home/victoryang00/hetGPU_new/CXLMemSim/workloads/tigon
+fi
+TIGON_KERNEL_DIR=${TIGON_KERNEL_DIR:-$TIGON_DIR/dependencies/kernel_module}
 for name in cxl_init cxl_recover_meta cxl_ivpci.ko; do
     if [ -e "$TIGON_KERNEL_DIR/$name" ]; then
         copy_to "$TIGON_KERNEL_DIR/$name" "/opt/tigon/kernel_module/$name"
@@ -217,6 +228,15 @@ for name in cxl_init cxl_recover_meta cxl_ivpci.ko; do
 done
 ln -sf /opt/tigon/kernel_module/cxl_init "$WORKDIR/usr/bin/cxl_init"
 ln -sf /opt/tigon/kernel_module/cxl_recover_meta "$WORKDIR/usr/bin/cxl_recover_meta"
+for item in bench_ycsb bench_tpcc; do
+    if [ -x "$TIGON_DIR/build/$item" ]; then
+        copy_to "$TIGON_DIR/build/$item" "/opt/tigon/bin/$item"
+    else
+        echo "warning: Tigon binary missing: $TIGON_DIR/build/$item" >&2
+    fi
+done
+ln -sf /opt/tigon/bin/bench_ycsb "$WORKDIR/usr/bin/tigon-ycsb"
+ln -sf /opt/tigon/bin/bench_tpcc "$WORKDIR/usr/bin/tigon-tpcc"
 
 CXL_CUDA_DIR=${CXL_CUDA_DIR:-/home/victoryang00/CXLMemSim/qemu_integration/guest_libcuda}
 if [ -e "$CXL_CUDA_DIR/libcuda.so.1" ]; then
@@ -267,6 +287,41 @@ else
     echo "warning: MPI CXL shim directory missing: $MPI_CXL_SHIM_DIR" >&2
 fi
 
+GROMACS_CXL_DIR=${GROMACS_CXL_DIR:-/home/victoryang00/CXLMemSim/workloads/gromacs}
+if [ ! -d "$GROMACS_CXL_DIR" ] && [ -d /home/victoryang00/hetGPU_new/CXLMemSim/workloads/gromacs ]; then
+    GROMACS_CXL_DIR=/home/victoryang00/hetGPU_new/CXLMemSim/workloads/gromacs
+fi
+if [ -d "$GROMACS_CXL_DIR" ]; then
+    mkdir -p "$WORKDIR/opt/gromacs-cxl/bin" "$WORKDIR/opt/gromacs-cxl/src"
+    for name in test_mpi_cxl; do
+        if [ -x "$GROMACS_CXL_DIR/$name" ]; then
+            copy_to "$GROMACS_CXL_DIR/$name" "/opt/gromacs-cxl/bin/$name"
+            ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
+        fi
+    done
+    for name in test_p2p test_collectives test_onesided; do
+        src="$GROMACS_CXL_DIR/$name.c"
+        if [ -f "$src" ] && command -v mpicc >/dev/null 2>&1; then
+            copy_to "$src" "/opt/gromacs-cxl/src/$name.c"
+            if mpicc -O2 -Wall -o "$WORKDIR/opt/gromacs-cxl/bin/$name" "$src" -lm; then
+                ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
+            else
+                echo "warning: failed to compile GROMACS CXL test: $src" >&2
+                rm -f "$WORKDIR/opt/gromacs-cxl/bin/$name"
+            fi
+        else
+            echo "warning: GROMACS CXL test source missing or mpicc unavailable: $src" >&2
+        fi
+    done
+    for name in run_gromacs_cxl.sh run_mpi_with_cxl.sh test_dax_sharing.sh; do
+        if [ -e "$GROMACS_CXL_DIR/$name" ]; then
+            copy_to "$GROMACS_CXL_DIR/$name" "/opt/gromacs-cxl/bin/$name"
+        fi
+    done
+else
+    echo "warning: GROMACS CXL workload directory missing: $GROMACS_CXL_DIR" >&2
+fi
+
 pass=1
 while [ "$pass" -le 8 ]; do
     : > "$STATE_DIR/new-libs"
@@ -288,7 +343,7 @@ gzip -c "$OUT_ARCHIVE" > "$OUT_ARCHIVE.gz"
 echo "rebuilt $OUT_ARCHIVE"
 du -h "$OUT_ARCHIVE" "$OUT_ARCHIVE.gz"
 echo "included commands:"
-for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash llama-cli llama-bench cxl_init cxl_recover_meta mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
+for cmd in mpirun mpiexec mpi-local-run ompi_info prte prterun gmx_mpi gmx gromacs-cxl-smoke gromacs-cxl-run test_mpi_cxl test_p2p test_collectives test_onesided timeout ldd strace readelf bash llama-cli llama-bench llama-smoke llama-mpi-smoke cxl_init cxl_recover_meta tigon-smoke tigon-ycsb-tiny tigon-ycsb tigon-tpcc mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
     if [ -e "$WORKDIR/usr/bin/$cmd" ] || [ -L "$WORKDIR/usr/bin/$cmd" ]; then
         echo "  $cmd"
     fi

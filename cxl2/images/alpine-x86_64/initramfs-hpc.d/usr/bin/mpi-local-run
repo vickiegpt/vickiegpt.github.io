@@ -1,0 +1,83 @@
+#!/bin/sh
+set -eu
+
+timeout_sec=
+np=2
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -np|--np)
+            np=$2
+            shift 2
+            ;;
+        --timeout)
+            timeout_sec=$2
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ "$#" -eq 0 ]; then
+    echo "usage: mpi-local-run [-np N] [--timeout SEC] <program> [args...]" >&2
+    exit 2
+fi
+
+mkdir -p /tmp /run /var/tmp
+if [ -e /sys/class/net/lo ]; then
+    if command -v ip >/dev/null 2>&1; then
+        ip link set lo up 2>/dev/null || true
+        ip addr add 127.0.0.1/8 dev lo 2>/dev/null || true
+    fi
+    if command -v ifconfig >/dev/null 2>&1; then
+        ifconfig lo 127.0.0.1 up 2>/dev/null || true
+    elif command -v busybox >/dev/null 2>&1; then
+        busybox ifconfig lo 127.0.0.1 up 2>/dev/null || true
+    fi
+fi
+
+export TMPDIR=${TMPDIR:-/tmp}
+export OPAL_PREFIX=${OPAL_PREFIX:-/usr}
+export OMPI_ALLOW_RUN_AS_ROOT=1
+export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+export OMPI_MCA_mpi_warn_on_fork=${OMPI_MCA_mpi_warn_on_fork:-0}
+export OMPI_MCA_opal_warn_on_missing_libcuda=${OMPI_MCA_opal_warn_on_missing_libcuda:-0}
+export OMPI_MCA_mca_base_component_show_load_errors=${OMPI_MCA_mca_base_component_show_load_errors:-0}
+export OMPI_MCA_btl=${OMPI_MCA_btl:-self,sm,tcp}
+export OMPI_MCA_pml=${OMPI_MCA_pml:-ob1}
+export OMPI_MCA_mtl=${OMPI_MCA_mtl:-^ofi,psm,psm2}
+export OMPI_MCA_osc=${OMPI_MCA_osc:-^ucx}
+export OMPI_MCA_coll=${OMPI_MCA_coll:-^hcoll,ucc}
+export OMPI_MCA_oob=${OMPI_MCA_oob:-tcp}
+export OMPI_MCA_oob_tcp_if_include=${OMPI_MCA_oob_tcp_if_include:-lo}
+export OMPI_MCA_btl_tcp_if_include=${OMPI_MCA_btl_tcp_if_include:-lo}
+export PRTE_MCA_oob_tcp_if_include=${PRTE_MCA_oob_tcp_if_include:-lo}
+export PRTE_MCA_rmaps_default_mapping_policy=${PRTE_MCA_rmaps_default_mapping_policy:-slot}
+export PRTE_MCA_hwloc_default_binding_policy=${PRTE_MCA_hwloc_default_binding_policy:-none}
+export PMIX_MCA_psec=${PMIX_MCA_psec:-native}
+export PMIX_MCA_ptl=${PMIX_MCA_ptl:-tcp}
+export PMIX_MCA_ptl_tcp_if_include=${PMIX_MCA_ptl_tcp_if_include:-lo}
+
+export_args=
+for var in LD_PRELOAD LD_LIBRARY_PATH CXL_SHIM_VERBOSE CXL_SHIM_ALLOC CXL_SHIM_WIN CXL_SHIM_COPY_SEND CXL_SHIM_COPY_RECV CXL_DAX_PATH CXL_MEM_SIZE CXL_SHM_NAME; do
+    eval "value=\${$var:-}"
+    [ -n "$value" ] && export_args="$export_args -x $var"
+done
+
+if [ -n "$timeout_sec" ] && command -v timeout >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    set +e
+    timeout -k 2 "$timeout_sec" mpirun --allow-run-as-root -np "$np" $export_args "$@"
+    rc=$?
+    set -e
+    pkill -x prte 2>/dev/null || true
+    pkill -x mpirun 2>/dev/null || true
+    exit "$rc"
+fi
+# shellcheck disable=SC2086
+exec mpirun --allow-run-as-root -np "$np" $export_args "$@"

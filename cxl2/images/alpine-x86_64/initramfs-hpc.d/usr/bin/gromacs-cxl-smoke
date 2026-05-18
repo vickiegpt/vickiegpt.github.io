@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+
+run_mpi=0
+np=2
+if [ "${1:-}" = "--mpi" ]; then
+    run_mpi=1
+    np=${2:-2}
+fi
+echo "GROMACS/CXL-MPI smoke"
+command -v gmx
+command -v gmx_mpi
+command -v mpi-local-run
+command -v mpi-cxl-run
+gmx --version 2>/dev/null | head -20 || true
+
+echo
+echo "CXL MPI tests:"
+for t in test_mpi_cxl test_p2p test_collectives test_onesided; do
+    if command -v "$t" >/dev/null 2>&1; then
+        printf "  %-18s %s\n" "$t" "$(command -v "$t")"
+    fi
+done
+
+if command -v test_mpi_cxl >/dev/null 2>&1; then
+    echo
+    if [ "$run_mpi" -eq 1 ]; then
+        echo "Running test_mpi_cxl through LD_PRELOAD shim with mpirun, np=$np"
+        exec mpi-cxl-run mpi-local-run --timeout 35 -np "$np" test_mpi_cxl
+    fi
+    echo "Running singleton test_mpi_cxl through LD_PRELOAD shim"
+    exec mpi-cxl-run test_mpi_cxl
+fi
+
+echo "WARN: test_mpi_cxl is not available"
+exit 1

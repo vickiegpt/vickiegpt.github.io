@@ -1,5 +1,5 @@
 #!/bin/sh
-export PATH=/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/x86_64-linux-gnu/openmpi/bin:$PATH
+export PATH=/opt/tigon/bin:/opt/gromacs-cxl/bin:/opt/llama.cpp:/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/x86_64-linux-gnu/openmpi/bin:$PATH
 export LD_LIBRARY_PATH=/opt/cxlmpi/lib:/opt/cxlcuda/lib:/opt/cxlcuda/bin:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export OPAL_PREFIX=/usr
 export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -15,8 +15,12 @@ export OMPI_MCA_mtl='^ofi,psm,psm2'
 export OMPI_MCA_osc='^ucx'
 export OMPI_MCA_coll='^hcoll,ucc'
 export OMPI_MCA_oob=tcp
+export OMPI_MCA_oob_tcp_if_include=lo
+export OMPI_MCA_btl_tcp_if_include=lo
 export OMPI_MCA_routed=radix
 export PRTE_MCA_rmaps_default_mapping_policy=slot
 export PRTE_MCA_hwloc_default_binding_policy=none
+export PRTE_MCA_oob_tcp_if_include=lo
 export PMIX_MCA_psec=native
 export PMIX_MCA_ptl=tcp
+export PMIX_MCA_ptl_tcp_if_include=lo

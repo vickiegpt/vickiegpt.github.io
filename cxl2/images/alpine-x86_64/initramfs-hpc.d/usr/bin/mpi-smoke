@@ -2,6 +2,6 @@
 set -eu
 np="${1:-2}"
 if command -v timeout >/dev/null 2>&1; then
-    exec timeout 15 mpirun --allow-run-as-root -np "$np" /bin/hostname
+    exec timeout 20 mpi-local-run -np "$np" /bin/echo mpi-ok
 fi
-exec mpirun --allow-run-as-root -np "$np" /bin/hostname
+exec mpi-local-run -np "$np" /bin/echo mpi-ok
