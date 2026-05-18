@@ -81,6 +81,7 @@ copy_to() {
     dst=$2
     [ -e "$src" ] || return 0
     mkdir -p "$(dirname "$WORKDIR$dst")"
+    rm -f "$WORKDIR$dst"
     cp -a "$src" "$WORKDIR$dst"
 }
 
@@ -88,6 +89,7 @@ write_loader_wrapper() {
     dst=$1
     target=$2
     mkdir -p "$(dirname "$WORKDIR$dst")"
+    rm -f "$WORKDIR$dst"
     {
         printf '%s\n' '#!/bin/sh'
         printf '%s\n' 'export PATH=/opt/tigon/bin:/opt/gromacs-cxl/bin:/opt/llama.cpp:/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}'
@@ -226,6 +228,15 @@ done
 
 for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash ip ifconfig; do
     copy_command "$cmd"
+done
+for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx; do
+    path=$(command -v "$cmd" 2>/dev/null || true)
+    [ -n "$path" ] || continue
+    real=$(readlink -f "$path" 2>/dev/null || printf '%s' "$path")
+    if [ -x "$real" ]; then
+        copy_to "$real" "/opt/hpc-bin/$cmd"
+        write_loader_wrapper "/usr/bin/$cmd" "/opt/hpc-bin/$cmd"
+    fi
 done
 for cmd in cxl daxctl ndctl modprobe insmod depmod lsmod; do
     copy_command "$cmd"

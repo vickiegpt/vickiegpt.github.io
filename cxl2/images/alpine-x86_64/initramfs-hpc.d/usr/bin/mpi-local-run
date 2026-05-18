@@ -3,6 +3,9 @@ set -eu
 
 timeout_sec=
 np=2
+PATH=/opt/hpc-bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}
+export PATH
+mpirun_cmd=${MPIRUN:-/usr/bin/mpirun}
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -np|--np)
@@ -72,7 +75,7 @@ done
 if [ -n "$timeout_sec" ] && command -v timeout >/dev/null 2>&1; then
     # shellcheck disable=SC2086
     set +e
-    timeout -k 2 "$timeout_sec" mpirun --allow-run-as-root -np "$np" $export_args "$@"
+    timeout -k 2 "$timeout_sec" "$mpirun_cmd" --allow-run-as-root -np "$np" $export_args "$@"
     rc=$?
     set -e
     pkill -x prte 2>/dev/null || true
@@ -80,4 +83,4 @@ if [ -n "$timeout_sec" ] && command -v timeout >/dev/null 2>&1; then
     exit "$rc"
 fi
 # shellcheck disable=SC2086
-exec mpirun --allow-run-as-root -np "$np" $export_args "$@"
+exec "$mpirun_cmd" --allow-run-as-root -np "$np" $export_args "$@"

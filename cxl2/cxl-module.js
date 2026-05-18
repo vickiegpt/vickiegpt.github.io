@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-wrap1' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-wrap1';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-mpiwrap2' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-mpiwrap2';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
@@ -285,7 +285,9 @@ const CXL_WEB_CONFIG = (() => {
         : !['0', 'false', 'off', 'no'].includes(String(initrdParam).toLowerCase()));
     const attachDisk = !useInitrd || rootDiskRequested || params.get('attach_disk') === '1';
     const fastShellMachine = String(params.get('fast_shell_machine') || params.get('shell_machine') || '').toLowerCase();
+    const forceQ35ForCxl = initrdProfile === 'hpc' && acpiEnabled && !cxlDisabled;
     const fastShellMicrovm = fastLogin && useInitrd && !attachDisk
+        && !forceQ35ForCxl
         && !['q35', 'pc'].includes(fastShellMachine);
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
