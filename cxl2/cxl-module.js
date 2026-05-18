@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-mpiwrap2' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-mpiwrap2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix1' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
@@ -285,13 +285,14 @@ const CXL_WEB_CONFIG = (() => {
         : !['0', 'false', 'off', 'no'].includes(String(initrdParam).toLowerCase()));
     const attachDisk = !useInitrd || rootDiskRequested || params.get('attach_disk') === '1';
     const fastShellMachine = String(params.get('fast_shell_machine') || params.get('shell_machine') || '').toLowerCase();
-    const forceQ35ForCxl = initrdProfile === 'hpc' && acpiEnabled && !cxlDisabled;
+    const acpiEnabled = params.get('acpi') !== 'off';
+    const forceQ35ForCxl = acpiEnabled && !cxlDisabled
+        && (initrdProfile === 'hpc' || cxlParam === 'all' || validProfiles.has(cxlParam));
     const fastShellMicrovm = fastLogin && useInitrd && !attachDisk
         && !forceQ35ForCxl
         && !['q35', 'pc'].includes(fastShellMachine);
     const autoShellProbe = params.get('auto_shell_probe') === '1';
     const fastBoot = params.get('fast_boot') !== '0';
-    const acpiEnabled = params.get('acpi') !== 'off';
     const qemuCxlEnabled = acpiEnabled && !cxlDisabled && !fastShellMicrovm;
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
@@ -316,7 +317,7 @@ const CXL_WEB_CONFIG = (() => {
     }
     const qemuCxlmemsimTransport = cxlmemsim.transport === 'browser' ? 'shm' : cxlmemsim.transport;
     const debug = params.get('debug') === '1' || params.get('cxl_debug') === '1' || params.get('verbose') === '1';
-    const simpleBoot = params.get('simple_boot') === '1';
+    const simpleBoot = params.get('simple_boot') === '1' && !qemuCxlEnabled;
     const startTimeoutSec = parseTimeoutSeconds(
         params,
         ['cxl_setup_timeout', 'cxlmem_setup_timeout', 'service_timeout', 'start_timeout'],

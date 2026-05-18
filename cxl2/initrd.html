@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js"></script>
-<script src="./cxl-module.js?v=20260518-mpiwrap2"></script>
+<script src="./cxl-module.js?v=20260518-romfix1"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260515-linuxboot-rom-cxl"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -403,7 +403,7 @@ const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/image
 qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260516-type2-shell");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
-const cxlRequested = config.qemuCxlEnabled !== false;
+const cxlRequested = config.qemuCxlEnabled === true;
 const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-rp(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-type[123](,|$)/.test(arg));
