@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix7' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix7';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix8' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix8';
     const pcBiosVersion = '20260518-bios256-1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
@@ -317,7 +317,7 @@ const CXL_WEB_CONFIG = (() => {
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const fwCfgDma = params.get('fw_cfg_dma') !== 'off' && params.get('fwcfg_dma') !== 'off';
-    const nodefaults = params.get('nodefaults') === '1' && params.get('defaults') !== '1';
+    const nodefaults = params.get('defaults') === '1' ? false : (qemuCxlEnabled || params.get('nodefaults') === '1');
     const rtcParam = String(params.get('rtc') || '').toLowerCase();
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
     const extraKernelArgs = parseExtraKernelArgs(params);
@@ -903,6 +903,7 @@ function buildQemuArguments() {
         '-smp', '1,sockets=1',
         '-accel', accel,
         '-boot', 'menu=off',
+        '-serial', 'mon:stdio',
         '-L', CXL_WEB_CONFIG.image.rom,
         '-bios', CXL_WEB_CONFIG.image.pcBios,
         '-kernel', CXL_WEB_CONFIG.image.kernel,
@@ -933,7 +934,8 @@ function buildQemuArguments() {
         args.splice(1, 0, '-nodefaults');
     }
     if (!CXL_WEB_CONFIG.fwCfgDma) {
-        args.splice(4, 0, '-global', 'fw_cfg_io.dma_enabled=off');
+        const machineIndex = args.indexOf('-M');
+        args.splice(machineIndex, 0, '-global', 'fw_cfg_io.dma_enabled=off');
     }
 
     if (virtioDisk) {
