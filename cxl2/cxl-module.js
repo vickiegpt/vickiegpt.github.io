@@ -178,6 +178,19 @@ function parseExtraKernelArgs(params) {
         .slice(0, 32);
 }
 
+function parseInitrdProfile(params) {
+    const raw = params.get('initrd_profile')
+        || params.get('initramfs_profile')
+        || params.get('toolset')
+        || params.get('tools')
+        || (params.get('hpc') === '1' ? 'hpc' : '');
+    const value = String(raw || '').trim().toLowerCase();
+    if (['hpc', 'full', 'mpi', 'openmpi', 'gromacs', 'gmx', 'llama', 'tigon'].includes(value)) {
+        return 'hpc';
+    }
+    return 'shell';
+}
+
 function parseImageConfig(params) {
     const imageDirParam = params.get('file_dir')
         || params.get('local_dir')
@@ -195,8 +208,18 @@ function parseImageConfig(params) {
         || (localImageRequested && imageDir ? new URL('bzImage', imageDir).href : '/about/bzImage');
     const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
+    const explicitInitrdText = params.get('initrd_url') || params.get('initramfs_url') || '';
+    let initrdProfile = parseInitrdProfile(params);
+    if (initrdProfile === 'shell' && /hpc|mpi|openmpi|gromacs|gmx|llama|tigon/i.test(explicitInitrdText)) {
+        initrdProfile = 'hpc';
+    }
+    const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc' : '20260518-tools2';
+    const defaultInitrdUrl = initrdProfile === 'hpc' && /^asplos\.dev$/i.test(location.hostname)
+        ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
+        : new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
-        || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio', location.href).href;
+        || defaultInitrdUrl;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
         || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
     return {
@@ -207,7 +230,9 @@ function parseImageConfig(params) {
         biosUrl,
         kernel: '/remote/bzImage',
         disk: '/remote/qemu.img',
-        initrd: '/remote/initramfs-shell.cpio',
+        initrd: `/remote/${initrdName}`,
+        initrdName,
+        initrdProfile,
         bios: '/remote/bios-microvm.bin',
         source: localDiskRequested && imageDir ? 'local' : 'remote',
         imageDir
@@ -312,7 +337,7 @@ const CXL_WEB_CONFIG = (() => {
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260517-fast-shell-alpine',
+        })[qemuCore] || '20260517-fast-shell-timer',
         assetBase: ({
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
             build: '/cxl2/images/alpine-x86_64-build/',
@@ -541,16 +566,20 @@ Module['preRun'].push((mod) => {
         });
     }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
-        createRangeBackedFile(mod, '/remote', 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
+        createRangeBackedFile(mod, '/remote', CXL_WEB_CONFIG.image.initrdName || 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
             eager: true,
             allowFullFallback: true,
-            maxFullFallbackSize: 16 * 1024 * 1024
+            maxFullFallbackSize: CXL_WEB_CONFIG.image.initrdProfile === 'hpc'
+                ? 512 * 1024 * 1024
+                : 16 * 1024 * 1024
         });
     }
-    createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
-        allowFullFallback: true,
-        maxFullFallbackSize: 1024 * 1024
-    });
+    if ((CXL_WEB_CONFIG.arguments || []).includes('-bios')) {
+        createRangeBackedFile(mod, '/remote', 'bios-microvm.bin', CXL_WEB_CONFIG.image.biosUrl, {
+            allowFullFallback: true,
+            maxFullFallbackSize: 1024 * 1024
+        });
+    }
 });
 
 function profileHas(name) {
@@ -669,8 +698,16 @@ function buildQemuArguments() {
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
+    const q35FastShellAppend = [
+        'noapic',
+        'notsc',
+        'lpj=1000000',
+        'nolapic_timer',
+        ...(legacyDisk ? [] : ['initcall_blacklist=ahci_pci_driver_init'])
+    ];
     const directShellAppend = [
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
+        ...(!CXL_WEB_CONFIG.fastShellMicrovm ? q35FastShellAppend : []),
         CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
         'nokaslr',
         ...directBootLogArgs,
@@ -704,6 +741,12 @@ function buildQemuArguments() {
     ];
     const append = (CXL_WEB_CONFIG.fastLogin ? directShellAppend : systemdAppend).join(' ');
     const accel = `tcg,tb-size=${CXL_WEB_CONFIG.tcg.tbSize},thread=${CXL_WEB_CONFIG.tcg.thread}`;
+    // WASM microvm lacks a reliable early timer reference for TSC calibration.
+    const microvmTimerAppend = [
+        'notsc',
+        'lpj=1000000',
+        'nolapic_timer'
+    ];
     if (CXL_WEB_CONFIG.fastShellMicrovm) {
         const microvmShellAppend = [
             'console=ttyS0,115200',
@@ -712,6 +755,7 @@ function buildQemuArguments() {
             'nokaslr',
             'loglevel=8',
             'earlyprintk=serial,ttyS0,115200',
+            ...microvmTimerAppend,
             ...CXL_WEB_CONFIG.extraKernelArgs
         ].join(' ');
         return [
@@ -744,6 +788,7 @@ function buildQemuArguments() {
             'nokaslr',
             'loglevel=8',
             'earlyprintk=serial,ttyS0,115200',
+            ...(simpleMachine === 'microvm' ? microvmTimerAppend : []),
             ...CXL_WEB_CONFIG.extraKernelArgs
         ] : [
             'console=ttyS0,115200',

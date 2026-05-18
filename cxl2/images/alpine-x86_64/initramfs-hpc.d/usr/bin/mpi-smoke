@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+np="${1:-2}"
+if command -v timeout >/dev/null 2>&1; then
+    exec timeout 15 mpirun --allow-run-as-root -np "$np" /bin/hostname
+fi
+exec mpirun --allow-run-as-root -np "$np" /bin/hostname

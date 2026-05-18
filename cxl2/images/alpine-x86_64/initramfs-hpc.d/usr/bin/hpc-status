@@ -1,0 +1,13 @@
+#!/bin/sh
+echo "hpc tools: OpenMPI/GROMACS/CXL-CUDA optional initramfs is active."
+printf "available:"
+for tool in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx llama-cli llama-bench cxl_init cxl_recover_meta mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
+    if command -v "$tool" >/dev/null 2>&1; then
+        printf " %s" "$tool"
+    fi
+done
+echo
+echo "safe checks: llama-bench --help; gmx --version; cxl-type2-test; cxl-type3-test"
+echo "CXL-CUDA: use cxlcuda-run <program> to LD_PRELOAD /opt/cxlcuda/lib/libcuda.so.1."
+echo "CXL-MPI: use mpi-cxl-run <program> to LD_PRELOAD /opt/cxlmpi/lib/libmpi_cxl_shim.so."
+echo "note: OpenMPI startup can hang under browser QEMU/TCG; use strace/ldd before ompi_info or mpi-smoke."

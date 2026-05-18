@@ -257,12 +257,16 @@ pre {
                 <dt>Assets</dt><dd id="asset-base">/cxl2/images/alpine-x86_64/</dd>
                 <dt>Kernel</dt><dd id="kernel-path">/about/bzImage</dd>
                 <dt>Disk</dt><dd id="disk-path">/about/qemu.img</dd>
+                <dt>Initramfs</dt><dd id="initrd-profile">shell</dd>
                 <dt>Network</dt><dd id="network-status">browser/c2w idle</dd>
                 <dt>CXLMemSim</dt><dd id="cxlmemsim-label">127.0.0.1:9999</dd>
                 <dt>Fast Boot</dt><dd id="fastboot-label">on</dd>
                 <dt>Backend</dt><dd id="webgpu-status">webgpu probing</dd>
             </dl>
-            <p><button id="open-cxlmemsim" type="button">Open CXLMemSim</button></p>
+            <p>
+                <button id="open-cxlmemsim" type="button">Open CXLMemSim</button>
+                <button id="open-hpc-tools" type="button">HPC Tools</button>
+            </p>
         </section>
         <section class="section">
             <h2>CXL Profile</h2>
@@ -294,6 +298,8 @@ udhcpc -i eth0 2>/dev/null || true
 export http_proxy=http://192.168.127.253:80
 export https_proxy=http://192.168.127.253:80
 wget -O - http://example.com 2>/dev/null | head
+hpc-status 2>/dev/null || true
+for x in mpirun mpiexec ompi_info gmx_mpi gmx llama-cli llama-bench cxl_init cxl_recover_meta; do command -v "$x" 2>/dev/null; done
 if command -v timeout >/dev/null 2>&1; then
   timeout 5 dmesg 2>/dev/null | tail -n 300 | grep -Ei 'cxl|dax|numa|memsim|hetgpu' | tail -n 80
 else
@@ -303,7 +309,7 @@ find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
-            <p class="note">Default boot uses the in-memory initramfs shell and does not wait for `/about/qemu.img`. Add `rootdisk=1` to boot the remote image, or `attach_disk=1` to expose it from the shell.</p>
+            <p class="note">Default boot uses the in-memory initramfs shell and does not wait for `/about/qemu.img`. Add `hpc=1` for the optional MPI/GROMACS/llama/tigon tools image, `rootdisk=1` to boot the remote image, or `attach_disk=1` to expose it from the shell.</p>
         </section>
         <section class="section">
             <h2>Active QEMU Args</h2>
@@ -328,17 +334,15 @@ window.coi = {
 <script>
 if (!location.search) {
     const fastShellParams = new URLSearchParams({
-        cxl: "off",
-        kernel_url: "/cxl2/images/hetgpu-webgpu/load-kernel.data",
-        simple_boot: "1",
-        simple_machine: "microvm",
-        simple_minimal: "1"
+        cxl: "type2",
+        fast_shell_machine: "q35",
+        kernel_url: "/about/bzImage"
     });
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module.js?v=20260517-fast-shell-alpine"></script>
-<script src="./images/alpine-x86_64/load-rom.js?v=20260517-microvm-bios-range"></script>
+<script src="./cxl-module.js?v=20260518-ahci-legacy"></script>
+<script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
@@ -351,9 +355,11 @@ const profileLabel = document.getElementById("profile-label");
 const assetBaseLabel = document.getElementById("asset-base");
 const kernelPathLabel = document.getElementById("kernel-path");
 const diskPathLabel = document.getElementById("disk-path");
+const initrdProfileLabel = document.getElementById("initrd-profile");
 const networkStatus = document.getElementById("network-status");
 const cxlmemsimLabel = document.getElementById("cxlmemsim-label");
 const openCxlmemsimButton = document.getElementById("open-cxlmemsim");
+const openHpcToolsButton = document.getElementById("open-hpc-tools");
 const fastbootLabel = document.getElementById("fastboot-label");
 const activeArgs = document.getElementById("active-args");
 const webgpuStatus = document.getElementById("webgpu-status");
@@ -382,7 +388,7 @@ const term = new Terminal({
 term.open(document.getElementById("terminal"));
 window.CXL_WEB_TERM = term;
 term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
-term.writeln("Press Start VM. Default boot opens the in-memory initramfs shell; use rootdisk=1 for /about/qemu.img.");
+term.writeln("Press Start VM. Default boot opens the in-memory initramfs shell; use hpc=1 for MPI/GROMACS tools or rootdisk=1 for /about/qemu.img.");
 term.writeln("");
 
 const config = window.CXL_WEB_CONFIG || {
@@ -391,7 +397,9 @@ const config = window.CXL_WEB_CONFIG || {
     assetBase: "/cxl2/images/alpine-x86_64/",
     image: {
         kernelUrl: "/about/bzImage",
-        diskUrl: "/about/qemu.img"
+        diskUrl: "/about/qemu.img",
+        initrdProfile: "shell",
+        initrdName: "initramfs-shell.cpio"
     },
     network: {
         mode: "browser",
@@ -408,7 +416,7 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260517-fast-shell-alpine",
+    assetVersion: "20260517-fast-shell-timer",
     startTimeoutSec: 180,
     arguments: []
 };
@@ -427,7 +435,7 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-alpine");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-timer");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled !== false;
@@ -448,6 +456,9 @@ profileLabel.textContent = config.profile;
 assetBaseLabel.textContent = `${config.qemuCore || "fast"} ${config.assetBase || "/cxl2/images/alpine-x86_64/"}`;
 kernelPathLabel.textContent = config.image?.kernelUrl || "/about/bzImage";
 diskPathLabel.textContent = config.image?.diskUrl || "/about/qemu.img";
+initrdProfileLabel.textContent = config.image?.initrdProfile === "hpc"
+    ? `hpc ${config.image?.initrdName || "initramfs-hpc.cpio"}`
+    : `shell ${config.image?.initrdName || "initramfs-shell.cpio"}`;
 networkStatus.textContent = config.network?.mode === "browser" ? "browser/c2w idle" : "disabled";
 cxlmemsimLabel.textContent = config.cxlmemsim?.transport === "browser"
     ? `browser:${config.cxlmemsim?.pool || config.cxlmemsim?.host || "CXLMemSim"}`
@@ -479,6 +490,16 @@ openCxlmemsimButton.addEventListener("click", () => {
     url.searchParams.set("pool", config.cxlmemsim?.pool || config.cxlmemsim?.host || "CXLMemSim");
     url.searchParams.set("size", String(config.cxlmemsim?.size || 256 * 1024 * 1024));
     window.open(url.href, "CXLMemSim", "popup,width=960,height=720");
+});
+
+openHpcToolsButton.addEventListener("click", () => {
+    if (booted) return;
+    const url = new URL(location.href);
+    url.searchParams.set("hpc", "1");
+    url.searchParams.set("initrd_profile", "hpc");
+    url.searchParams.set("fast_shell_machine", "q35");
+    url.searchParams.set("kernel_url", config.image?.kernelUrl || "/about/bzImage");
+    location.href = url.href;
 });
 
 async function probeWebGPU() {
@@ -535,12 +556,21 @@ function sendCxlProbe() {
         "mount -t devtmpfs devtmpfs /dev 2>/dev/null || true",
         "echo CXL_PROBE_START",
         "cat /proc/cmdline",
+        "echo HPC_TOOLS",
+        "hpc-status 2>/dev/null || true",
+        "for x in mpirun mpiexec ompi_info gmx_mpi gmx llama-cli llama-bench cxl_init cxl_recover_meta; do command -v \"$x\" 2>/dev/null; done",
+        "echo LSPCI",
+        "lspci 2>/dev/null || true",
+        "echo LSPCI_NN",
+        "lspci -nn 2>/dev/null || true",
+        "echo CXL_SYSFS",
+        "find /sys/bus/cxl -maxdepth 3 -print 2>/dev/null | sort",
         "echo CXL_DEVICES",
-        "find /sys/bus/cxl/devices -maxdepth 1 -type l -printf '%f\\n' 2>/dev/null | sort",
+        "for d in /sys/bus/cxl/devices/*; do [ -e \"$d\" ] && echo \"${d##*/}\"; done 2>/dev/null | sort",
         "echo PCI_CXL",
-        "for d in /sys/bus/pci/devices/*; do [ -r \"$d/vendor\" ] || continue; v=$(cat \"$d/vendor\"); c=$(cat \"$d/class\"); dev=$(cat \"$d/device\"); if [ \"$v\" = 0x1b36 ] || [ \"$v\" = 0x8086 ] || [ \"$c\" = 0x050210 ]; then drv=$(basename $(readlink \"$d/driver\" 2>/dev/null) 2>/dev/null); echo \"${d##*/} vendor=$v device=$dev class=$c driver=$drv\"; fi; done",
+        "for d in /sys/bus/pci/devices/*; do [ -r \"$d/vendor\" ] || continue; v=$(cat \"$d/vendor\"); c=$(cat \"$d/class\"); dev=$(cat \"$d/device\"); if [ \"$v\" = 0x1b36 ] || [ \"$v\" = 0x1e98 ] || [ \"$v\" = 0x8086 ] || [ \"$c\" = 0x050210 ] || [ \"$c\" = 0x0b4000 ]; then drv=$(basename $(readlink \"$d/driver\" 2>/dev/null) 2>/dev/null); echo \"${d##*/} vendor=$v device=$dev class=$c driver=$drv\"; fi; done",
         "echo DMESG_CXL",
-        "timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|0d:00|resource' | tail -n 80 || true",
+        "timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|0c:00|0d:00|resource|host supports' | tail -n 100 || true",
         "echo CXL_PROBE_DONE_$(cut -c1-8 /proc/sys/kernel/random/boot_id 2>/dev/null || date +%s)"
     ].join("\n") + "\n", { raw: true });
 }
