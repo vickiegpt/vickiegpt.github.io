@@ -1,6 +1,6 @@
 #!/bin/sh
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/x86_64-linux-gnu/openmpi/bin:$PATH
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export PATH=/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/x86_64-linux-gnu/openmpi/bin:$PATH
+export LD_LIBRARY_PATH=/opt/cxlmpi/lib:/opt/cxlcuda/lib:/opt/cxlcuda/bin:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export OPAL_PREFIX=/usr
 export OMPI_ALLOW_RUN_AS_ROOT=1
 export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1

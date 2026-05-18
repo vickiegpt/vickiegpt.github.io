@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+if [ "$#" -eq 0 ]; then
+    echo "usage: cxlcuda-run <program> [args...]" >&2
+    echo "sets LD_LIBRARY_PATH and LD_PRELOAD for /opt/cxlcuda/lib/libcuda.so.1" >&2
+    exit 2
+fi
+export CXL_CUDA_HOME=${CXL_CUDA_HOME:-/opt/cxlcuda}
+export LD_LIBRARY_PATH="$CXL_CUDA_HOME/lib:$CXL_CUDA_HOME/bin${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_PRELOAD="$CXL_CUDA_HOME/lib/libcuda.so.1${LD_PRELOAD:+:$LD_PRELOAD}"
+export CXL_CUDA_DEBUG=${CXL_CUDA_DEBUG:-1}
+exec "$@"

@@ -149,7 +149,14 @@ cpio -idum < "$BASE_ARCHIVE" >/dev/null
 if [ -d "$SCRIPT_DIR/initramfs-hpc.d" ]; then
     (cd "$SCRIPT_DIR/initramfs-hpc.d" && find . -print | cpio -pdm "$WORKDIR" >/dev/null)
 fi
-chmod 0755 "$WORKDIR/usr/bin/hpc-status" "$WORKDIR/usr/bin/mpi-smoke" 2>/dev/null || true
+chmod 0755 \
+    "$WORKDIR/usr/bin/hpc-status" \
+    "$WORKDIR/usr/bin/mpi-smoke" \
+    "$WORKDIR/usr/bin/mpi-cxl-run" \
+    "$WORKDIR/usr/bin/cxlcuda-run" \
+    "$WORKDIR/usr/bin/cxl-type2-test" \
+    "$WORKDIR/usr/bin/cxl-type3-test" \
+    2>/dev/null || true
 
 mkdir -p "$WORKDIR/etc/profile.d" "$WORKDIR/root" "$WORKDIR/opt" "$WORKDIR/usr/bin"
 printf 'root:x:0:0:root:/root:/bin/sh\n' > "$WORKDIR/etc/passwd"
@@ -178,9 +185,13 @@ do
     copy_tree "$dir"
 done
 
-for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf; do
+for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash; do
     copy_command "$cmd"
 done
+if [ -e "$WORKDIR/usr/bin/bash" ] || [ -L "$WORKDIR/usr/bin/bash" ]; then
+    mkdir -p "$WORKDIR/bin"
+    ln -sf /usr/bin/bash "$WORKDIR/bin/bash"
+fi
 
 LLAMA_DIR=${LLAMA_DIR:-/home/victoryang00/hetGPU_new/CXLMemSim/workloads/llama.cpp}
 if [ -x "$LLAMA_DIR/main" ]; then
@@ -207,6 +218,55 @@ done
 ln -sf /opt/tigon/kernel_module/cxl_init "$WORKDIR/usr/bin/cxl_init"
 ln -sf /opt/tigon/kernel_module/cxl_recover_meta "$WORKDIR/usr/bin/cxl_recover_meta"
 
+CXL_CUDA_DIR=${CXL_CUDA_DIR:-/home/victoryang00/CXLMemSim/qemu_integration/guest_libcuda}
+if [ -e "$CXL_CUDA_DIR/libcuda.so.1" ]; then
+    copy_to "$CXL_CUDA_DIR/libcuda.so.1" /opt/cxlcuda/lib/libcuda.so.1
+    ln -sf libcuda.so.1 "$WORKDIR/opt/cxlcuda/lib/libcuda.so"
+    mkdir -p "$WORKDIR/usr/lib/x86_64-linux-gnu"
+    ln -sf /opt/cxlcuda/lib/libcuda.so.1 "$WORKDIR/usr/lib/x86_64-linux-gnu/libcuda.so.1"
+    ln -sf /opt/cxlcuda/lib/libcuda.so "$WORKDIR/usr/lib/x86_64-linux-gnu/libcuda.so"
+else
+    echo "warning: CXL CUDA shim missing: $CXL_CUDA_DIR/libcuda.so.1" >&2
+fi
+for name in \
+    cuda_test \
+    cxl_bar_benchmark \
+    cpu_gpu_hitm_benchmark \
+    agentic_bias_benchmark \
+    rq1_graph_bfs \
+    rq2_dir_sizing \
+    rq3_bias_kv \
+    rq4_alloc_policy \
+    rq4_devfrac_sweep
+do
+    if [ -x "$CXL_CUDA_DIR/$name" ]; then
+        copy_to "$CXL_CUDA_DIR/$name" "/opt/cxlcuda/bin/$name"
+        ln -sf "/opt/cxlcuda/bin/$name" "$WORKDIR/usr/bin/$name"
+    else
+        echo "warning: CXL CUDA test missing: $CXL_CUDA_DIR/$name" >&2
+    fi
+done
+ln -sf ../lib/libcuda.so.1 "$WORKDIR/opt/cxlcuda/bin/libcuda.so.1"
+ln -sf ../lib/libcuda.so "$WORKDIR/opt/cxlcuda/bin/libcuda.so"
+
+MPI_CXL_SHIM_DIR=${MPI_CXL_SHIM_DIR:-/home/victoryang00/CXLMemSim/workloads/gromacs}
+if [ -d "$MPI_CXL_SHIM_DIR" ]; then
+    mkdir -p "$WORKDIR/opt/cxlmpi/lib" "$WORKDIR/usr/lib/x86_64-linux-gnu"
+    found_mpi_cxl=0
+    for so in "$MPI_CXL_SHIM_DIR"/libmpi_cxl_shim*.so; do
+        [ -e "$so" ] || [ -L "$so" ] || continue
+        copy_to "$so" "/opt/cxlmpi/lib/$(basename "$so")"
+        found_mpi_cxl=1
+    done
+    if [ "$found_mpi_cxl" -eq 1 ]; then
+        ln -sf /opt/cxlmpi/lib/libmpi_cxl_shim.so "$WORKDIR/usr/lib/x86_64-linux-gnu/libmpi_cxl_shim.so"
+    else
+        echo "warning: no MPI CXL shims found in $MPI_CXL_SHIM_DIR" >&2
+    fi
+else
+    echo "warning: MPI CXL shim directory missing: $MPI_CXL_SHIM_DIR" >&2
+fi
+
 pass=1
 while [ "$pass" -le 8 ]; do
     : > "$STATE_DIR/new-libs"
@@ -228,7 +288,7 @@ gzip -c "$OUT_ARCHIVE" > "$OUT_ARCHIVE.gz"
 echo "rebuilt $OUT_ARCHIVE"
 du -h "$OUT_ARCHIVE" "$OUT_ARCHIVE.gz"
 echo "included commands:"
-for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf llama-cli llama-bench cxl_init cxl_recover_meta mpi-smoke; do
+for cmd in mpirun mpiexec ompi_info prte prterun gmx_mpi gmx timeout ldd strace readelf bash llama-cli llama-bench cxl_init cxl_recover_meta mpi-smoke mpi-cxl-run cxlcuda-run cxl-type2-test cxl-type3-test cuda_test cxl_bar_benchmark; do
     if [ -e "$WORKDIR/usr/bin/$cmd" ] || [ -L "$WORKDIR/usr/bin/$cmd" ]; then
         echo "  $cmd"
     fi
