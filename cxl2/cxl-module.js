@@ -175,6 +175,14 @@ function parseQemuCpuParam(params) {
     return /^[A-Za-z0-9_.+,-]+$/.test(value) ? value.slice(0, 128) : '';
 }
 
+function parseClientLabelParam(params) {
+    const raw = params.get('host_id') || params.get('qemu_host') ||
+        params.get('qemu_client') || params.get('client_id') || '';
+    const value = String(raw || '').trim();
+    if (!value) return '';
+    return value.replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 48);
+}
+
 function parseExtraKernelArgs(params) {
     const value = params.get('extra_kernel_args') || params.get('kernel_args') || '';
     return String(value)
@@ -281,6 +289,8 @@ const CXL_WEB_CONFIG = (() => {
     const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
     const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : 'fast';
     const qemuCpu = parseQemuCpuParam(params);
+    const clientLabel = parseClientLabelParam(params);
+    const clientToken = `${clientLabel || 'tab'}-${Math.random().toString(16).slice(2, 10)}`;
     const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
@@ -329,6 +339,8 @@ const CXL_WEB_CONFIG = (() => {
         startTimeoutSec,
         qemuCore,
         qemuCpu,
+        clientLabel,
+        clientToken,
         diskBus,
         hpet,
         fwCfgDma,
@@ -369,8 +381,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-hpcsigill1',
-            workerName: 'hetgpu-cxlmemsim-20260518-hpcsigill1'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-multihost1',
+            workerName: 'hetgpu-cxlmemsim-20260518-multihost1'
         }
     };
 })();
@@ -994,14 +1006,15 @@ function registerCxlMemsimClients() {
         const id = (arg.match(/(^|,)id=([^,]+)/) || [])[2] || `${type}-${ports.length}`;
         const worker = new SharedWorker(workerUrl, CXL_WEB_CONFIG.cxlmemsim.workerName);
         const port = worker.port;
-        const clientId = `qemu-${id}`;
+        const host = CXL_WEB_CONFIG.clientLabel || CXL_WEB_CONFIG.clientToken;
+        const clientId = `qemu-${id}-${CXL_WEB_CONFIG.clientToken}-${ports.length}`;
 
         port.start();
         port.postMessage({
             type: 'connect',
             role: 'qemu',
             clientId,
-            device: id,
+            device: `${id}@${host}`,
             pool: CXL_WEB_CONFIG.cxlmemsim.pool,
             size: CXL_WEB_CONFIG.cxlmemsim.size
         });

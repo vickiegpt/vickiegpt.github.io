@@ -407,8 +407,11 @@ function attachPort(port) {
         const pool = getPool(msg.pool, msg.size);
 
         if (msg.type === 'connect') {
-            const id = msg.clientId ||
+            let id = msg.clientId ||
                 `${msg.role || 'client'}-${Math.random().toString(16).slice(2)}`;
+            if (pool.clients.has(id)) {
+                id = `${id}-${Math.random().toString(16).slice(2, 8)}`;
+            }
             client = { id, role: msg.role || 'client',
                        device: msg.device || '', port, lastSeen: Date.now() };
             pool.clients.set(id, client);
@@ -435,7 +438,7 @@ function attachPort(port) {
             return;
         }
         if (msg.type === 'disconnect') {
-            const id = msg.clientId || (client && client.id);
+            const id = (client && client.id) || msg.clientId;
             if (id) pool.clients.delete(id);
             broadcastStatus(pool);
             return;
