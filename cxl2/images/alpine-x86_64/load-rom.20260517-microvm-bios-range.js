@@ -198,7 +198,10 @@ if (typeof window === 'object'
         'linuxboot_dma.bin',
         'vgabios-stdvga.bin'
       ];
-      var aliasDirs = ['/', '/qemu/pc-bios', '/usr/local/share/qemu', '/usr/share/qemu'];
+      var aliasDirs = ['/pack-rom', '/', '/qemu/pc-bios', '/usr/local/share/qemu', '/usr/share/qemu'];
+      var externalRoms = {
+        'efi-e1000.rom': '/cxl2/images/alpine-x86_64/efi-e1000.rom?v=20260518-e1000-1'
+      };
       function mkdirp(path) {
         if (!path || path === '/') return;
         var parts = path.split('/').filter(Boolean);
@@ -221,6 +224,22 @@ if (typeof window === 'object'
           var target = (dir === '/' ? '' : dir) + '/' + name;
           if (!FS.analyzePath(target).exists) {
             FS.writeFile(target, data);
+          }
+        }
+      }
+      if (typeof window === 'object' && typeof window.CXL_createRangeBackedFile === 'function') {
+        for (var externalName in externalRoms) {
+          var externalUrl = new URL(externalRoms[externalName], location.href).href;
+          for (var k = 0; k < aliasDirs.length; k++) {
+            var aliasDir = aliasDirs[k];
+            mkdirp(aliasDir);
+            var aliasTarget = (aliasDir === '/' ? '' : aliasDir) + '/' + externalName;
+            if (!FS.analyzePath(aliasTarget).exists) {
+              window.CXL_createRangeBackedFile(Module, aliasDir, externalName, externalUrl, {
+                allowFullFallback: true,
+                maxFullFallbackSize: 1024 * 1024
+              });
+            }
           }
         }
       }
