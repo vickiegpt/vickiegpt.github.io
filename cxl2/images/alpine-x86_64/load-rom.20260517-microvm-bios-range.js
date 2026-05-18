@@ -186,5 +186,44 @@ if (typeof window === 'object'
 
     }
     loadPackage({"files": [{"filename": "/pack-rom/bios-256k.bin", "start": 0, "end": 262144}, {"filename": "/pack-rom/efi-virtio.rom", "start": 262144, "end": 422912}, {"filename": "/pack-rom/kvmvapic.bin", "start": 422912, "end": 432128}, {"filename": "/pack-rom/linuxboot.bin", "start": 432128, "end": 433152}, {"filename": "/pack-rom/linuxboot_dma.bin", "start": 433152, "end": 434688}, {"filename": "/pack-rom/vgabios-stdvga.bin", "start": 434688, "end": 474112}], "remote_package_size": 474112});
+    if (!Module['preRun']) Module['preRun'] = [];
+    Module['preRun'].push(function() {
+      var FS = Module['FS'];
+      if (!FS) return;
+      var romNames = [
+        'bios-256k.bin',
+        'efi-virtio.rom',
+        'kvmvapic.bin',
+        'linuxboot.bin',
+        'linuxboot_dma.bin',
+        'vgabios-stdvga.bin'
+      ];
+      var aliasDirs = ['/', '/qemu/pc-bios', '/usr/local/share/qemu', '/usr/share/qemu'];
+      function mkdirp(path) {
+        if (!path || path === '/') return;
+        var parts = path.split('/').filter(Boolean);
+        var current = '';
+        for (var i = 0; i < parts.length; i++) {
+          current += '/' + parts[i];
+          if (!FS.analyzePath(current).exists) {
+            FS.mkdir(current);
+          }
+        }
+      }
+      for (var i = 0; i < romNames.length; i++) {
+        var name = romNames[i];
+        var source = '/pack-rom/' + name;
+        if (!FS.analyzePath(source).exists) continue;
+        var data = FS.readFile(source);
+        for (var j = 0; j < aliasDirs.length; j++) {
+          var dir = aliasDirs[j];
+          mkdirp(dir);
+          var target = (dir === '/' ? '' : dir) + '/' + name;
+          if (!FS.analyzePath(target).exists) {
+            FS.writeFile(target, data);
+          }
+        }
+      }
+    });
 
   })();
