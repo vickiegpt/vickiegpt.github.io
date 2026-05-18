@@ -360,7 +360,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-ui-cleanup'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-selftest3',
+            workerName: 'hetgpu-cxlmemsim-20260518-selftest3'
         }
     };
 })();
@@ -978,7 +979,7 @@ function registerCxlMemsimClients() {
     for (const arg of deviceArgs) {
         const type = (arg.match(/(^|,)(cxl-type[12])(?=,|$)/) || [])[2] || 'cxl-device';
         const id = (arg.match(/(^|,)id=([^,]+)/) || [])[2] || `${type}-${ports.length}`;
-        const worker = new SharedWorker(workerUrl, 'hetgpu-cxlmemsim');
+        const worker = new SharedWorker(workerUrl, CXL_WEB_CONFIG.cxlmemsim.workerName);
         const port = worker.port;
         const clientId = `qemu-${id}`;
 

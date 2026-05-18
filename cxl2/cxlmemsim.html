@@ -259,7 +259,11 @@ events.onmessage = (event) => {
     }
     if (msg.type !== "stats") return;
     const sim = msg.sim || {};
-    if (Object.keys(sim).length > 0 && !simFields.mode.textContent.startsWith("degraded")) {
+    const hasSim = Object.keys(sim).length > 0;
+    if (!hasSim) {
+        return;
+    }
+    if (!simFields.mode.textContent.startsWith("degraded")) {
         simFields.mode.textContent = "wasm";
     }
     simFields.reads.textContent = sim.total_reads || 0;
@@ -275,20 +279,24 @@ events.onmessage = (event) => {
     simFields.mode.textContent = "wasm";
 };
 
-if (!window.crossOriginIsolated) {
-    setStatus("needs isolation", false);
-    simFields.mode.textContent = "needs isolation — soft-reload page";
-} else if (typeof SharedWorker === "undefined" || typeof SharedArrayBuffer === "undefined") {
+if (typeof SharedWorker === "undefined") {
     setStatus("unsupported", false);
     simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260518-ui-cleanup", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker(
+        "./cxlmemsim-pool-worker.js?v=20260518-selftest3",
+        "hetgpu-cxlmemsim-20260518-selftest3"
+    );
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
     let disconnected = false;
 
     fields.pool.textContent = pool;
     fields.size.textContent = formatBytes(size);
+    simFields.mode.textContent =
+        (!window.crossOriginIsolated || typeof SharedArrayBuffer === "undefined")
+            ? "dashboard-only"
+            : "flat";
 
     console.log("[cxlmemsim] SharedWorker constructed", worker);
     worker.addEventListener("error", (event) => {
@@ -300,6 +308,10 @@ if (!window.crossOriginIsolated) {
         console.log("[cxlmemsim] port", msg.type, msg);
         if (msg.type === "connected") {
             setStatus("ready", true);
+            return;
+        }
+        if (msg.type === "self-test-done") {
+            setStatus(`self test ok @0x${Number(msg.addr || 0).toString(16)}`, true);
             return;
         }
         if (msg.type === "degraded") {
@@ -346,31 +358,26 @@ if (!window.crossOriginIsolated) {
     window.addEventListener("pagehide", disconnect, { once: true });
     window.addEventListener("beforeunload", disconnect, { once: true });
 
-    document.getElementById("self-test").addEventListener("click", () => {
-        const addr = (Date.now() & 0xfffff0) >>> 0;
+    function runSelfTest() {
+        const span = Math.max(64, Math.min(size, 256 * 1024 * 1024) - 64);
+        const addr = Math.floor((Date.now() % span) / 64) * 64;
         const payload = new Uint8Array(16);
         for (let i = 0; i < payload.length; i++) payload[i] = (addr + i) & 0xff;
 
-        const writeSab = new SharedArrayBuffer(128 + 81);
-        new Uint8Array(writeSab, 64, payload.length).set(payload);
         port.postMessage({
-            type: "sync-request", clientId, pool,
-            op: 1, addrLo: addr, addrHi: 0, size: payload.length,
-            valueLo: 0, valueHi: 0, expectedLo: 0, expectedHi: 0,
-            sab: writeSab
-        });
-
-        const readSab = new SharedArrayBuffer(128 + 81);
-        port.postMessage({
-            type: "sync-request", clientId, pool,
-            op: 0, addrLo: addr, addrHi: 0, size: payload.length,
-            valueLo: 0, valueHi: 0, expectedLo: 0, expectedHi: 0,
-            sab: readSab
+            type: "self-test", clientId, pool, size,
+            addr, data: Array.from(payload)
         });
 
         setStatus("self test sent", true);
         setTimeout(() => port.postMessage({ type: "get-status", pool, size }), 100);
-    });
+    }
+
+    document.getElementById("self-test").addEventListener("click", runSelfTest);
+
+    if (params.get("selftest") === "1") {
+        setTimeout(runSelfTest, 500);
+    }
 
     document.getElementById("reset").addEventListener("click", () => {
         port.postMessage({ type: "reset", pool, size, keepClientId: clientId });

@@ -128,6 +128,10 @@ function toOffset(lo, hi) {
 }
 
 function setResponse(sab, status, payload, oldValue = 0n, latencyNs = 0n) {
+    if (!sab || typeof SharedArrayBuffer === 'undefined' ||
+            !(sab instanceof SharedArrayBuffer)) {
+        return;
+    }
     const control = new Int32Array(sab, 0, 1);
     const bytes = new Uint8Array(sab);
     const view = new DataView(sab);
@@ -177,31 +181,28 @@ function copyRequestInto(bridgeState, msg) {
     view.setBigUint64(25, BigInt((msg.valueHi >>> 0) * 4294967296 + (msg.valueLo >>> 0)), true);
     view.setBigUint64(33, BigInt((msg.expectedHi >>> 0) * 4294967296 + (msg.expectedLo >>> 0)), true);
     if (msg.op === 1 || msg.op === 7) {
-        const src = new Uint8Array(msg.sab, REQUEST_DATA_OFFSET, 64);
+        const src = msg.sab
+            ? new Uint8Array(msg.sab, REQUEST_DATA_OFFSET, 64)
+            : Uint8Array.from(msg.data || []);
         heap.set(src, reqPtr + 41);
     }
 }
 
-function handleSyncRequest(pool, msg) {
-    const sab = msg.sab;
-    try {
-        if (!bridge) {
-            handleSyncRequestFlat(pool, msg);
-            return;
-        }
-        copyRequestInto(bridge, msg);
-        const n = bridge.Module._cxlmemsim_handle_request(
-            bridge.reqPtr, bridge.respPtr, bridge.invPtr, INV_CAP);
-        const respBytes = bridge.Module.HEAPU8.subarray(
-            bridge.respPtr, bridge.respPtr + RESPONSE_SIZE);
-        const status = respBytes[0];
-        const view = new DataView(respBytes.buffer, respBytes.byteOffset, RESPONSE_SIZE);
-        const latency = view.getBigUint64(1, true);
-        const oldVal = view.getBigUint64(9, true);
-        const payload = respBytes.subarray(17, 17 + 64);
-        setResponse(sab, status, payload, oldVal, latency);
+function runBridgeRequest(pool, msg, responseSab, updatePortStats) {
+    copyRequestInto(bridge, msg);
+    const n = bridge.Module._cxlmemsim_handle_request(
+        bridge.reqPtr, bridge.respPtr, bridge.invPtr, INV_CAP);
+    const respBytes = bridge.Module.HEAPU8.subarray(
+        bridge.respPtr, bridge.respPtr + RESPONSE_SIZE);
+    const status = respBytes[0];
+    const view = new DataView(respBytes.buffer, respBytes.byteOffset, RESPONSE_SIZE);
+    const latency = view.getBigUint64(1, true);
+    const oldVal = view.getBigUint64(9, true);
+    const payload = respBytes.subarray(17, 17 + 64);
+    setResponse(responseSab, status, payload, oldVal, latency);
 
-        if (status !== 0) pool.stats.errors++;
+    if (status !== 0) pool.stats.errors++;
+    if (updatePortStats) {
         if (msg.op === 0 || msg.op === 6) {
             pool.stats.reads++;
             pool.stats.bytesRead += Number(msg.size >>> 0);
@@ -213,24 +214,81 @@ function handleSyncRequest(pool, msg) {
         } else if (msg.op === 5) {
             pool.stats.fences++;
         }
+    }
 
-        if (n > 0) {
-            const invView = new DataView(bridge.Module.HEAPU8.buffer,
-                                         bridge.invPtr, n * 4);
-            for (let i = 0; i < n; i++) {
-                const addr = invView.getUint32(i * 4, true);
-                pool.stats.invalidations++;
-                broadcastType2(pool, msg.clientId,
-                    makeType2Message(CXL_T2_MSG_INVALIDATE,
-                                     addr, 64, 0, 0xff));
-            }
+    if (n > 0) {
+        const invView = new DataView(bridge.Module.HEAPU8.buffer,
+                                     bridge.invPtr, n * 4);
+        for (let i = 0; i < n; i++) {
+            const addr = invView.getUint32(i * 4, true);
+            pool.stats.invalidations++;
+            broadcastType2(pool, msg.clientId,
+                makeType2Message(CXL_T2_MSG_INVALIDATE,
+                                 addr, 64, 0, 0xff));
         }
+    }
+    return status;
+}
+
+function handleSyncRequest(pool, msg) {
+    const sab = msg.sab;
+    try {
+        if (!bridge) {
+            handleSyncRequestFlat(pool, msg);
+            return;
+        }
+        runBridgeRequest(pool, msg, sab, true);
     } catch (err) {
         pool.stats.errors++;
         setResponse(sab, 1, null);
         events.postMessage({ type: 'error', reason: String(err) });
     }
     publishStats(pool);
+}
+
+function handleSelfTest(pool, msg) {
+    const payload = Uint8Array.from(msg.data || []).subarray(0, 64);
+    const size = Math.max(1, Math.min(payload.length || 16, 64));
+    const limit = Math.max(0, pool.size - size);
+    const requested = Number(msg.addr);
+    const rawAddr = Number.isFinite(requested) ? requested : Date.now();
+    const addr = Math.min(limit, Math.max(0, Math.floor((rawAddr % Math.max(1, limit)) / 64) * 64));
+    const data = payload.length ? payload.subarray(0, size) : new Uint8Array(size);
+    if (!payload.length) {
+        for (let i = 0; i < data.length; i++) data[i] = (addr + i) & 0xff;
+    }
+
+    pool.bytes.set(data, addr);
+    pool.stats.writes++;
+    pool.stats.bytesWritten += size;
+    pool.bytes.subarray(addr, addr + size);
+    pool.stats.reads++;
+    pool.stats.bytesRead += size;
+
+    if (bridge) {
+        try {
+            runBridgeRequest(pool, {
+                ...msg, op: 1, addrLo: addr >>> 0, addrHi: 0,
+                size, data, valueLo: 0, valueHi: 0,
+                expectedLo: 0, expectedHi: 0
+            }, null, false);
+            runBridgeRequest(pool, {
+                ...msg, op: 0, addrLo: addr >>> 0, addrHi: 0,
+                size, valueLo: 0, valueHi: 0,
+                expectedLo: 0, expectedHi: 0
+            }, null, false);
+        } catch (err) {
+            pool.stats.errors++;
+            events.postMessage({ type: 'error', reason: String(err) });
+        }
+    }
+
+    if (msg.clientId && pool.clients.has(msg.clientId)) {
+        pool.clients.get(msg.clientId).port.postMessage({
+            type: 'self-test-done', addr, size
+        });
+    }
+    publishStats(pool, true);
 }
 
 function handleSyncRequestFlat(pool, msg) {
@@ -368,12 +426,6 @@ function attachPort(port) {
                 port.postMessage({ type: 'degraded',
                     reason: String(bridgeError.message || bridgeError) });
             }
-            ensureBridge(pool.size).then((b) => {
-                if (!b && bridgeError) {
-                    port.postMessage({ type: 'degraded',
-                        reason: String(bridgeError.message || bridgeError) });
-                }
-            });
             broadcastStatus(pool);
             return;
         }
@@ -389,8 +441,16 @@ function attachPort(port) {
             return;
         }
         if (msg.type === 'sync-request') {
-            if (!bridge && !bridgeError) await ensureBridge(pool.size);
             handleSyncRequest(pool, msg);
+            return;
+        }
+        if (msg.type === 'self-test') {
+            handleSelfTest(pool, msg);
+            return;
+        }
+        if (msg.type === 'load-wasm') {
+            await ensureBridge(pool.size);
+            publishStats(pool, true);
             return;
         }
         if (msg.type === 'qemu-message' && client) {
@@ -406,7 +466,7 @@ function attachPort(port) {
                     pool.clients.delete(id);
                 }
             }
-            broadcastStatus(pool);
+            publishStats(pool, true);
             return;
         }
         if (msg.type === 'get-status') {
