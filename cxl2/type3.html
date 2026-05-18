@@ -396,7 +396,7 @@ term.writeln("");
 const config = window.CXL_WEB_CONFIG || {
     profile: "type3",
     backend: "webgpu",
-    assetBase: "/cxl2/images/alpine-x86_64/",
+    assetBase: "/cxl2/images/alpine-x86_64-fpcast/",
     image: {
         kernelUrl: "/about/bzImage",
         diskUrl: "/about/qemu.img",
@@ -418,7 +418,7 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fpcast",
-    assetVersion: "20260517-fast-shell-timer",
+    assetVersion: "20260512-numfix",
     startTimeoutSec: 180,
     arguments: []
 };
@@ -437,7 +437,7 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-timer");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260512-numfix");
 const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled === true;
