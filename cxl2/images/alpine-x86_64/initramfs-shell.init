@@ -15,6 +15,7 @@ echo "cmdline: $(cat /proc/cmdline 2>/dev/null)"
 echo "root disk is detached by default; add attach_disk=1 or rootdisk=1 to expose it."
 echo "with virtio disk attached: mount -t ext4 -o ro /dev/vda /mnt/root"
 echo "with legacy SATA attached: mount -t ext4 -o ro /dev/sda /mnt/root"
+echo "tools: lspci, findmnt, dmesg, and common BusyBox applets are available."
 echo
 
 echo "starting interactive shell on /dev/console"

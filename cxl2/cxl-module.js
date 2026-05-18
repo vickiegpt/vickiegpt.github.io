@@ -196,7 +196,7 @@ function parseImageConfig(params) {
     const diskUrl = firstUrlParam(params, ['disk_url', 'qemu_img_url', 'qemu_img', 'img_url'])
         || (localDiskRequested && imageDir ? new URL('qemu.img', imageDir).href : '/about/qemu.img');
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
-        || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio', location.href).href;
+        || new URL('/cxl2/images/alpine-x86_64/initramfs-shell.cpio?v=20260518-tools', location.href).href;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
         || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
     return {

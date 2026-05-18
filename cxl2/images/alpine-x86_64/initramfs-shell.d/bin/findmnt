@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+
+noheadings=0
+type_filter=""
+target_filter=""
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -n|--noheadings)
+            noheadings=1
+            ;;
+        -r|--raw)
+            ;;
+        -t|--types)
+            shift
+            type_filter=${1:-}
+            ;;
+        -h|--help)
+            echo "usage: findmnt [-n] [-r] [-t FSTYPE] [TARGET]"
+            exit 0
+            ;;
+        -*)
+            ;;
+        *)
+            target_filter=$1
+            ;;
+    esac
+    shift || true
+done
+
+[ "$noheadings" -eq 1 ] || printf '%-24s %-24s %-10s %s\n' TARGET SOURCE FSTYPE OPTIONS
+
+while read -r source target fstype options rest; do
+    [ -n "$type_filter" ] && [ "$fstype" != "$type_filter" ] && continue
+    [ -n "$target_filter" ] && [ "$target" != "$target_filter" ] && continue
+    printf '%-24s %-24s %-10s %s\n' "$target" "$source" "$fstype" "$options"
+done < /proc/mounts
