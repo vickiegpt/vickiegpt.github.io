@@ -28,12 +28,8 @@
     <link rel="stylesheet" type="text/css" media="screen and (min-device-width: 500px)" href="about/style.css">
     <link href="https://fonts.googleapis.com/css?family=Merriweather:300,400,700|Source+Sans+Pro:400,400i"
         rel="stylesheet">
-    <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css
-        integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin=anonymous>
     <link rel=stylesheet href=https://use.fontawesome.com/releases/v5.6.0/css/all.css
         integrity=sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h crossorigin=anonymous>
-    <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css
-        integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin=anonymous>
     <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css
         crossorigin=anonymous title=hl-light>
     <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css
@@ -110,6 +106,11 @@
 
             // Hide loading screen after everything loads
             window.addEventListener('load', function () {
+                if (!loadingScreen) {
+                    initializeAnimations();
+                    return;
+                }
+
                 setTimeout(() => {
                     loadingScreen.style.opacity = '0';
                     setTimeout(() => {
@@ -1487,7 +1488,6 @@
     </div>
 
 
-    <script src="/live2d/js/jquery.min.js"></script>
     <script src="/live2d/js/main.js"></script>
     <script src="/live2d/js/message.js"></script>
     <div class="page">
@@ -2168,19 +2168,6 @@
             </div>
         </div>
 
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js
-            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js
-            integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js
-            integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js
-            integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js
-            integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/r.min.js></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js
-            integrity="sha256-EErZamuLefUnbMBQbsEqu1USa+btR2oIlCpBJbyD4/g=" crossorigin=anonymous></script>
         <script>const code_highlighting = true;</script>
         <script>const isSiteThemeDark = false;</script>
         <script>const search_config = { "indexURI": "/index.json", "minLength": 1, "threshold": 0.3 }; const i18n = { "no_results": "No results found", "placeholder": "Search...", "results": "results found" }; const content_type = { 'post': "Posts", 'project': "Projects", 'publication': "Publications", 'talk': "Talks" };</script>
@@ -2195,14 +2182,6 @@
                 </div>
                 </div>
             </script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js
-            integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin=anonymous></script>
-        <script src=https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js
-            integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin=anonymous></script>
-        <div>
-            <footer class=site-footer>
-            </footer>
-        </div>
         <div id="modal" class="modal fade" role="dialog" style="display: none;" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -2229,12 +2208,115 @@
                 src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=200&t=tt&d=C01WBCWmUAOyr-bipPuCTgqvEdr6to0o6r84Bjx1Ve8&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
         </div>
         <!-- TODO LLM with VR on local deployment-->
+        <script>
+            (function () {
+                const modal = document.getElementById('modal');
+                if (!modal) return;
+
+                const codeBlock = modal.querySelector('.modal-body code');
+                const errorBox = document.getElementById('modal-error');
+                const downloadLink = modal.querySelector('.js-download-cite');
+                let backdrop = null;
+
+                function setModalVisible(visible) {
+                    if (visible) {
+                        modal.style.display = 'block';
+                        modal.style.zIndex = '12000';
+                        modal.removeAttribute('aria-hidden');
+                        modal.setAttribute('aria-modal', 'true');
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+
+                        if (!backdrop) {
+                            backdrop = document.createElement('div');
+                            backdrop.className = 'modal-backdrop fade show';
+                            backdrop.style.zIndex = '11990';
+                            document.body.appendChild(backdrop);
+                            backdrop.addEventListener('click', function () {
+                                setModalVisible(false);
+                            });
+                        }
+                    } else {
+                        modal.classList.remove('show');
+                        modal.style.display = 'none';
+                        modal.removeAttribute('aria-modal');
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+
+                        if (backdrop) {
+                            backdrop.remove();
+                            backdrop = null;
+                        }
+                    }
+                }
+
+                async function openCitation(filename) {
+                    if (codeBlock) codeBlock.textContent = 'Loading citation...';
+                    if (errorBox) errorBox.textContent = '';
+                    if (downloadLink) downloadLink.setAttribute('href', filename);
+                    setModalVisible(true);
+
+                    try {
+                        const response = await fetch(filename, { cache: 'no-store' });
+                        if (!response.ok) {
+                            throw new Error(response.status + ' ' + response.statusText);
+                        }
+                        if (codeBlock) codeBlock.textContent = await response.text();
+                    } catch (error) {
+                        if (codeBlock) codeBlock.textContent = '';
+                        if (errorBox) errorBox.textContent = 'Error: ' + error.message;
+                    }
+                }
+
+                document.addEventListener('click', function (event) {
+                    const citeButton = event.target.closest('.js-cite-modal');
+                    if (citeButton) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        openCitation(citeButton.getAttribute('data-filename'));
+                        return;
+                    }
+
+                    if (event.target.closest('#modal [data-dismiss="modal"]')) {
+                        event.preventDefault();
+                        setModalVisible(false);
+                    }
+                }, true);
+
+                document.addEventListener('click', async function (event) {
+                    const copyButton = event.target.closest('.js-copy-cite');
+                    if (!copyButton || !codeBlock) return;
+
+                    event.preventDefault();
+                    const citation = codeBlock.textContent.trim();
+                    if (!citation) return;
+
+                    try {
+                        await navigator.clipboard.writeText(citation);
+                    } catch (error) {
+                        const range = document.createRange();
+                        range.selectNodeContents(codeBlock);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        document.execCommand('copy');
+                        selection.removeAllRanges();
+                    }
+                }, true);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && modal.classList.contains('show')) {
+                        setModalVisible(false);
+                    }
+                });
+            })();
+        </script>
+        <footer>
+            <div><small>ASPLOS short links: access by <code>https://asplos.dev/&lt;year&gt;</code>, e.g.
+                    <a href='https://asplos.dev/2024' target='_blank' class='url'>asplos.dev/2024</a>.</small>
+            </div>
+            <p><small>沪ICP备18048797号-1</small></p>
+        </footer>
 </body>
-<footer>
-    <div><small>ASPLOS short links: access by <code>https://asplos.dev/&lt;year&gt;</code>, e.g.
-            <a href='https://asplos.dev/2024' target='_blank' class='url'>asplos.dev/2024</a>.</small>
-    </div>
-    <p><small>沪ICP备18048797号-1</small></p>
-</footer>
 
 </html>
