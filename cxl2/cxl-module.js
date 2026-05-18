@@ -227,8 +227,8 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix3' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix3';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix4' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-romfix4';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
         ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=${hpcKernelVersion}`, location.href).href;
@@ -367,7 +367,7 @@ const CXL_WEB_CONFIG = (() => {
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260518-worker-import1',
+        })[qemuCore] || '20260518-worker-import2',
         assetBase: ({
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
             build: '/cxl2/images/alpine-x86_64-build/',

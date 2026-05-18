@@ -3724,7 +3724,7 @@ var PThread = {
  allocateUnusedWorker() {
   var worker;
   if (!Module["locateFile"]) {
-   worker = new Worker(new URL("qemu-system-x86_64.worker.js", import.meta.url), {
+   worker = new Worker(new URL("qemu-system-x86_64.worker.js?v=20260518-worker-import2", import.meta.url), {
     type: "module"
    });
   } else {
