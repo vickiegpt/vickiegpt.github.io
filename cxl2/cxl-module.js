@@ -360,7 +360,7 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260516-clientreg'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-ui-cleanup'
         }
     };
 })();

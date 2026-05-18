@@ -156,6 +156,7 @@ pre {
     <div class="topbar">
         <div class="title">CXLMemSim Shared Pool</div>
         <div id="status" class="status">connecting</div>
+        <button id="self-test" type="button">Self Test</button>
         <button id="reset" type="button">Reset Pool</button>
     </div>
     <div class="content">
@@ -281,9 +282,10 @@ if (!window.crossOriginIsolated) {
     setStatus("unsupported", false);
     simFields.mode.textContent = "unsupported";
 } else {
-    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260516-clientreg", "hetgpu-cxlmemsim");
+    const worker = new SharedWorker("./cxlmemsim-pool-worker.js?v=20260518-ui-cleanup", "hetgpu-cxlmemsim");
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
+    let disconnected = false;
 
     fields.pool.textContent = pool;
     fields.size.textContent = formatBytes(size);
@@ -331,8 +333,47 @@ if (!window.crossOriginIsolated) {
     port.postMessage({ type: "connect", role: "ui", clientId, pool, size });
     port.postMessage({ type: "get-status", pool, size });
 
+    const heartbeat = setInterval(() => {
+        port.postMessage({ type: "heartbeat", clientId, pool, size });
+    }, 5000);
+
+    const disconnect = () => {
+        if (disconnected) return;
+        disconnected = true;
+        clearInterval(heartbeat);
+        port.postMessage({ type: "disconnect", clientId, pool, size });
+    };
+    window.addEventListener("pagehide", disconnect, { once: true });
+    window.addEventListener("beforeunload", disconnect, { once: true });
+
+    document.getElementById("self-test").addEventListener("click", () => {
+        const addr = (Date.now() & 0xfffff0) >>> 0;
+        const payload = new Uint8Array(16);
+        for (let i = 0; i < payload.length; i++) payload[i] = (addr + i) & 0xff;
+
+        const writeSab = new SharedArrayBuffer(128 + 81);
+        new Uint8Array(writeSab, 64, payload.length).set(payload);
+        port.postMessage({
+            type: "sync-request", clientId, pool,
+            op: 1, addrLo: addr, addrHi: 0, size: payload.length,
+            valueLo: 0, valueHi: 0, expectedLo: 0, expectedHi: 0,
+            sab: writeSab
+        });
+
+        const readSab = new SharedArrayBuffer(128 + 81);
+        port.postMessage({
+            type: "sync-request", clientId, pool,
+            op: 0, addrLo: addr, addrHi: 0, size: payload.length,
+            valueLo: 0, valueHi: 0, expectedLo: 0, expectedHi: 0,
+            sab: readSab
+        });
+
+        setStatus("self test sent", true);
+        setTimeout(() => port.postMessage({ type: "get-status", pool, size }), 100);
+    });
+
     document.getElementById("reset").addEventListener("click", () => {
-        port.postMessage({ type: "reset", pool, size });
+        port.postMessage({ type: "reset", pool, size, keepClientId: clientId });
     });
 }
 </script>

@@ -27,6 +27,7 @@ const TYPE2_DATA_OFFSET = 26;
 const INV_CAP = 16;
 const STATS_SIZE = 256;
 const WASM_URL = new URL('./cxlmemsim_wasm/cxlmemsim_wasm.mjs', self.location).href;
+const UI_CLIENT_TTL_MS = 30000;
 
 const CXL_T2_MSG_INVALIDATE = 7;
 
@@ -316,6 +317,7 @@ function publishStats(pool, force = false) {
 }
 
 function broadcastStatus(pool) {
+    cleanupStaleUiClients(pool);
     const status = {
         type: 'status', pool: pool.name, size: pool.size,
         clients: Array.from(pool.clients.values()).map((client) => ({
@@ -328,6 +330,18 @@ function broadcastStatus(pool) {
     }
 }
 
+function cleanupStaleUiClients(pool) {
+    const now = Date.now();
+    let changed = false;
+    for (const [id, client] of pool.clients.entries()) {
+        if (client.role !== 'ui') continue;
+        if (now - (client.lastSeen || 0) <= UI_CLIENT_TTL_MS) continue;
+        pool.clients.delete(id);
+        changed = true;
+    }
+    return changed;
+}
+
 function attachPort(port) {
     let client = null;
     port.onmessage = async (event) => {
@@ -338,7 +352,7 @@ function attachPort(port) {
             const id = msg.clientId ||
                 `${msg.role || 'client'}-${Math.random().toString(16).slice(2)}`;
             client = { id, role: msg.role || 'client',
-                       device: msg.device || '', port };
+                       device: msg.device || '', port, lastSeen: Date.now() };
             pool.clients.set(id, client);
             port.postMessage({
                 type: 'connected', clientId: id,
@@ -363,6 +377,11 @@ function attachPort(port) {
             broadcastStatus(pool);
             return;
         }
+        if (client) client.lastSeen = Date.now();
+        if (msg.type === 'heartbeat') {
+            broadcastStatus(pool);
+            return;
+        }
         if (msg.type === 'disconnect') {
             const id = msg.clientId || (client && client.id);
             if (id) pool.clients.delete(id);
@@ -382,6 +401,11 @@ function attachPort(port) {
             pool.bytes.fill(0);
             for (const key of Object.keys(pool.stats)) pool.stats[key] = 0;
             if (bridge) bridge.Module._cxlmemsim_reset();
+            for (const [id, entry] of pool.clients.entries()) {
+                if (entry.role === 'ui' && id !== msg.keepClientId) {
+                    pool.clients.delete(id);
+                }
+            }
             broadcastStatus(pool);
             return;
         }
@@ -399,3 +423,9 @@ self.onconnect = (event) => {
     wlog('onconnect fired');
     attachPort(event.ports[0]);
 };
+
+setInterval(() => {
+    for (const pool of pools.values()) {
+        if (cleanupStaleUiClients(pool)) broadcastStatus(pool);
+    }
+}, 5000);
