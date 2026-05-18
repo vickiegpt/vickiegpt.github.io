@@ -215,8 +215,11 @@ function parseImageConfig(params) {
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
     const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc' : '20260518-tools2';
+    const defaultInitrdUrl = initrdProfile === 'hpc' && /^asplos\.dev$/i.test(location.hostname)
+        ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
+        : new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
-        || new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
+        || defaultInitrdUrl;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])
         || new URL('/cxl2/images/alpine-x86_64/bios-microvm.bin', location.href).href;
     return {
