@@ -168,6 +168,13 @@ function parseNativeCxlParam(params, names, fallback) {
     return fallback;
 }
 
+function parseQemuCpuParam(params) {
+    const raw = params.get('qemu_cpu') || params.get('cpu_model') || '';
+    const value = String(raw || '').trim();
+    if (!value) return '';
+    return /^[A-Za-z0-9_.+,-]+$/.test(value) ? value.slice(0, 128) : '';
+}
+
 function parseExtraKernelArgs(params) {
     const value = params.get('extra_kernel_args') || params.get('kernel_args') || '';
     return String(value)
@@ -273,6 +280,7 @@ const CXL_WEB_CONFIG = (() => {
     const coreParam = params.get('qemu_core') || params.get('core') || '';
     const qemuCoreNames = new Set(['fpcast', 'build', 'safe', 'relfix', 'o3-clean']);
     const qemuCore = qemuCoreNames.has(coreParam) ? coreParam : 'fast';
+    const qemuCpu = parseQemuCpuParam(params);
     const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
@@ -320,6 +328,7 @@ const CXL_WEB_CONFIG = (() => {
         simpleBoot,
         startTimeoutSec,
         qemuCore,
+        qemuCpu,
         diskBus,
         hpet,
         fwCfgDma,
@@ -360,8 +369,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-selftest3',
-            workerName: 'hetgpu-cxlmemsim-20260518-selftest3'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-hpcsigill1',
+            workerName: 'hetgpu-cxlmemsim-20260518-hpcsigill1'
         }
     };
 })();
@@ -859,6 +868,10 @@ function buildQemuArguments() {
         '-device', 'virtio-net-pci,netdev=vmnic,mac=52:54:00:00:10:22,romfile=',
         '-device', 'virtio-rng-pci'
     ];
+    if (CXL_WEB_CONFIG.qemuCpu) {
+        const accelIndex = args.indexOf('-accel');
+        args.splice(accelIndex, 0, '-cpu', CXL_WEB_CONFIG.qemuCpu);
+    }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
         const appendIndex = args.indexOf('-append');
         args.splice(appendIndex, 0, '-initrd', CXL_WEB_CONFIG.image.initrd);

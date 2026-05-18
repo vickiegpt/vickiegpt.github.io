@@ -293,22 +293,25 @@ if [ ! -d "$GROMACS_CXL_DIR" ] && [ -d /home/victoryang00/hetGPU_new/CXLMemSim/w
 fi
 if [ -d "$GROMACS_CXL_DIR" ]; then
     mkdir -p "$WORKDIR/opt/gromacs-cxl/bin" "$WORKDIR/opt/gromacs-cxl/src"
-    for name in test_mpi_cxl; do
-        if [ -x "$GROMACS_CXL_DIR/$name" ]; then
-            copy_to "$GROMACS_CXL_DIR/$name" "/opt/gromacs-cxl/bin/$name"
-            ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
-        fi
-    done
-    for name in test_p2p test_collectives test_onesided; do
+    MPI_TEST_CFLAGS=${MPI_TEST_CFLAGS:-"-O2 -Wall -march=x86-64 -mtune=generic -mno-avx -mno-avx2 -mno-avx512f"}
+    for name in test_mpi_cxl test_p2p test_collectives test_onesided; do
         src="$GROMACS_CXL_DIR/$name.c"
         if [ -f "$src" ] && command -v mpicc >/dev/null 2>&1; then
             copy_to "$src" "/opt/gromacs-cxl/src/$name.c"
-            if mpicc -O2 -Wall -o "$WORKDIR/opt/gromacs-cxl/bin/$name" "$src" -lm; then
+            # Browser QEMU commonly exposes a conservative CPU. Build the
+            # smoke tests for baseline x86-64 so they do not inherit native
+            # AVX/CLWB/etc. codegen from the build host.
+            # shellcheck disable=SC2086
+            if mpicc $MPI_TEST_CFLAGS -o "$WORKDIR/opt/gromacs-cxl/bin/$name" "$src" -lm; then
                 ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
             else
                 echo "warning: failed to compile GROMACS CXL test: $src" >&2
                 rm -f "$WORKDIR/opt/gromacs-cxl/bin/$name"
             fi
+        elif [ -x "$GROMACS_CXL_DIR/$name" ]; then
+            echo "warning: using prebuilt GROMACS CXL test without generic rebuild: $GROMACS_CXL_DIR/$name" >&2
+            copy_to "$GROMACS_CXL_DIR/$name" "/opt/gromacs-cxl/bin/$name"
+            ln -sf "/opt/gromacs-cxl/bin/$name" "$WORKDIR/usr/bin/$name"
         else
             echo "warning: GROMACS CXL test source missing or mpicc unavailable: $src" >&2
         fi

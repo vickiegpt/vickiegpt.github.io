@@ -12,4 +12,5 @@ echo "CXL-CUDA: use cxlcuda-run <program> to LD_PRELOAD /opt/cxlcuda/lib/libcuda
 echo "CXL-MPI: use mpi-cxl-run <program> to LD_PRELOAD /opt/cxlmpi/lib/libmpi_cxl_shim.so."
 echo "MPI local: use mpi-local-run -np 2 <program> to set loopback/PMIx-safe defaults."
 echo "GROMACS: use gromacs-cxl-run -np 2 mdrun ... or gromacs-cxl-smoke."
+echo "GROMACS SIMD note: packaged gmx may SIGILL under browser QEMU; set GMX_PROBE=1 only when testing qemu_cpu=max/no-SIMD builds."
 echo "Tigon: use tigon-ycsb-tiny for a 1s local CXL-transport YCSB run."

@@ -12,6 +12,14 @@ case "$shim" in
     /*) shim_path=$shim ;;
     *) shim_path=/opt/cxlmpi/lib/$shim ;;
 esac
+if [ ! -e "$shim_path" ] && [ -e /opt/cxlmpi/lib/libmpi_cxl_shim_nocc.so ]; then
+    shim_path=/opt/cxlmpi/lib/libmpi_cxl_shim_nocc.so
+fi
+if [ ! -e "$shim_path" ]; then
+    echo "WARN: MPI CXL shim not found: $shim_path; continuing without LD_PRELOAD" >&2
+    unset LD_PRELOAD
+    exec "$@"
+fi
 
 export LD_LIBRARY_PATH="/opt/cxlmpi/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export LD_PRELOAD="$shim_path${LD_PRELOAD:+:$LD_PRELOAD}"

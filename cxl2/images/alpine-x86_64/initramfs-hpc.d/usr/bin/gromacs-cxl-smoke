@@ -12,7 +12,19 @@ command -v gmx
 command -v gmx_mpi
 command -v mpi-local-run
 command -v mpi-cxl-run
-gmx --version 2>/dev/null | head -20 || true
+if [ "${GMX_PROBE:-0}" = "1" ]; then
+    echo
+    echo "Probing gmx --version (may SIGILL on browser QEMU without AVX/SIMD CPU features)"
+    if command -v timeout >/dev/null 2>&1; then
+        timeout -k 1 5 gmx --version 2>&1 | head -20 || \
+            echo "WARN: gmx --version failed; use qemu_cpu=max or a no-SIMD GROMACS build"
+    else
+        gmx --version 2>&1 | head -20 || \
+            echo "WARN: gmx --version failed; use qemu_cpu=max or a no-SIMD GROMACS build"
+    fi
+else
+    echo "Skipping gmx --version by default; set GMX_PROBE=1 to test the packaged GROMACS binary."
+fi
 
 echo
 echo "CXL MPI tests:"
@@ -29,6 +41,9 @@ if command -v test_mpi_cxl >/dev/null 2>&1; then
         exec mpi-cxl-run mpi-local-run --timeout 35 -np "$np" test_mpi_cxl
     fi
     echo "Running singleton test_mpi_cxl through LD_PRELOAD shim"
+    if command -v timeout >/dev/null 2>&1; then
+        exec timeout -k 2 25 mpi-cxl-run test_mpi_cxl
+    fi
     exec mpi-cxl-run test_mpi_cxl
 fi
 
