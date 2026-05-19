@@ -187,8 +187,19 @@ pre {
     color: var(--muted);
 }
 
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 0;
+}
+
 .warn {
     color: var(--warn);
+}
+
+#webgpu-native-output {
+    min-height: 156px;
 }
 
 .segmented {
@@ -262,10 +273,12 @@ pre {
                 <dt>CXLMemSim</dt><dd id="cxlmemsim-label">127.0.0.1:9999</dd>
                 <dt>Fast Boot</dt><dd id="fastboot-label">on</dd>
                 <dt>Backend</dt><dd id="webgpu-status">webgpu probing</dd>
+                <dt>Native GPU</dt><dd id="webgpu-native-status">not initialized</dd>
             </dl>
-            <p>
+            <p class="inline-actions">
                 <button id="open-cxlmemsim" type="button">Open CXLMemSim</button>
                 <button id="open-hpc-tools" type="button">HPC Tools</button>
+                <button id="run-webgpu-native" type="button" onclick="window.HETGPU_RUN_WEBGPU_NATIVE && window.HETGPU_RUN_WEBGPU_NATIVE()">WebGPU Compute Test</button>
             </p>
         </section>
         <section class="section">
@@ -277,6 +290,11 @@ pre {
                 <button type="button" data-profile="type3">Type3</button>
             </div>
             <p class="note">Changing profile reloads the page before VM boot.</p>
+        </section>
+        <section class="section">
+            <h2>Native WebGPU Compute</h2>
+            <pre id="webgpu-native-output">not run</pre>
+            <p class="note">Runs in the browser GPU process. Current QEMU wasm still reports Type2 `hetgpu-backend=5` until QEMU is rebuilt with the JS bridge import.</p>
         </section>
         <section class="section">
             <h2>Guest Probe</h2>
@@ -344,12 +362,13 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix17.js?v=20260518-romfix39-real-ld-file"></script>
+<script src="./cxl-module-romfix17.js?v=20260519-native-webgpu-mem1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
 import "https://unpkg.com/xterm-pty/index.js";
 import { Start as startNetworkStack } from "./images/alpine-x86_64/stack.js?v=20260512-numfix";
+import { installHetgpuWebGpuNative, formatHetgpuWebGpuBenchmark } from "./hetgpu-webgpu-native.js?v=20260519-native-webgpu1";
 
 const status = document.getElementById("status");
 const startButton = document.getElementById("start");
@@ -366,11 +385,16 @@ const openHpcToolsButton = document.getElementById("open-hpc-tools");
 const fastbootLabel = document.getElementById("fastboot-label");
 const activeArgs = document.getElementById("active-args");
 const webgpuStatus = document.getElementById("webgpu-status");
+const webgpuNativeStatus = document.getElementById("webgpu-native-status");
+const runWebgpuNativeButton = document.getElementById("run-webgpu-native");
+const webgpuNativeOutput = document.getElementById("webgpu-native-output");
 const commandInput = document.getElementById("command-input");
 const sendCommandButton = document.getElementById("send-command");
 const sendCxlProbeButton = document.getElementById("send-cxl-probe");
 const sendBreakButton = document.getElementById("send-break");
 let booted = false;
+let nativeWebgpuState = null;
+const autoWebgpuBenchmark = new URLSearchParams(location.search).get("webgpu_bench") === "1";
 
 const term = new Terminal({
     cols: 112,
@@ -508,18 +532,75 @@ openHpcToolsButton.addEventListener("click", () => {
 async function probeWebGPU() {
     if (!("gpu" in navigator)) {
         webgpuStatus.textContent = "webgpu unavailable";
+        webgpuNativeStatus.textContent = "unavailable";
+        runWebgpuNativeButton.disabled = true;
         return;
     }
     try {
-        const adapter = await navigator.gpu.requestAdapter();
-        webgpuStatus.textContent = adapter ? "webgpu ready" : "webgpu no adapter";
-        window.HETGPU_WEBGPU_ADAPTER = adapter || null;
+        nativeWebgpuState = await installHetgpuWebGpuNative();
+        window.HETGPU_WEBGPU_NATIVE = nativeWebgpuState;
+        Module.HETGPU_WEBGPU_NATIVE = nativeWebgpuState;
+        if (nativeWebgpuState.ready) {
+            const adapter = nativeWebgpuState.backend.adapter;
+            const info = nativeWebgpuState.backend.adapterInfo || {};
+            const label = [info.description, info.vendor, info.architecture].filter(Boolean).join(" ") || "native adapter";
+            webgpuStatus.textContent = "native webgpu ready";
+            webgpuNativeStatus.textContent = label;
+            window.HETGPU_WEBGPU_ADAPTER = adapter || null;
+            runWebgpuNativeButton.disabled = false;
+        } else {
+            webgpuStatus.textContent = "webgpu no adapter";
+            webgpuNativeStatus.textContent = nativeWebgpuState.error?.message || "no adapter";
+            runWebgpuNativeButton.disabled = true;
+        }
     } catch (error) {
         webgpuStatus.textContent = "webgpu blocked";
+        webgpuNativeStatus.textContent = error && error.message ? error.message : "blocked";
+        runWebgpuNativeButton.disabled = true;
     }
 }
 
 probeWebGPU();
+
+async function runWebgpuNativeBenchmark() {
+    runWebgpuNativeButton.disabled = true;
+    webgpuNativeOutput.textContent = "running...";
+    try {
+        if (!nativeWebgpuState || !nativeWebgpuState.ready) {
+            nativeWebgpuState = await installHetgpuWebGpuNative();
+            window.HETGPU_WEBGPU_NATIVE = nativeWebgpuState;
+            Module.HETGPU_WEBGPU_NATIVE = nativeWebgpuState;
+        }
+        if (!nativeWebgpuState.ready) {
+            throw nativeWebgpuState.error || new Error("native WebGPU backend is not ready");
+        }
+        const result = await nativeWebgpuState.benchmark({
+            copyBytes: 4 * 1024 * 1024,
+            copyMode: "transform",
+            hitmLines: 64,
+            hitmIterations: 1000
+        });
+        const text = formatHetgpuWebGpuBenchmark(result);
+        webgpuNativeOutput.textContent = text;
+        webgpuNativeStatus.textContent = `copy ${result.copy.bandwidthMBps.toFixed(1)} MB/s`;
+        term.writeln("WEBGPU_NATIVE_BENCH_START");
+        for (const line of text.split("\n")) {
+            term.writeln(line);
+        }
+        term.writeln("WEBGPU_NATIVE_BENCH_DONE");
+    } catch (error) {
+        const message = error && error.stack ? error.stack : String(error);
+        webgpuNativeOutput.textContent = message;
+        webgpuNativeStatus.textContent = "error";
+        term.writeln(`WEBGPU_NATIVE_ERROR ${error && error.message ? error.message : error}`);
+    } finally {
+        runWebgpuNativeButton.disabled = !nativeWebgpuState?.ready;
+    }
+}
+window.HETGPU_RUN_WEBGPU_NATIVE = runWebgpuNativeBenchmark;
+if (autoWebgpuBenchmark) {
+    setTimeout(() => runWebgpuNativeBenchmark(), 0);
+}
 
 const { master, slave } = openpty();
 term.loadAddon(master);
@@ -708,6 +789,7 @@ async function start() {
 
 startButton.addEventListener("click", start);
 resetButton.addEventListener("click", () => location.reload());
+runWebgpuNativeButton.addEventListener("click", runWebgpuNativeBenchmark);
 sendCommandButton.addEventListener("click", () => sendGuestText(commandInput.value));
 sendCxlProbeButton.addEventListener("click", sendCxlProbe);
 sendBreakButton.addEventListener("click", () => {

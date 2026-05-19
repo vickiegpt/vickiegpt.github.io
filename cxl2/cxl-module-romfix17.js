@@ -283,6 +283,8 @@ const CXL_WEB_CONFIG = (() => {
     const profile = validProfiles.has(cxlParam) ? cxlParam : 'type2';
     const cxlDisabled = cxlParam === 'off' || cxlParam === 'none' || params.get('no_cxl') === '1';
     const backend = params.get('hetgpu') || 'webgpu';
+    const backendName = String(backend || '').trim().toLowerCase();
+    const webgpuNative = ['webgpu', 'webgpu-native', 'native-webgpu'].includes(backendName);
     const cxlmemsim = parseCxlmemsimEndpoint(params);
     const nativeType1 = parseNativeCxlParam(params, ['native_type1', 'cxl_type1'], true);
     const nativeType2 = parseNativeCxlParam(params, ['native_type2', 'cxl_type2'], true);
@@ -330,6 +332,13 @@ const CXL_WEB_CONFIG = (() => {
     const diskBus = params.get('disk_bus') === 'legacy' || params.get('disk_bus') === 'sata' ? 'legacy' : 'virtio';
     const tcgThread = params.get('tcg_thread') === 'single' ? 'single' : 'multi';
     const tbSize = parseIntegerParam(params, ['qemu_tb_size', 'tb_size', 'tcg_tb_size'], 500, 32, 1024);
+    const memoryBytes = parseByteSizeParam(
+        params,
+        ['qemu_mem', 'qemu_memory', 'guest_mem', 'guest_memory', 'memory', 'mem'],
+        0,
+        256 * 1024 * 1024,
+        2048 * 1024 * 1024
+    );
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const kernelIrqchipParam = String(params.get('kernel_irqchip') || params.get('kernel-irqchip') || '').toLowerCase();
@@ -406,6 +415,7 @@ const CXL_WEB_CONFIG = (() => {
             thread: tcgThread,
             tbSize
         },
+        memoryBytes,
         assetVersion: ({
             fast: '20260518-worker-import2',
             fpcast: '20260512-numfix',
@@ -439,7 +449,8 @@ const CXL_WEB_CONFIG = (() => {
             size: cxlmemsimSize,
             workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-multihost1',
             workerName: 'hetgpu-cxlmemsim-20260518-multihost1'
-        }
+        },
+        webgpuNative
     };
 })();
 
@@ -451,7 +462,9 @@ Module['ENV'] = {
     CXL_MEMSIM_POOL: CXL_WEB_CONFIG.cxlmemsim.pool,
     CXL_MEMSIM_SIZE: String(CXL_WEB_CONFIG.cxlmemsim.size),
     CXL_MEMSIM_TRANSPORT: CXL_WEB_CONFIG.cxlmemsim.qemuTransport,
-    CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.qemuTransport
+    CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.qemuTransport,
+    HETGPU_BACKEND: CXL_WEB_CONFIG.backend,
+    HETGPU_WEBGPU_NATIVE: CXL_WEB_CONFIG.webgpuNative ? '1' : '0'
 };
 Module['HETGPU_CXL_MEMSIM_WORKER_URL'] = new URL(
     CXL_WEB_CONFIG.cxlmemsim.workerUrl,
@@ -522,7 +535,18 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
     }
     if (eager) {
-        FS.writeFile(`${parent}/${name}`, responseBytes(request('GET', url)), { canOwn: true });
+        const bytes = responseBytes(request('GET', url));
+        const sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
+        if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
+            throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+        }
+        if (/\.gz$/i.test(name) && !(bytes[0] === 0x1f && bytes[1] === 0x8b)) {
+            throw new Error(`${url} is not a gzip initramfs`);
+        }
+        if (/\.cpio$/i.test(name) && !/^07070[12]/.test(sample)) {
+            throw new Error(`${url} is not a newc cpio initramfs`);
+        }
+        FS.writeFile(`${parent}/${name}`, bytes, { canOwn: true });
         return;
     }
 
@@ -718,6 +742,15 @@ function buildQemuArguments() {
     const virtioDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus !== 'legacy';
     const legacyDisk = CXL_WEB_CONFIG.attachDisk && CXL_WEB_CONFIG.diskBus === 'legacy';
     const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
+    const hpcInitrd = CXL_WEB_CONFIG.image?.initrdProfile === 'hpc';
+    const needsMemorySlots = type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem';
+    const defaultMemoryBytes = hpcInitrd ? 1152 * 1024 * 1024 : 768 * 1024 * 1024;
+    const memoryBytes = CXL_WEB_CONFIG.memoryBytes || defaultMemoryBytes;
+    const memoryMb = Math.ceil(memoryBytes / (1024 * 1024));
+    const maxMemoryMb = Math.max(memoryMb + 512, hpcInitrd ? 2048 : 1536);
+    const memoryArg = needsMemorySlots
+        ? `${memoryMb}M,maxmem=${maxMemoryMb}M,slots=4`
+        : `${memoryMb}M`;
     const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
         'systemd.mask=apt-daily.service',
         'systemd.mask=apt-daily.timer',
@@ -985,7 +1018,7 @@ function buildQemuArguments() {
         '-nographic',
         '-no-user-config',
         '-M', machine,
-        '-m', (type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem') ? '768M,maxmem=1536M,slots=4' : '768M',
+        '-m', memoryArg,
         '-smp', '1,sockets=1',
         '-accel', accel,
         '-boot', 'menu=off',
@@ -1069,8 +1102,9 @@ function buildQemuArguments() {
                     'gpu-mode=2',
                     /* QEMU hetgpu-backend is UINT32 enum (cxl_hetgpu.h):
                      *   0=AUTO 1=INTEL 2=AMD 3=NVIDIA 4=TENSTORRENT 5=SIMULATION
-                     * Browser env has no native GPU → use SIMULATION. */
-                    `hetgpu-backend=${({intel:1,amd:2,nvidia:3,tenstorrent:4,simulation:5,webgpu:5,sim:5,auto:0})[String(CXL_WEB_CONFIG.backend).toLowerCase()] ?? 5}`,
+                     * The browser native WebGPU service is exposed through JS; this
+                     * pre-bridge wasm still uses the QEMU SIMULATION enum. */
+                    `hetgpu-backend=${({intel:1,amd:2,nvidia:3,tenstorrent:4,simulation:5,webgpu:5,'webgpu-native':5,'native-webgpu':5,sim:5,auto:0})[String(CXL_WEB_CONFIG.backend).toLowerCase()] ?? 5}`,
                     'hetgpu-device=0',
                     'id=cxl-type2-hetgpu0'
                 ].join(',')
