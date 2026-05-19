@@ -227,7 +227,7 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix17' : '20260518-tools2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix19-daxdiag' : '20260518-tools2';
     const hpcKernelVersion = '20260518-romfix17';
     const pcBiosVersion = '20260518-bios256-1';
     const efiE1000RomVersion = '20260518-e1000-1';
