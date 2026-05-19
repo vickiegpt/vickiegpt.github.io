@@ -226,9 +226,9 @@ function parseImageConfig(params) {
     if (initrdProfile === 'shell' && /hpc|mpi|openmpi|gromacs|gmx|llama|tigon/i.test(explicitInitrdText)) {
         initrdProfile = 'hpc';
     }
-    const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix19-daxdiag' : '20260518-tools2';
-    const hpcKernelVersion = '20260518-romfix17';
+    const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc-dax2.cpio.gz' : 'initramfs-shell.cpio';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix34-real-ld-file' : '20260518-tools2';
+    const hpcKernelVersion = '20260518-genlrelax-v2-devdax';
     const pcBiosVersion = '20260518-bios256-1';
     const efiE1000RomVersion = '20260518-e1000-1';
     const defaultHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
@@ -338,6 +338,18 @@ const CXL_WEB_CONFIG = (() => {
     const nodefaults = params.get('nodefaults') === '1' && params.get('defaults') !== '1';
     const rtcParam = String(params.get('rtc') || '').toLowerCase();
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
+    const daxFallbackParam = String(
+        params.get('dax_fallback') || params.get('virtio_pmem') || params.get('pmem_dax') || ''
+    ).toLowerCase();
+    const daxFallbackDisabled = ['0', 'false', 'off', 'no', 'none'].includes(daxFallbackParam);
+    const daxFallbackRequested = ['1', 'true', 'on', 'yes', 'virtio', 'pmem', 'devdax'].includes(daxFallbackParam);
+    const daxFallbackEnabled = !daxFallbackDisabled
+        && (daxFallbackRequested || (requestedInitrdProfile === 'hpc' && (profile === 'type3' || profile === 'all')));
+    const daxFallbackMode = daxFallbackEnabled
+        ? (['virtio', 'virtio-pmem', 'virtio_pmem'].includes(daxFallbackParam) || params.get('virtio_pmem') === '1'
+            ? 'virtio-pmem'
+            : 'e820-pmem')
+        : 'off';
     const extraKernelArgs = parseExtraKernelArgs(params);
     const image = parseImageConfig(params);
     const kernelExplicit = ['kernel_url', 'bzimage_url', 'bzImage_url'].some((name) => params.get(name));
@@ -386,6 +398,8 @@ const CXL_WEB_CONFIG = (() => {
         fwCfgDma,
         nodefaults,
         rtc,
+        daxFallbackEnabled,
+        daxFallbackMode,
         cxlRootPortReserve,
         extraKernelArgs,
         tcg: {
@@ -795,7 +809,17 @@ function buildQemuArguments() {
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
-    const q35TimerAppend = [
+    const q35TimerAppend = CXL_WEB_CONFIG.qemuCpu ? [
+        'notsc',
+        'lpj=1000000',
+        'nolapic_timer',
+        'no_timer_check',
+        'nohz=off',
+        'highres=off',
+        'nowatchdog',
+        'nmi_watchdog=0',
+        'nosoftlockup'
+    ] : [
         'clocksource=tsc',
         'tsc=reliable',
         'no_timer_check',
@@ -805,9 +829,14 @@ function buildQemuArguments() {
         'nmi_watchdog=0',
         'nosoftlockup'
     ];
+    const q35InitcallBlacklist = [
+        ...(legacyDisk ? [] : ['ahci_pci_driver_init'])
+    ];
     const q35FastShellAppend = [
         ...q35TimerAppend,
-        ...(legacyDisk ? [] : ['initcall_blacklist=ahci_pci_driver_init'])
+        ...(CXL_WEB_CONFIG.daxFallbackMode === 'e820-pmem' ? ['memmap=64M!512M'] : []),
+        ...(CXL_WEB_CONFIG.qemuCpu ? ['genl_relax_init=1'] : []),
+        ...(q35InitcallBlacklist.length ? [`initcall_blacklist=${q35InitcallBlacklist.join(',')}`] : [])
     ];
     const directShellAppend = [
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
@@ -956,7 +985,7 @@ function buildQemuArguments() {
         '-nographic',
         '-no-user-config',
         '-M', machine,
-        '-m', type3Enabled ? '768M,maxmem=1536M,slots=4' : '768M',
+        '-m', (type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem') ? '768M,maxmem=1536M,slots=4' : '768M',
         '-smp', '1,sockets=1',
         '-accel', accel,
         '-boot', 'menu=off',
@@ -1071,6 +1100,23 @@ function buildQemuArguments() {
             '-device', 'cxl-type3,bus=root_port13,volatile-memdev=vmem0,id=cxl-vmem0,sn=0x1',
             '-M', 'cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=256M'
         );
+    }
+
+    if (CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem') {
+        args.push(
+            '-object', 'memory-backend-ram,id=daxpmem0,share=on,size=64M',
+            '-device', 'virtio-pmem-pci,bus=pcie.0,memdev=daxpmem0,id=dax-pmem0'
+        );
+    }
+
+    if (CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem') {
+        for (const option of ['-kernel', '-initrd', '-append']) {
+            const index = args.indexOf(option);
+            if (index >= 0) {
+                const pair = args.splice(index, 2);
+                args.push(...pair);
+            }
+        }
     }
 
     return args;
