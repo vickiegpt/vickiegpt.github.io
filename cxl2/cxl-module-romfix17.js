@@ -870,10 +870,10 @@ function buildQemuArguments() {
         ? `${memoryMb}M,maxmem=${maxMemoryMb}M,slots=4`
         : `${memoryMb}M`;
     const defaultType2MemBytes = hpcInitrd && !CXL_WEB_CONFIG.unsafeGuestMemory
-        ? 64 * 1024 * 1024
+        ? 32 * 1024 * 1024
         : 256 * 1024 * 1024;
     const defaultType2CacheBytes = hpcInitrd && !CXL_WEB_CONFIG.unsafeGuestMemory
-        ? 16 * 1024 * 1024
+        ? 8 * 1024 * 1024
         : 64 * 1024 * 1024;
     const type2MemMb = Math.ceil((CXL_WEB_CONFIG.type2MemBytes || defaultType2MemBytes) / (1024 * 1024));
     const type2CacheMb = Math.ceil((CXL_WEB_CONFIG.type2CacheBytes || defaultType2CacheBytes) / (1024 * 1024));
@@ -1001,6 +1001,7 @@ function buildQemuArguments() {
         ...(CXL_WEB_CONFIG.useInitrd ? commonAppend : baseAppend),
         ...(!CXL_WEB_CONFIG.fastShellMicrovm ? q35FastShellAppend : []),
         CXL_WEB_CONFIG.useInitrd ? 'rdinit=/init' : 'init=/bin/sh',
+        ...(CXL_WEB_CONFIG.useInitrd ? ['rootfstype=ramfs'] : []),
         ...directBootLogArgs,
         ...runtimeAppend,
         ...(CXL_WEB_CONFIG.debug ? cxlDebug : [])
