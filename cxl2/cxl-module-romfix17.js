@@ -95,6 +95,34 @@ function firstUrlParam(params, names) {
     return null;
 }
 
+function githubLfsMediaUrl(value) {
+    let parsed;
+    try {
+        parsed = new URL(value, location.href);
+    } catch (error) {
+        return null;
+    }
+    if (parsed.hostname === 'raw.githubusercontent.com') {
+        const parts = parsed.pathname.split('/').filter(Boolean);
+        if (parts.length >= 4) {
+            const [owner, repo, ref, ...pathParts] = parts;
+            parsed.hostname = 'media.githubusercontent.com';
+            parsed.pathname = `/media/${owner}/${repo}/${ref}/${pathParts.join('/')}`;
+            return parsed.href;
+        }
+    }
+    if (parsed.hostname === 'github.com') {
+        const parts = parsed.pathname.split('/').filter(Boolean);
+        if (parts.length >= 5 && parts[2] === 'raw') {
+            const [owner, repo, , ref, ...pathParts] = parts;
+            parsed.hostname = 'media.githubusercontent.com';
+            parsed.pathname = `/media/${owner}/${repo}/${ref}/${pathParts.join('/')}`;
+            return parsed.href;
+        }
+    }
+    return null;
+}
+
 function parseTimeoutSeconds(params, names, fallback) {
     for (const name of names) {
         const raw = params.get(name);
@@ -227,7 +255,7 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc-dax2.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260518-hpc-romfix34-real-ld-file' : '20260518-tools2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260519-hpc-lfsmedia1' : '20260518-tools2';
     const hpcKernelVersion = '20260518-genlrelax-v2-devdax';
     const pcBiosVersion = '20260518-bios256-1';
     const efiE1000RomVersion = '20260518-e1000-1';
@@ -239,7 +267,7 @@ function parseImageConfig(params) {
             ? new URL('bzImage', imageDir).href
             : (initrdProfile === 'hpc' ? defaultHpcKernelUrl : '/about/bzImage'));
     const defaultInitrdUrl = initrdProfile === 'hpc' && /^asplos\.dev$/i.test(location.hostname)
-        ? `https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
+        ? `https://media.githubusercontent.com/media/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
         : new URL(`/cxl2/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
         || defaultInitrdUrl;
@@ -535,10 +563,17 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
     }
     if (eager) {
-        const bytes = responseBytes(request('GET', url));
-        const sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
+        let bytes = responseBytes(request('GET', url));
+        let sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
         if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
-            throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+            const mediaUrl = githubLfsMediaUrl(url);
+            if (mediaUrl && mediaUrl !== url) {
+                bytes = responseBytes(request('GET', mediaUrl));
+                sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
+            }
+            if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
+                throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+            }
         }
         if (/\.gz$/i.test(name) && !(bytes[0] === 0x1f && bytes[1] === 0x8b)) {
             throw new Error(`${url} is not a gzip initramfs`);
