@@ -367,6 +367,20 @@ const CXL_WEB_CONFIG = (() => {
         256 * 1024 * 1024,
         2048 * 1024 * 1024
     );
+    const type2MemBytes = parseByteSizeParam(
+        params,
+        ['cxl_type2_mem', 'type2_mem', 'cxl_mem', 'hetgpu_mem'],
+        0,
+        16 * 1024 * 1024,
+        256 * 1024 * 1024
+    );
+    const type2CacheBytes = parseByteSizeParam(
+        params,
+        ['cxl_type2_cache', 'type2_cache', 'cxl_cache', 'hetgpu_cache'],
+        0,
+        8 * 1024 * 1024,
+        128 * 1024 * 1024
+    );
     const cxlRootPortReserve = params.get('cxl_rp_reserve') !== '0';
     const hpet = params.get('hpet') === 'on' ? 'on' : 'off';
     const kernelIrqchipParam = String(params.get('kernel_irqchip') || params.get('kernel-irqchip') || '').toLowerCase();
@@ -446,6 +460,8 @@ const CXL_WEB_CONFIG = (() => {
             tbSize
         },
         memoryBytes,
+        type2MemBytes,
+        type2CacheBytes,
         assetVersion: ({
             fast: '20260518-worker-import2',
             fpcast: '20260512-numfix',
@@ -805,12 +821,14 @@ function buildQemuArguments() {
     const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
     const hpcInitrd = CXL_WEB_CONFIG.image?.initrdProfile === 'hpc';
     const needsMemorySlots = type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem';
+    const safeHpcAttachBytes = 640 * 1024 * 1024;
+    const safeHpcBytes = 768 * 1024 * 1024;
     const defaultMemoryBytes = hpcInitrd
-        ? (CXL_WEB_CONFIG.attachDisk ? 896 * 1024 * 1024 : 1024 * 1024 * 1024)
+        ? (CXL_WEB_CONFIG.attachDisk ? safeHpcAttachBytes : safeHpcBytes)
         : 768 * 1024 * 1024;
     const requestedMemoryBytes = CXL_WEB_CONFIG.memoryBytes || defaultMemoryBytes;
     const safeMemoryBytes = hpcInitrd
-        ? (CXL_WEB_CONFIG.attachDisk ? 896 * 1024 * 1024 : 1024 * 1024 * 1024)
+        ? (CXL_WEB_CONFIG.attachDisk ? safeHpcAttachBytes : safeHpcBytes)
         : requestedMemoryBytes;
     const memoryBytes = CXL_WEB_CONFIG.unsafeGuestMemory
         ? requestedMemoryBytes
@@ -820,6 +838,14 @@ function buildQemuArguments() {
     const memoryArg = needsMemorySlots
         ? `${memoryMb}M,maxmem=${maxMemoryMb}M,slots=4`
         : `${memoryMb}M`;
+    const defaultType2MemBytes = hpcInitrd && !CXL_WEB_CONFIG.unsafeGuestMemory
+        ? 64 * 1024 * 1024
+        : 256 * 1024 * 1024;
+    const defaultType2CacheBytes = hpcInitrd && !CXL_WEB_CONFIG.unsafeGuestMemory
+        ? 16 * 1024 * 1024
+        : 64 * 1024 * 1024;
+    const type2MemMb = Math.ceil((CXL_WEB_CONFIG.type2MemBytes || defaultType2MemBytes) / (1024 * 1024));
+    const type2CacheMb = Math.ceil((CXL_WEB_CONFIG.type2CacheBytes || defaultType2CacheBytes) / (1024 * 1024));
     const fastBootMasks = CXL_WEB_CONFIG.fastBoot ? [
         'systemd.mask=apt-daily.service',
         'systemd.mask=apt-daily.timer',
@@ -1162,8 +1188,8 @@ function buildQemuArguments() {
                 '-device', [
                     'cxl-type2',
                     'bus=root_port14',
-                    'cache-size=64M',
-                    'mem-size=256M',
+                    `cache-size=${type2CacheMb}M`,
+                    `mem-size=${type2MemMb}M`,
                     'sn=0x2',
                     `cxlmemsim-addr=${CXL_WEB_CONFIG.cxlmemsim.host}`,
                     `cxlmemsim-port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
