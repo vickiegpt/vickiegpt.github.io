@@ -301,10 +301,6 @@ pre {
             <pre>mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
-modprobe cxl_core 2>/dev/null || true
-modprobe cxl_acpi 2>/dev/null || true
-modprobe cxl_pci 2>/dev/null || true
-modprobe cxl_mem 2>/dev/null || true
 modprobe virtio_net 2>/dev/null || true
 ip link set lo up 2>/dev/null || true
 ip link set eth0 up 2>/dev/null || true
@@ -317,7 +313,7 @@ export http_proxy=http://192.168.127.253:80
 export https_proxy=http://192.168.127.253:80
 wget -O - http://example.com 2>/dev/null | head
 hpc-status 2>/dev/null || true
-for x in mpirun mpiexec ompi_info gmx_mpi gmx llama-cli llama-bench cxl_init cxl_recover_meta; do command -v "$x" 2>/dev/null; done
+for x in mpirun mpiexec ompi_info gmx_mpi gmx llama-cli llama-bench cxlcuda-run cxl-type2-test cxl-type3-test dax-access-test; do command -v "$x" 2>/dev/null; done
 if command -v timeout >/dev/null 2>&1; then
   timeout 5 dmesg 2>/dev/null | tail -n 300 | grep -Ei 'cxl|dax|numa|memsim|hetgpu' | tail -n 80
 else
@@ -326,7 +322,10 @@ fi
 find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
 lspci 2>/dev/null | grep -i cxl
 find /sys/bus/pci/devices -maxdepth 1 -type l
-grep -R . /sys/module/hetgpu/parameters 2>/dev/null</pre>
+grep -R . /sys/module/hetgpu/parameters 2>/dev/null
+cxl-type2-test 2>/dev/null || true
+find /dev -maxdepth 2 -name 'dax*' -print 2>/dev/null
+dax-access-test /dev/dax0.0 2>/dev/null || true</pre>
             <p class="note">Default boot uses the in-memory initramfs shell and does not wait for `/about/qemu.img`. Add `hpc=1` for the optional MPI/GROMACS/llama/tigon tools image, `rootdisk=1` to boot the remote image, or `attach_disk=1` to expose it from the shell.</p>
         </section>
         <section class="section">
@@ -361,7 +360,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix17.js?v=20260519-native-webgpu-oomfix6"></script>
+<script src="./cxl-module-romfix20.js?v=20260519-dax-einjskip1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
