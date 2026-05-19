@@ -795,7 +795,18 @@ function buildQemuArguments() {
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
+    const q35TimerAppend = [
+        'clocksource=tsc',
+        'tsc=reliable',
+        'no_timer_check',
+        'nohz=off',
+        'highres=off',
+        'nowatchdog',
+        'nmi_watchdog=0',
+        'nosoftlockup'
+    ];
     const q35FastShellAppend = [
+        ...q35TimerAppend,
         ...(legacyDisk ? [] : ['initcall_blacklist=ahci_pci_driver_init'])
     ];
     const directShellAppend = [
