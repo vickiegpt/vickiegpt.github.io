@@ -852,7 +852,7 @@ function buildQemuArguments() {
     const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
     const hpcInitrd = CXL_WEB_CONFIG.image?.initrdProfile === 'hpc';
     const needsMemorySlots = type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem';
-    const safeHpcAttachBytes = 640 * 1024 * 1024;
+    const safeHpcAttachBytes = 768 * 1024 * 1024;
     const safeHpcBytes = 768 * 1024 * 1024;
     const defaultMemoryBytes = hpcInitrd
         ? (CXL_WEB_CONFIG.attachDisk ? safeHpcAttachBytes : safeHpcBytes)
