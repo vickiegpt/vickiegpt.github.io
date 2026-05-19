@@ -968,19 +968,10 @@ function buildQemuArguments() {
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
     ];
-    const q35TimerAppend = CXL_WEB_CONFIG.qemuCpu ? [
+    const q35TimerAppend = [
         'notsc',
         'lpj=1000000',
         'nolapic_timer',
-        'no_timer_check',
-        'nohz=off',
-        'highres=off',
-        'nowatchdog',
-        'nmi_watchdog=0',
-        'nosoftlockup'
-    ] : [
-        'clocksource=tsc',
-        'tsc=reliable',
         'no_timer_check',
         'nohz=off',
         'highres=off',
