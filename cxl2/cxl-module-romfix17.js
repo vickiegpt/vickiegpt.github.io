@@ -528,6 +528,7 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const allowFullFallback = options.allowFullFallback === true;
     const maxFullFallbackSize = options.maxFullFallbackSize || 64 * 1024 * 1024;
     const validateMagic = options.validateMagic === true;
+    const dropCacheAfterMmap = options.dropCacheAfterMmap === true;
     let fullFile = null;
 
     if (options.githubLfsMedia === true) {
@@ -732,8 +733,37 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         allocate() {
             throw new FS.ErrnoError(63);
         },
-        mmap() {
-            throw new FS.ErrnoError(43);
+        mmap(stream, length, position) {
+            const malloc = mod['___libc_malloc'] || mod['_emscripten_builtin_malloc'] || mod['_malloc'];
+            const heap = mod.HEAPU8;
+            if (typeof malloc !== 'function' || !heap) {
+                throw new FS.ErrnoError(48);
+            }
+            const ptr = malloc(length);
+            if (!ptr) {
+                throw new FS.ErrnoError(48);
+            }
+            const available = Math.min(length, Math.max(0, size - position));
+            let copied = 0;
+            while (copied < available) {
+                const absolute = position + copied;
+                const chunkIndex = Math.floor(absolute / chunkSize);
+                const chunkOffset = absolute % chunkSize;
+                const chunk = getChunk(chunkIndex);
+                const part = Math.min(available - copied, chunk.length - chunkOffset);
+                heap.set(chunk.subarray(chunkOffset, chunkOffset + part), ptr + copied);
+                copied += part;
+            }
+            if (copied < length) {
+                heap.fill(0, ptr + copied, ptr + length);
+            }
+            if (dropCacheAfterMmap) {
+                chunks.clear();
+            }
+            return {
+                ptr,
+                allocated: true
+            };
         },
         msync() {
             throw new FS.ErrnoError(43);
@@ -760,7 +790,8 @@ Module['preRun'].push((mod) => {
             githubLfsMedia: hpcInitrd,
             validateMagic: hpcInitrd,
             chunkSize: hpcInitrd ? 8 * 1024 * 1024 : 4 * 1024 * 1024,
-            maxChunks: hpcInitrd ? 3 : 64,
+            maxChunks: hpcInitrd ? 1 : 64,
+            dropCacheAfterMmap: hpcInitrd,
             allowFullFallback: true,
             maxFullFallbackSize: CXL_WEB_CONFIG.image.initrdProfile === 'hpc'
                 ? 512 * 1024 * 1024
