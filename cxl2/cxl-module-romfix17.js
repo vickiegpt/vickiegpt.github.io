@@ -375,6 +375,7 @@ const CXL_WEB_CONFIG = (() => {
     const nodefaults = params.get('nodefaults') === '1' && params.get('defaults') !== '1';
     const rtcParam = String(params.get('rtc') || '').toLowerCase();
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
+    const unsafeGuestMemory = params.get('unsafe_mem') === '1' || params.get('allow_oom_mem') === '1';
     const daxFallbackParam = String(
         params.get('dax_fallback') || params.get('virtio_pmem') || params.get('pmem_dax') || ''
     ).toLowerCase();
@@ -435,6 +436,7 @@ const CXL_WEB_CONFIG = (() => {
         fwCfgDma,
         nodefaults,
         rtc,
+        unsafeGuestMemory,
         daxFallbackEnabled,
         daxFallbackMode,
         cxlRootPortReserve,
@@ -509,7 +511,12 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const eager = options.eager === true;
     const allowFullFallback = options.allowFullFallback === true;
     const maxFullFallbackSize = options.maxFullFallbackSize || 64 * 1024 * 1024;
+    const validateMagic = options.validateMagic === true;
     let fullFile = null;
+
+    if (options.githubLfsMedia === true) {
+        url = githubLfsMediaUrl(url) || url;
+    }
 
     function request(method, requestUrl, start, end) {
         const xhr = new XMLHttpRequest();
@@ -641,6 +648,20 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         return data;
     }
 
+    if (validateMagic) {
+        const bytes = getChunk(0);
+        const sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
+        if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
+            throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+        }
+        if (/\.gz$/i.test(name) && !(bytes[0] === 0x1f && bytes[1] === 0x8b)) {
+            throw new Error(`${url} is not a gzip initramfs`);
+        }
+        if (/\.cpio$/i.test(name) && !/^07070[12]/.test(sample)) {
+            throw new Error(`${url} is not a newc cpio initramfs`);
+        }
+    }
+
     const node = FS.createFile(parent, name, null, true, writable);
     node.usedBytes = size;
     node.contents = { length: size };
@@ -712,13 +733,18 @@ Module['preRun'].push((mod) => {
     if (CXL_WEB_CONFIG.attachDisk) {
         createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, {
             writable: true,
-            chunkSize: 16 * 1024 * 1024,
-            maxChunks: 32
+            chunkSize: 4 * 1024 * 1024,
+            maxChunks: 4
         });
     }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
+        const hpcInitrd = CXL_WEB_CONFIG.image.initrdProfile === 'hpc';
         createRangeBackedFile(mod, '/remote', CXL_WEB_CONFIG.image.initrdName || 'initramfs-shell.cpio', CXL_WEB_CONFIG.image.initrdUrl, {
-            eager: true,
+            eager: !hpcInitrd,
+            githubLfsMedia: hpcInitrd,
+            validateMagic: hpcInitrd,
+            chunkSize: hpcInitrd ? 8 * 1024 * 1024 : 4 * 1024 * 1024,
+            maxChunks: hpcInitrd ? 3 : 64,
             allowFullFallback: true,
             maxFullFallbackSize: CXL_WEB_CONFIG.image.initrdProfile === 'hpc'
                 ? 512 * 1024 * 1024
@@ -779,8 +805,16 @@ function buildQemuArguments() {
     const rootDevice = virtioDisk ? '/dev/vda' : '/dev/sda';
     const hpcInitrd = CXL_WEB_CONFIG.image?.initrdProfile === 'hpc';
     const needsMemorySlots = type3Enabled || CXL_WEB_CONFIG.daxFallbackMode === 'virtio-pmem';
-    const defaultMemoryBytes = hpcInitrd ? 1152 * 1024 * 1024 : 768 * 1024 * 1024;
-    const memoryBytes = CXL_WEB_CONFIG.memoryBytes || defaultMemoryBytes;
+    const defaultMemoryBytes = hpcInitrd
+        ? (CXL_WEB_CONFIG.attachDisk ? 896 * 1024 * 1024 : 1024 * 1024 * 1024)
+        : 768 * 1024 * 1024;
+    const requestedMemoryBytes = CXL_WEB_CONFIG.memoryBytes || defaultMemoryBytes;
+    const safeMemoryBytes = hpcInitrd
+        ? (CXL_WEB_CONFIG.attachDisk ? 896 * 1024 * 1024 : 1024 * 1024 * 1024)
+        : requestedMemoryBytes;
+    const memoryBytes = CXL_WEB_CONFIG.unsafeGuestMemory
+        ? requestedMemoryBytes
+        : Math.min(requestedMemoryBytes, safeMemoryBytes);
     const memoryMb = Math.ceil(memoryBytes / (1024 * 1024));
     const maxMemoryMb = Math.max(memoryMb + 512, hpcInitrd ? 2048 : 1536);
     const memoryArg = needsMemorySlots
