@@ -325,7 +325,7 @@ window.coi = {
 };
 </script>
 <script src="./coi-serviceworker.js?v=20260518-worker-compat1"></script>
-<script src="./cxl-module.js?v=20260518-romfix13"></script>
+<script src="./cxl-module.js?v=20260518-romfix14"></script>
 <script src="./images/alpine-x86_64/load-rom.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -473,6 +473,12 @@ probeWebGPU();
 const { master, slave } = openpty();
 term.loadAddon(master);
 Module.pty = slave;
+function writeTerminalByte(byte) {
+    if (byte === null || byte === undefined) return;
+    term.write(String.fromCharCode(byte & 0xff));
+}
+Module.stdout = writeTerminalByte;
+Module.stderr = writeTerminalByte;
 window.CXL_WEB_PTY = { master, slave };
 Module.print = (text) => term.writeln(text);
 Module.printErr = (text) => term.writeln(text);
