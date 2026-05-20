@@ -255,7 +255,7 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc-dax2.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260520-hpc-osu1' : '20260518-tools2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260520-multivm-dax1' : '20260518-tools2';
     const hpcKernelVersion = '20260520-force-cxl-kernel1';
     const pcBiosVersion = '20260518-bios256-1';
     const efiE1000RomVersion = '20260518-e1000-1';
@@ -390,12 +390,15 @@ const CXL_WEB_CONFIG = (() => {
     const rtcParam = String(params.get('rtc') || '').toLowerCase();
     const rtc = rtcParam === 'off' ? 'off' : (rtcParam === 'vm' ? 'vm' : 'host');
     const unsafeGuestMemory = params.get('unsafe_mem') === '1' || params.get('allow_oom_mem') === '1';
+    const cxl3SharedParam = String(params.get('cxl3_shared') || params.get('shared_dax') || params.get('multi_vm_dax') || '').toLowerCase();
+    const cxl3Shared = ['1', 'true', 'on', 'yes', 'shared'].includes(cxl3SharedParam);
+    const multiVmRole = String(params.get('multi_vm_role') || params.get('vm_role') || params.get('role') || '').trim();
     const daxFallbackParam = String(
         params.get('dax_fallback') || params.get('virtio_pmem') || params.get('pmem_dax') || ''
     ).toLowerCase();
     const daxFallbackDisabled = ['0', 'false', 'off', 'no', 'none'].includes(daxFallbackParam);
     const daxFallbackRequested = ['1', 'true', 'on', 'yes', 'virtio', 'pmem', 'devdax'].includes(daxFallbackParam);
-    const daxFallbackEnabled = !daxFallbackDisabled
+    const daxFallbackEnabled = !cxl3Shared && !daxFallbackDisabled
         && (daxFallbackRequested || (requestedInitrdProfile === 'hpc' && (profile === 'type3' || profile === 'all')));
     const daxFallbackMode = daxFallbackEnabled
         ? (!daxFallbackParam || ['1', 'true', 'on', 'yes', 'virtio', 'virtio-pmem', 'virtio_pmem'].includes(daxFallbackParam) || params.get('virtio_pmem') === '1'
@@ -458,6 +461,8 @@ const CXL_WEB_CONFIG = (() => {
         unsafeGuestMemory,
         daxFallbackEnabled,
         daxFallbackMode,
+        cxl3Shared,
+        multiVmRole,
         cxlRootPortReserve,
         extraKernelArgs,
         tcg: {
@@ -498,8 +503,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260518-multihost1',
-            workerName: 'hetgpu-cxlmemsim-20260518-multihost1'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260520-multivm-dax1',
+            workerName: 'hetgpu-cxlmemsim-20260520-multivm-dax1'
         },
         webgpuNative
     };
@@ -971,6 +976,8 @@ function buildQemuArguments() {
         `cxlmemsim.host=${CXL_WEB_CONFIG.cxlmemsim.host}`,
         `cxlmemsim.port=${CXL_WEB_CONFIG.cxlmemsim.port}`,
         `cxlmemsim.pool=${CXL_WEB_CONFIG.cxlmemsim.pool}`,
+        `cxl3.shared=${CXL_WEB_CONFIG.cxl3Shared ? 'on' : 'off'}`,
+        ...(CXL_WEB_CONFIG.multiVmRole ? [`cxl3.role=${CXL_WEB_CONFIG.multiVmRole}`] : []),
         `dax_fallback=${CXL_WEB_CONFIG.daxFallbackMode}`,
         `cxl.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`,
         `cxlmem.setup_timeout_sec=${CXL_WEB_CONFIG.startTimeoutSec}`
@@ -1292,16 +1299,19 @@ function registerCxlMemsimClients() {
 
     const ports = [];
     const workerUrl = new URL(CXL_WEB_CONFIG.cxlmemsim.workerUrl, location.href).href;
-    const deviceArgs = Module['arguments'].filter((arg) =>
-        /(^|,)cxl-type[12](,|$)/.test(arg) && /(^|,)cxlmemsim-addr=/.test(arg)
-    );
+    const deviceArgs = Module['arguments'].filter((arg) => {
+        const cxl12 = /(^|,)cxl-type[12](,|$)/.test(arg) && /(^|,)cxlmemsim-addr=/.test(arg);
+        const cxl3 = CXL_WEB_CONFIG.cxl3Shared && /(^|,)cxl-type3(,|$)/.test(arg);
+        return cxl12 || cxl3;
+    });
 
     for (const arg of deviceArgs) {
-        const type = (arg.match(/(^|,)(cxl-type[12])(?=,|$)/) || [])[2] || 'cxl-device';
+        const type = (arg.match(/(^|,)(cxl-type[123])(?=,|$)/) || [])[2] || 'cxl-device';
         const id = (arg.match(/(^|,)id=([^,]+)/) || [])[2] || `${type}-${ports.length}`;
         const worker = new SharedWorker(workerUrl, CXL_WEB_CONFIG.cxlmemsim.workerName);
         const port = worker.port;
-        const host = CXL_WEB_CONFIG.clientLabel || CXL_WEB_CONFIG.clientToken;
+        const roleSuffix = CXL_WEB_CONFIG.multiVmRole ? `-${CXL_WEB_CONFIG.multiVmRole}` : '';
+        const host = CXL_WEB_CONFIG.clientLabel || `${CXL_WEB_CONFIG.clientToken}${roleSuffix}`;
         const clientId = `qemu-${id}-${CXL_WEB_CONFIG.clientToken}-${ports.length}`;
 
         port.start();
@@ -1309,7 +1319,7 @@ function registerCxlMemsimClients() {
             type: 'connect',
             role: 'qemu',
             clientId,
-            device: `${id}@${host}`,
+            device: `${id}@${host}${type === 'cxl-type3' && CXL_WEB_CONFIG.cxl3Shared ? ':shared-dax-metadata' : ''}`,
             pool: CXL_WEB_CONFIG.cxlmemsim.pool,
             size: CXL_WEB_CONFIG.cxlmemsim.size
         });

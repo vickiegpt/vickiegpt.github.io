@@ -277,6 +277,7 @@ pre {
             </dl>
             <p class="inline-actions">
                 <button id="open-cxlmemsim" type="button">Open CXLMemSim</button>
+                <button id="open-multivm-dax" type="button">Open 2 VM DAX</button>
                 <button id="open-hpc-tools" type="button">HPC Tools</button>
                 <button id="run-webgpu-native" type="button" onclick="window.HETGPU_RUN_WEBGPU_NATIVE && window.HETGPU_RUN_WEBGPU_NATIVE()">WebGPU Compute Test</button>
             </p>
@@ -367,7 +368,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix22.js?v=20260520-hpc-osu1"></script>
+<script src="./cxl-module-romfix22.js?v=20260520-multivm-dax1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -386,6 +387,7 @@ const initrdProfileLabel = document.getElementById("initrd-profile");
 const networkStatus = document.getElementById("network-status");
 const cxlmemsimLabel = document.getElementById("cxlmemsim-label");
 const openCxlmemsimButton = document.getElementById("open-cxlmemsim");
+const openMultiVmDaxButton = document.getElementById("open-multivm-dax");
 const openHpcToolsButton = document.getElementById("open-hpc-tools");
 const fastbootLabel = document.getElementById("fastboot-label");
 const activeArgs = document.getElementById("active-args");
@@ -522,6 +524,37 @@ openCxlmemsimButton.addEventListener("click", () => {
     url.searchParams.set("pool", config.cxlmemsim?.pool || config.cxlmemsim?.host || "CXLMemSim");
     url.searchParams.set("size", String(config.cxlmemsim?.size || 256 * 1024 * 1024));
     window.open(url.href, "CXLMemSim", "popup,width=960,height=720");
+});
+
+function buildMultiVmDaxUrl(role) {
+    const url = new URL(location.href);
+    url.searchParams.set("cxl", "type3");
+    url.searchParams.set("hpc", "1");
+    url.searchParams.set("initrd_profile", "hpc");
+    url.searchParams.set("fast_shell_machine", "q35");
+    url.searchParams.set("qemu_core", config.qemuCore || "fast");
+    url.searchParams.set("acpi", "on");
+    url.searchParams.set("qemu_cxl", "1");
+    url.searchParams.set("cxl3_shared", "1");
+    url.searchParams.set("dax_fallback", "off");
+    url.searchParams.set("multi_vm_role", role);
+    url.searchParams.set("client_label", `vm${role}`);
+    url.searchParams.set("cxlmemsim_pool", config.cxlmemsim?.pool || "CXLMemSim");
+    url.searchParams.set("cxlmemsim_size", String(config.cxlmemsim?.size || 256 * 1024 * 1024));
+    if (config.image?.kernelUrl) {
+        url.searchParams.set("kernel_url", config.image.kernelUrl);
+    }
+    url.searchParams.set("reload", "20260520-multivm-dax1");
+    return url.href;
+}
+
+openMultiVmDaxButton?.addEventListener("click", () => {
+    const poolUrl = new URL("./cxlmemsim.html", location.href);
+    poolUrl.searchParams.set("pool", config.cxlmemsim?.pool || "CXLMemSim");
+    poolUrl.searchParams.set("size", String(config.cxlmemsim?.size || 256 * 1024 * 1024));
+    window.open(poolUrl.href, "CXLMemSim", "popup,width=960,height=720");
+    window.open(buildMultiVmDaxUrl("A"), "CXL3-VM-A");
+    window.open(buildMultiVmDaxUrl("B"), "CXL3-VM-B");
 });
 
 openHpcToolsButton.addEventListener("click", () => {

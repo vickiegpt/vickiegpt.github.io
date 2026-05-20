@@ -284,8 +284,8 @@ if (typeof SharedWorker === "undefined") {
     simFields.mode.textContent = "unsupported";
 } else {
     const worker = new SharedWorker(
-        "./cxlmemsim-pool-worker.js?v=20260518-multihost1",
-        "hetgpu-cxlmemsim-20260518-multihost1"
+        "./cxlmemsim-pool-worker.js?v=20260520-multivm-dax1",
+        "hetgpu-cxlmemsim-20260520-multivm-dax1"
     );
     const port = worker.port;
     const clientId = `ui-${Math.random().toString(16).slice(2)}`;
