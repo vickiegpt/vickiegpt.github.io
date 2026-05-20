@@ -320,10 +320,15 @@ else
   dmesg 2>/dev/null | tail -n 300 | grep -Ei 'cxl|dax|numa|memsim|hetgpu' | tail -n 80
 fi
 find /sys/bus/cxl -maxdepth 3 -type d 2>/dev/null
-lspci 2>/dev/null | grep -i cxl
+lspci 2>/dev/null | grep -Ei 'cxl|0b40|0502|0d92|0d93|7075'
 find /sys/bus/pci/devices -maxdepth 1 -type l
 grep -R . /sys/module/hetgpu/parameters 2>/dev/null
-cxl-type2-test 2>/dev/null || true
+if lspci -nn 2>/dev/null | grep -Eiq '0b40|8086:0d92'; then
+  cxl-type2-test 2>/dev/null || true
+fi
+if lspci -nn 2>/dev/null | grep -Eiq '0502|8086:0d93'; then
+  cxl-type3-test 2>/dev/null || true
+fi
 find /dev -maxdepth 2 -name 'dax*' -print 2>/dev/null
 dax-access-test /dev/dax0.0 2>/dev/null || true</pre>
             <p class="note">Default boot uses the in-memory initramfs shell and does not wait for `/about/qemu.img`. Add `hpc=1` for the optional MPI/GROMACS/llama/tigon tools image, `rootdisk=1` to boot the remote image, or `attach_disk=1` to expose it from the shell.</p>
