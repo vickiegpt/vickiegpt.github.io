@@ -127,9 +127,14 @@ function toOffset(lo, hi) {
     return Number(lo >>> 0) + Number(hi >>> 0) * 4294967296;
 }
 
+function isSharedBuffer(buffer) {
+    return !!buffer && typeof SharedArrayBuffer !== 'undefined' &&
+        (buffer instanceof SharedArrayBuffer ||
+         Object.prototype.toString.call(buffer) === '[object SharedArrayBuffer]');
+}
+
 function setResponse(sab, status, payload, oldValue = 0n, latencyNs = 0n) {
-    if (!sab || typeof SharedArrayBuffer === 'undefined' ||
-            !(sab instanceof SharedArrayBuffer)) {
+    if (!isSharedBuffer(sab)) {
         return;
     }
     const control = new Int32Array(sab, 0, 1);
@@ -233,6 +238,11 @@ function runBridgeRequest(pool, msg, responseSab, updatePortStats) {
 function handleSyncRequest(pool, msg) {
     const sab = msg.sab;
     try {
+        if (!isSharedBuffer(sab)) {
+            pool.stats.errors++;
+            events.postMessage({ type: 'error', reason: 'sync-request missing SharedArrayBuffer' });
+            return;
+        }
         if (!bridge) {
             handleSyncRequestFlat(pool, msg);
             return;
@@ -293,6 +303,10 @@ function handleSelfTest(pool, msg) {
 
 function handleSyncRequestFlat(pool, msg) {
     const sab = msg.sab;
+    if (!isSharedBuffer(sab)) {
+        pool.stats.errors++;
+        return;
+    }
     const requestBytes = new Uint8Array(sab);
     const addr = toOffset(msg.addrLo, msg.addrHi);
     const size = Number(msg.size >>> 0);

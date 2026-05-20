@@ -255,7 +255,7 @@ function parseImageConfig(params) {
         initrdProfile = 'hpc';
     }
     const initrdName = initrdProfile === 'hpc' ? 'initramfs-hpc-dax2.cpio.gz' : 'initramfs-shell.cpio';
-    const initrdVersion = initrdProfile === 'hpc' ? '20260520-multivm-dax1' : '20260518-tools2';
+    const initrdVersion = initrdProfile === 'hpc' ? '20260520-type3-sharedworker1' : '20260518-tools2';
     const hpcKernelVersion = '20260520-force-cxl-kernel1';
     const pcBiosVersion = '20260518-bios256-1';
     const efiE1000RomVersion = '20260518-e1000-1';
@@ -473,13 +473,13 @@ const CXL_WEB_CONFIG = (() => {
         type2MemBytes,
         type2CacheBytes,
         assetVersion: ({
-            fast: '20260518-worker-import2',
+            fast: '20260520-type3-sharedworker1',
             fpcast: '20260512-numfix',
             build: '20260516-build',
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260518-worker-import2',
+        })[qemuCore] || '20260520-type3-sharedworker1',
         assetBase: ({
             fast: '/cxl2/images/alpine-x86_64/',
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
@@ -503,8 +503,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260520-multivm-dax1',
-            workerName: 'hetgpu-cxlmemsim-20260520-multivm-dax1'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260520-type3-sharedworker1',
+            workerName: 'hetgpu-cxlmemsim-20260520-type3-sharedworker1'
         },
         webgpuNative
     };
@@ -519,6 +519,12 @@ Module['ENV'] = {
     CXL_MEMSIM_SIZE: String(CXL_WEB_CONFIG.cxlmemsim.size),
     CXL_MEMSIM_TRANSPORT: CXL_WEB_CONFIG.cxlmemsim.qemuTransport,
     CXL_TRANSPORT_MODE: CXL_WEB_CONFIG.cxlmemsim.qemuTransport,
+    CXL_MEMSIM_BROWSER: CXL_WEB_CONFIG.cxlmemsim.transport === 'browser' ? '1' : '0',
+    CXL_MEMSIM_WORKER_URL: new URL(CXL_WEB_CONFIG.cxlmemsim.workerUrl, location.href).href,
+    HETGPU_CXL_MEMSIM_WORKER_URL: new URL(CXL_WEB_CONFIG.cxlmemsim.workerUrl, location.href).href,
+    CXL_MEMSIM_WORKER_NAME: CXL_WEB_CONFIG.cxlmemsim.workerName,
+    CXL_MEMSIM_CLIENT_ID: `qemu-type3-${CXL_WEB_CONFIG.clientToken}`,
+    CXL_MEMSIM_DEVICE: `cxl-type3-${CXL_WEB_CONFIG.multiVmRole || CXL_WEB_CONFIG.clientLabel || CXL_WEB_CONFIG.clientToken}`,
     HETGPU_BACKEND: CXL_WEB_CONFIG.backend,
     HETGPU_WEBGPU_NATIVE: CXL_WEB_CONFIG.webgpuNative ? '1' : '0'
 };
@@ -1300,13 +1306,11 @@ function registerCxlMemsimClients() {
     const ports = [];
     const workerUrl = new URL(CXL_WEB_CONFIG.cxlmemsim.workerUrl, location.href).href;
     const deviceArgs = Module['arguments'].filter((arg) => {
-        const cxl12 = /(^|,)cxl-type[12](,|$)/.test(arg) && /(^|,)cxlmemsim-addr=/.test(arg);
-        const cxl3 = CXL_WEB_CONFIG.cxl3Shared && /(^|,)cxl-type3(,|$)/.test(arg);
-        return cxl12 || cxl3;
+        return /(^|,)cxl-type[12](,|$)/.test(arg) && /(^|,)cxlmemsim-addr=/.test(arg);
     });
 
     for (const arg of deviceArgs) {
-        const type = (arg.match(/(^|,)(cxl-type[123])(?=,|$)/) || [])[2] || 'cxl-device';
+        const type = (arg.match(/(^|,)(cxl-type[12])(?=,|$)/) || [])[2] || 'cxl-device';
         const id = (arg.match(/(^|,)id=([^,]+)/) || [])[2] || `${type}-${ports.length}`;
         const worker = new SharedWorker(workerUrl, CXL_WEB_CONFIG.cxlmemsim.workerName);
         const port = worker.port;
@@ -1319,7 +1323,7 @@ function registerCxlMemsimClients() {
             type: 'connect',
             role: 'qemu',
             clientId,
-            device: `${id}@${host}${type === 'cxl-type3' && CXL_WEB_CONFIG.cxl3Shared ? ':shared-dax-metadata' : ''}`,
+            device: `${id}@${host}`,
             pool: CXL_WEB_CONFIG.cxlmemsim.pool,
             size: CXL_WEB_CONFIG.cxlmemsim.size
         });
