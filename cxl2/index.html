@@ -353,14 +353,14 @@ if (!location.search) {
     const fastShellParams = new URLSearchParams({
         cxl: "type2",
         fast_shell_machine: "q35",
-        kernel_url: "/about/bzImage",
+        kernel_url: "/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=20260518-genlrelax-v2-devdax",
         qemu_core: "fast",
         defaults: "1"
     });
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix20.js?v=20260519-dax-einjskip1"></script>
+<script src="./cxl-module-romfix21.js?v=20260520-dax-virtio1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
