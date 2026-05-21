@@ -566,6 +566,56 @@ async function fetchHead(url) {
     return response;
 }
 
+function headerBackedSize(response) {
+    const contentRange = response.headers.get("Content-Range") || "";
+    const rangeMatch = contentRange.match(/\/(\d+)$/);
+    if (rangeMatch) {
+        const rangeSize = Number(rangeMatch[1]);
+        if (Number.isFinite(rangeSize) && rangeSize > 0) {
+            return rangeSize;
+        }
+    }
+    const contentLength = Number(response.headers.get("Content-Length") || 0);
+    return Number.isFinite(contentLength) && contentLength > 0 ? contentLength : 0;
+}
+
+async function readResponsePrefix(response, limit = 512) {
+    if (response.body && typeof response.body.getReader === "function") {
+        const reader = response.body.getReader();
+        const chunks = [];
+        let total = 0;
+        try {
+            while (total < limit) {
+                const { value, done } = await reader.read();
+                if (done || !value) {
+                    break;
+                }
+                const part = value.subarray(0, Math.min(value.length, limit - total));
+                chunks.push(part);
+                total += part.length;
+                if (part.length < value.length || total >= limit) {
+                    await reader.cancel();
+                    break;
+                }
+            }
+        } finally {
+            try {
+                reader.releaseLock();
+            } catch (error) {
+            }
+        }
+        const bytes = new Uint8Array(total);
+        let offset = 0;
+        for (const chunk of chunks) {
+            bytes.set(chunk, offset);
+            offset += chunk.length;
+        }
+        return bytes;
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return bytes.subarray(0, Math.min(bytes.length, limit));
+}
+
 async function fetchPrefix(url) {
     const response = await fetch(url, {
         headers: { Range: "bytes=0-511" },
@@ -574,16 +624,7 @@ async function fetchPrefix(url) {
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
     }
-    const responseLength = Number(response.headers.get("Content-Length") || 0);
-    if (response.status !== 206 && responseLength > 4096) {
-        return {
-            status: response.status,
-            contentRange: response.headers.get("Content-Range") || "",
-            bytes: new Uint8Array(),
-            text: ""
-        };
-    }
-    const bytes = new Uint8Array(await response.arrayBuffer());
+    const bytes = await readResponsePrefix(response, 512);
     let text = "";
     for (let i = 0; i < Math.min(bytes.length, 256); i++) {
         text += String.fromCharCode(bytes[i]);
@@ -591,6 +632,7 @@ async function fetchPrefix(url) {
     return {
         status: response.status,
         contentRange: response.headers.get("Content-Range") || "",
+        size: headerBackedSize(response),
         bytes,
         text
     };
@@ -602,18 +644,17 @@ async function checkResource(label, url, options = {}) {
             throw new Error("missing URL");
         }
         const absoluteUrl = new URL(url, location.href).href;
-        const head = await fetchHead(absoluteUrl);
-        const lengthHeader = head.headers.get("Content-Length");
-        const size = Number(lengthHeader || 0);
-        if (!Number.isFinite(size) || size <= 0) {
-            throw new Error("missing Content-Length");
-        }
-        if (options.maxBytes && size > options.maxBytes) {
-            throw new Error(`${formatBytes(size)} exceeds stable browser limit ${formatBytes(options.maxBytes)}`);
+        let size = 0;
+        let headError = null;
+        try {
+            size = headerBackedSize(await fetchHead(absoluteUrl));
+        } catch (error) {
+            headError = error;
         }
         let prefix = null;
-        if (options.checkPointer || options.needsRange) {
+        if (options.checkPointer || options.needsRange || !size) {
             prefix = await fetchPrefix(absoluteUrl);
+            size = size || prefix.size || 0;
             if (options.checkPointer && isLfsPointerText(prefix.text)) {
                 throw new Error("Git LFS pointer, not binary asset");
             }
@@ -621,7 +662,17 @@ async function checkResource(label, url, options = {}) {
         if (options.needsRange && prefix?.status !== 206) {
             throw new Error(`Range request returned HTTP ${prefix?.status || "unknown"} instead of 206`);
         }
-        return { label, ok: true, detail: formatBytes(size) };
+        if (!size && options.requireSize) {
+            throw new Error(headError ? `missing Content-Length (${headError.message})` : "missing Content-Length");
+        }
+        if (options.maxBytes && size > options.maxBytes) {
+            throw new Error(`${formatBytes(size)} exceeds stable browser limit ${formatBytes(options.maxBytes)}`);
+        }
+        return {
+            label,
+            ok: true,
+            detail: size ? formatBytes(size) : "reachable; size unknown"
+        };
     } catch (error) {
         return {
             label,
@@ -646,17 +697,19 @@ async function runStartupPreflight(options = {}) {
         checkResource("qemu wasm", qemuAssetUrl("qemu-system-x86_64.wasm"), { checkPointer: true }),
         checkResource("pthread worker", qemuAssetUrl("qemu-system-x86_64.worker.js"), { checkPointer: true }),
         checkResource("rom pack", new URL("load-rom.data", new URL("/cxl2/images/alpine-x86_64/", location.href)).href, { checkPointer: true }),
-        checkResource("kernel", config.image?.kernelUrl || "/about/bzImage", { checkPointer: true })
+        checkResource("kernel", config.image?.kernelUrl || "/about/bzImage", { checkPointer: true, requireSize: true })
     ];
     if (config.fastLogin !== false && config.useInitrd !== false) {
         checks.push(checkResource("initramfs", config.image?.initrdUrl, {
             checkPointer: true,
+            requireSize: true,
             maxBytes: config.allowBigInitrd ? 512 * 1024 * 1024 : (config.maxStableInitrdSize || 64 * 1024 * 1024)
         }));
     }
     if (config.attachDisk) {
         checks.push(checkResource("qemu.img", config.image?.diskUrl || "/about/qemu.img", {
             checkPointer: true,
+            requireSize: true,
             needsRange: true
         }));
     }
