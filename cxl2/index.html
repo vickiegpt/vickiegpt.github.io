@@ -395,7 +395,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix22.js?v=20260521-noexit1"></script>
+<script src="./cxl-module-romfix23.js"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -478,6 +478,8 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
+    qemuMainScript: "out-noexit1.js",
+    qemuPthreadScript: "qemu-system-x86_64-noexit1.js",
     assetVersion: "20260521-noexit1",
     startTimeoutSec: 180,
     arguments: []
@@ -496,7 +498,7 @@ Module.preRun.push((mod) => {
         });
     }
 });
-const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
+const qemuModuleUrl = new URL(config.qemuMainScript || "out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
 qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260521-noexit1");
 let initEmscriptenModulePromise = null;
 function getInitEmscriptenModule() {
@@ -697,7 +699,7 @@ async function runStartupPreflight(options = {}) {
     const checks = [
         checkResource("qemu js", qemuModuleUrl.href, { checkPointer: true }),
         checkResource("qemu wasm", qemuAssetUrl("qemu-system-x86_64.wasm"), { checkPointer: true }),
-        checkResource("pthread worker", qemuAssetUrl("qemu-system-x86_64.worker.js"), { checkPointer: true }),
+        checkResource("pthread worker", qemuAssetUrl(config.qemuPthreadScript || "qemu-system-x86_64.worker.js"), { checkPointer: true }),
         checkResource("rom pack", new URL("load-rom.data", new URL("/cxl2/images/alpine-x86_64/", location.href)).href, { checkPointer: true }),
         checkResource("kernel", config.image?.kernelUrl || "/about/bzImage", { checkPointer: true, requireSize: true })
     ];
