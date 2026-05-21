@@ -115,8 +115,14 @@ function handleMessage(e) {
 
       Module['ENVIRONMENT_IS_PTHREAD'] = true;
 
-      (e.data.urlOrBlob ? import(e.data.urlOrBlob) : import('./qemu-system-x86_64.js'))
-      .then(exports => exports.default(Module));
+      {
+        const fallbackUrl = new URL('./qemu-system-x86_64.js', self.location.href);
+        if (self.location.search && !fallbackUrl.search) {
+          fallbackUrl.search = self.location.search;
+        }
+        (e.data.urlOrBlob ? import(e.data.urlOrBlob) : import(fallbackUrl.href))
+        .then(exports => exports.default(Module));
+      }
     } else if (e.data.cmd === 'run') {
       // Pass the thread address to wasm to store it for fast access.
       Module['__emscripten_thread_init'](e.data.pthread_ptr, /*is_main=*/0, /*is_runtime=*/0, /*can_block=*/1);

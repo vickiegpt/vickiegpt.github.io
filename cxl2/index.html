@@ -198,6 +198,31 @@ pre {
     color: var(--warn);
 }
 
+.health {
+    margin: 10px 0 0;
+    padding: 12px;
+    border: 1px solid var(--line);
+    background: #0a1016;
+    color: var(--muted);
+    font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+.health.ok {
+    border-color: rgba(79, 209, 123, 0.65);
+    color: var(--green);
+}
+
+.health.warn {
+    border-color: rgba(245, 200, 106, 0.75);
+    color: var(--warn);
+}
+
+.health.error {
+    border-color: rgba(255, 107, 107, 0.75);
+    color: #ff9b9b;
+}
+
 #webgpu-native-output {
     min-height: 156px;
 }
@@ -298,6 +323,10 @@ pre {
             <p class="note">Runs in the browser GPU process. Current QEMU wasm still reports Type2 `hetgpu-backend=5` until QEMU is rebuilt with the JS bridge import.</p>
         </section>
         <section class="section">
+            <h2>Startup Checks</h2>
+            <pre id="preflight-status" class="health">checking startup assets...</pre>
+        </section>
+        <section class="section">
             <h2>Guest Probe</h2>
             <pre>mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
@@ -366,7 +395,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix22.js?v=20260520-type3-sharedworker1"></script>
+<script src="./cxl-module-romfix22.js?v=20260521-stable1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -393,6 +422,7 @@ const webgpuStatus = document.getElementById("webgpu-status");
 const webgpuNativeStatus = document.getElementById("webgpu-native-status");
 const runWebgpuNativeButton = document.getElementById("run-webgpu-native");
 const webgpuNativeOutput = document.getElementById("webgpu-native-output");
+const preflightStatus = document.getElementById("preflight-status");
 const commandInput = document.getElementById("command-input");
 const sendCommandButton = document.getElementById("send-command");
 const sendCxlProbeButton = document.getElementById("send-cxl-probe");
@@ -448,7 +478,7 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260517-fast-shell-timer",
+    assetVersion: "20260521-stable1",
     startTimeoutSec: 180,
     arguments: []
 };
@@ -467,8 +497,19 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260517-fast-shell-timer");
-const initEmscriptenModulePromise = import(qemuModuleUrl.href).then((module) => module.default);
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260521-stable1");
+let initEmscriptenModulePromise = null;
+function getInitEmscriptenModule() {
+    if (!initEmscriptenModulePromise) {
+        initEmscriptenModulePromise = import(qemuModuleUrl.href)
+            .then((module) => module.default)
+            .catch((error) => {
+                initEmscriptenModulePromise = null;
+                throw error;
+            });
+    }
+    return initEmscriptenModulePromise;
+}
 const qemuArgs = config.arguments || [];
 const cxlRequested = config.qemuCxlEnabled === true;
 const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg))
@@ -501,6 +542,155 @@ fastbootLabel.textContent = config.fastLogin === false
 activeArgs.textContent = (config.arguments || []).map((arg) => {
     return /\s/.test(arg) ? JSON.stringify(arg) : arg;
 }).join(" ");
+
+function formatBytes(value) {
+    const units = ["B", "KiB", "MiB", "GiB"];
+    let amount = Number(value) || 0;
+    let unit = 0;
+    while (amount >= 1024 && unit < units.length - 1) {
+        amount /= 1024;
+        unit++;
+    }
+    return `${amount.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function isLfsPointerText(text) {
+    return String(text || "").startsWith("version https://git-lfs.github.com/spec/v1");
+}
+
+async function fetchHead(url) {
+    const response = await fetch(url, { method: "HEAD", cache: "no-store" });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    return response;
+}
+
+async function fetchPrefix(url) {
+    const response = await fetch(url, {
+        headers: { Range: "bytes=0-511" },
+        cache: "no-store"
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    const responseLength = Number(response.headers.get("Content-Length") || 0);
+    if (response.status !== 206 && responseLength > 4096) {
+        return {
+            status: response.status,
+            contentRange: response.headers.get("Content-Range") || "",
+            bytes: new Uint8Array(),
+            text: ""
+        };
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    let text = "";
+    for (let i = 0; i < Math.min(bytes.length, 256); i++) {
+        text += String.fromCharCode(bytes[i]);
+    }
+    return {
+        status: response.status,
+        contentRange: response.headers.get("Content-Range") || "",
+        bytes,
+        text
+    };
+}
+
+async function checkResource(label, url, options = {}) {
+    try {
+        if (!url) {
+            throw new Error("missing URL");
+        }
+        const absoluteUrl = new URL(url, location.href).href;
+        const head = await fetchHead(absoluteUrl);
+        const lengthHeader = head.headers.get("Content-Length");
+        const size = Number(lengthHeader || 0);
+        if (!Number.isFinite(size) || size <= 0) {
+            throw new Error("missing Content-Length");
+        }
+        if (options.maxBytes && size > options.maxBytes) {
+            throw new Error(`${formatBytes(size)} exceeds stable browser limit ${formatBytes(options.maxBytes)}`);
+        }
+        let prefix = null;
+        if (options.checkPointer || options.needsRange) {
+            prefix = await fetchPrefix(absoluteUrl);
+            if (options.checkPointer && isLfsPointerText(prefix.text)) {
+                throw new Error("Git LFS pointer, not binary asset");
+            }
+        }
+        if (options.needsRange && prefix?.status !== 206) {
+            throw new Error(`Range request returned HTTP ${prefix?.status || "unknown"} instead of 206`);
+        }
+        return { label, ok: true, detail: formatBytes(size) };
+    } catch (error) {
+        return {
+            label,
+            ok: false,
+            fatal: options.optional !== true,
+            detail: error && error.message ? error.message : String(error)
+        };
+    }
+}
+
+function qemuAssetUrl(path) {
+    const url = new URL(path, new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
+    url.searchParams.set("v", config.assetVersion || "20260521-stable1");
+    return url.href;
+}
+
+let lastPreflight = null;
+async function runStartupPreflight(options = {}) {
+    const strict = options.strict === true;
+    const checks = [
+        checkResource("qemu js", qemuModuleUrl.href, { checkPointer: true }),
+        checkResource("qemu wasm", qemuAssetUrl("qemu-system-x86_64.wasm"), { checkPointer: true }),
+        checkResource("pthread worker", qemuAssetUrl("qemu-system-x86_64.worker.js"), { checkPointer: true }),
+        checkResource("rom pack", new URL("load-rom.data", new URL("/cxl2/images/alpine-x86_64/", location.href)).href, { checkPointer: true }),
+        checkResource("kernel", config.image?.kernelUrl || "/about/bzImage", { checkPointer: true })
+    ];
+    if (config.fastLogin !== false && config.useInitrd !== false) {
+        checks.push(checkResource("initramfs", config.image?.initrdUrl, {
+            checkPointer: true,
+            maxBytes: config.allowBigInitrd ? 512 * 1024 * 1024 : (config.maxStableInitrdSize || 64 * 1024 * 1024)
+        }));
+    }
+    if (config.attachDisk) {
+        checks.push(checkResource("qemu.img", config.image?.diskUrl || "/about/qemu.img", {
+            checkPointer: true,
+            needsRange: true
+        }));
+    }
+
+    const results = await Promise.all(checks);
+    const failures = results.filter((item) => !item.ok && item.fatal);
+    const warnings = results.filter((item) => !item.ok && !item.fatal);
+    lastPreflight = { results, failures, warnings };
+
+    const lines = results.map((item) =>
+        `${item.ok ? "ok" : "fail"} ${item.label}: ${item.detail}`
+    );
+    if (!window.crossOriginIsolated) {
+        lines.unshift("warn isolation: service worker reload may be needed before VM start");
+    }
+    if (config.image?.initrdProfile === "hpc" && !config.allowBigInitrd) {
+        lines.push(`note hpc: large initramfs is blocked above ${formatBytes(config.maxStableInitrdSize || 64 * 1024 * 1024)} to avoid wasm OOM`);
+    }
+
+    preflightStatus.textContent = lines.join("\n");
+    preflightStatus.classList.toggle("ok", failures.length === 0 && warnings.length === 0);
+    preflightStatus.classList.toggle("warn", failures.length === 0 && warnings.length > 0);
+    preflightStatus.classList.toggle("error", failures.length > 0);
+
+    if (strict && failures.length > 0) {
+        term.writeln("");
+        term.writeln("Startup preflight failed:");
+        for (const failure of failures) {
+            term.writeln(`  ${failure.label}: ${failure.detail}`);
+        }
+        term.writeln("Fix the asset URL/server first, or use the default shell profile for a small stable boot.");
+    }
+    return failures.length === 0;
+}
 
 document.querySelectorAll("[data-profile]").forEach((button) => {
     const isActive = button.dataset.profile === config.profile;
@@ -634,6 +824,10 @@ async function runWebgpuNativeBenchmark() {
     }
 }
 window.HETGPU_RUN_WEBGPU_NATIVE = runWebgpuNativeBenchmark;
+runStartupPreflight().catch((error) => {
+    preflightStatus.textContent = error && error.stack ? error.stack : String(error);
+    preflightStatus.classList.add("error");
+});
 if (autoWebgpuBenchmark) {
     setTimeout(() => runWebgpuNativeBenchmark(), 0);
 }
@@ -795,6 +989,12 @@ async function start() {
         await reloadForCrossOriginIsolation();
         return;
     }
+    if (!lastPreflight || lastPreflight.failures.length > 0) {
+        const preflightOk = await runStartupPreflight({ strict: true });
+        if (!preflightOk) {
+            return;
+        }
+    }
 
     booted = true;
     startButton.disabled = true;
@@ -811,7 +1011,7 @@ async function start() {
     try {
         startBrowserNetwork();
         queueDirectShellProbe();
-        const initEmscriptenModule = await initEmscriptenModulePromise;
+        const initEmscriptenModule = await getInitEmscriptenModule();
         await initEmscriptenModule(Module);
         setStatus("running", true);
     } catch (error) {

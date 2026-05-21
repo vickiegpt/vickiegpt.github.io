@@ -179,6 +179,23 @@ function parseByteSizeParam(params, names, fallback, min, max) {
     return fallback;
 }
 
+function parseBooleanParam(params, names, fallback) {
+    for (const name of names) {
+        const raw = params.get(name);
+        if (!raw) {
+            continue;
+        }
+        const value = String(raw).trim().toLowerCase();
+        if (['0', 'false', 'off', 'no'].includes(value)) {
+            return false;
+        }
+        if (['1', 'true', 'on', 'yes'].includes(value)) {
+            return true;
+        }
+    }
+    return fallback;
+}
+
 function parseNativeCxlParam(params, names, fallback) {
     for (const name of names) {
         const raw = params.get(name);
@@ -431,6 +448,14 @@ const CXL_WEB_CONFIG = (() => {
         64 * 1024 * 1024,
         1024 * 1024 * 1024
     );
+    const allowBigInitrd = parseBooleanParam(params, ['allow_big_initrd', 'unsafe_big_initrd'], false);
+    const maxStableInitrdSize = parseByteSizeParam(
+        params,
+        ['max_stable_initrd', 'initrd_stable_limit'],
+        64 * 1024 * 1024,
+        16 * 1024 * 1024,
+        512 * 1024 * 1024
+    );
     return {
         profile,
         backend,
@@ -464,6 +489,8 @@ const CXL_WEB_CONFIG = (() => {
         cxl3Shared,
         multiVmRole,
         cxlRootPortReserve,
+        allowBigInitrd,
+        maxStableInitrdSize,
         extraKernelArgs,
         tcg: {
             thread: tcgThread,
@@ -473,13 +500,13 @@ const CXL_WEB_CONFIG = (() => {
         type2MemBytes,
         type2CacheBytes,
         assetVersion: ({
-            fast: '20260520-type3-sharedworker1',
+            fast: '20260521-stable1',
             fpcast: '20260512-numfix',
             build: '20260516-build',
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260520-type3-sharedworker1',
+        })[qemuCore] || '20260521-stable1',
         assetBase: ({
             fast: '/cxl2/images/alpine-x86_64/',
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
@@ -503,8 +530,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260520-type3-sharedworker1',
-            workerName: 'hetgpu-cxlmemsim-20260520-type3-sharedworker1'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260521-stable1',
+            workerName: 'hetgpu-cxlmemsim-20260521-stable1'
         },
         webgpuNative
     };
@@ -543,6 +570,8 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const eager = options.eager === true;
     const allowFullFallback = options.allowFullFallback === true;
     const maxFullFallbackSize = options.maxFullFallbackSize || 64 * 1024 * 1024;
+    const maxEagerSize = options.maxEagerSize || 0;
+    const label = options.label || `${parent}/${name}`;
     const validateMagic = options.validateMagic === true;
     const dropCacheAfterMmap = options.dropCacheAfterMmap === true;
     let fullFile = null;
@@ -560,9 +589,13 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         if (start !== undefined) {
             xhr.setRequestHeader('Range', `bytes=${start}-${end}`);
         }
-        xhr.send(null);
+        try {
+            xhr.send(null);
+        } catch (error) {
+            throw new Error(`${label}: ${method} ${requestUrl} failed before response: ${error && error.message ? error.message : error}`);
+        }
         if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) {
-            throw new Error(`${method} ${requestUrl} failed: HTTP ${xhr.status}`);
+            throw new Error(`${label}: ${method} ${requestUrl} failed: HTTP ${xhr.status}`);
         }
         return xhr;
     }
@@ -577,6 +610,24 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
             bytes[i] = text.charCodeAt(i) & 0xff;
         }
         return bytes;
+    }
+
+    function isLfsPointer(bytes) {
+        if (!bytes || bytes.length < 32) {
+            return false;
+        }
+        let text = '';
+        const n = Math.min(bytes.length, 256);
+        for (let i = 0; i < n; i++) {
+            text += String.fromCharCode(bytes[i]);
+        }
+        return text.startsWith('version https://git-lfs.github.com/spec/v1');
+    }
+
+    function assertRealAsset(bytes) {
+        if (isLfsPointer(bytes)) {
+            throw new Error(`${label}: ${url} returned a Git LFS pointer instead of the binary asset. Serve the real LFS object or use the local 127.0.0.1 static server.`);
+        }
     }
 
     function exposedResponseHeader(xhr, name) {
@@ -595,14 +646,24 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
     const head = request('HEAD', url);
     const size = Number(head.getResponseHeader('Content-Length'));
     const acceptRangesHeader = exposedResponseHeader(head, 'Accept-Ranges');
-    const acceptsRanges = acceptRangesHeader ? /bytes/i.test(acceptRangesHeader) : true;
+    let acceptsRanges = acceptRangesHeader ? /bytes/i.test(acceptRangesHeader) : false;
     if (!Number.isFinite(size) || size <= 0) {
-        throw new Error(`${url} did not return a usable Content-Length`);
+        throw new Error(`${label}: ${url} did not return a usable Content-Length`);
+    }
+    if (!acceptsRanges) {
+        try {
+            acceptsRanges = request('GET', url, 0, 0).status === 206;
+        } catch (error) {
+            acceptsRanges = false;
+        }
     }
     if (!acceptsRanges && (!allowFullFallback || size > maxFullFallbackSize)) {
-        throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
+        throw new Error(`${label}: ${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
     }
     if (eager) {
+        if (maxEagerSize && size > maxEagerSize) {
+            throw new Error(`${label}: refusing to eager-load ${Math.ceil(size / 1024 / 1024)} MiB initrd in browser QEMU. Use the shell profile, shrink/split the initramfs, or add allow_big_initrd=1 if you accept wasm OOM risk.`);
+        }
         let bytes = responseBytes(request('GET', url));
         let sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
         if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
@@ -612,14 +673,15 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
                 sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
             }
             if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
-                throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+                throw new Error(`${label}: ${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
             }
         }
+        assertRealAsset(bytes);
         if (/\.gz$/i.test(name) && !(bytes[0] === 0x1f && bytes[1] === 0x8b)) {
-            throw new Error(`${url} is not a gzip initramfs`);
+            throw new Error(`${label}: ${url} is not a gzip initramfs`);
         }
         if (/\.cpio$/i.test(name) && !/^07070[12]/.test(sample)) {
-            throw new Error(`${url} is not a newc cpio initramfs`);
+            throw new Error(`${label}: ${url} is not a newc cpio initramfs`);
         }
         FS.writeFile(`${parent}/${name}`, bytes, { canOwn: true });
         return;
@@ -630,9 +692,10 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
             return fullFile;
         }
         if (!allowFullFallback || size > maxFullFallbackSize) {
-            throw new Error(`${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
+            throw new Error(`${label}: ${url} must be served with Accept-Ranges: bytes and HTTP 206 byte-range responses`);
         }
         fullFile = responseBytes(request('GET', url));
+        assertRealAsset(fullFile);
         return fullFile;
     }
 
@@ -657,11 +720,15 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         if (xhr.status !== 206) {
             if (xhr.status === 200 && allowFullFallback && size <= maxFullFallbackSize) {
                 fullFile = responseBytes(xhr);
+                assertRealAsset(fullFile);
                 return fullFile.subarray(start, end + 1);
             }
-            throw new Error(`${url} ignored Range ${start}-${end}: HTTP ${xhr.status}`);
+            throw new Error(`${label}: ${url} ignored Range ${start}-${end}: HTTP ${xhr.status}`);
         }
         const data = responseBytes(xhr);
+        if (start === 0) {
+            assertRealAsset(data);
+        }
         chunks.set(chunkIndex, data);
         while (chunks.size > maxChunks) {
             chunks.delete(chunks.keys().next().value);
@@ -685,13 +752,13 @@ function createRangeBackedFile(mod, parent, name, url, options = {}) {
         const bytes = getChunk(0);
         const sample = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, Math.min(bytes.length, 128)));
         if (/^version https:\/\/git-lfs\.github\.com\/spec/i.test(sample)) {
-            throw new Error(`${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
+            throw new Error(`${label}: ${url} returned a Git LFS pointer instead of ${name}; serve the real LFS object or use the local server`);
         }
         if (/\.gz$/i.test(name) && !(bytes[0] === 0x1f && bytes[1] === 0x8b)) {
-            throw new Error(`${url} is not a gzip initramfs`);
+            throw new Error(`${label}: ${url} is not a gzip initramfs`);
         }
         if (/\.cpio$/i.test(name) && !/^07070[12]/.test(sample)) {
-            throw new Error(`${url} is not a newc cpio initramfs`);
+            throw new Error(`${label}: ${url} is not a newc cpio initramfs`);
         }
     }
 
@@ -791,12 +858,16 @@ window.CXL_createRangeBackedFile = createRangeBackedFile;
 Module['preRun'] = Module['preRun'] || [];
 Module['preRun'].push((mod) => {
     mod.FS.mkdir('/remote');
-    createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl, { allowFullFallback: true });
+    createRangeBackedFile(mod, '/remote', 'bzImage', CXL_WEB_CONFIG.image.kernelUrl, {
+        allowFullFallback: true,
+        label: 'kernel'
+    });
     if (CXL_WEB_CONFIG.attachDisk) {
         createRangeBackedFile(mod, '/remote', 'qemu.img', CXL_WEB_CONFIG.image.diskUrl, {
             writable: true,
             chunkSize: 4 * 1024 * 1024,
-            maxChunks: 4
+            maxChunks: 4,
+            label: 'qemu.img'
         });
     }
     if (CXL_WEB_CONFIG.fastLogin && CXL_WEB_CONFIG.useInitrd) {
@@ -809,9 +880,13 @@ Module['preRun'].push((mod) => {
             maxChunks: hpcInitrd ? 1 : 64,
             dropCacheAfterMmap: hpcInitrd,
             allowFullFallback: true,
+            maxEagerSize: CXL_WEB_CONFIG.allowBigInitrd
+                ? 512 * 1024 * 1024
+                : CXL_WEB_CONFIG.maxStableInitrdSize,
             maxFullFallbackSize: CXL_WEB_CONFIG.image.initrdProfile === 'hpc'
                 ? 512 * 1024 * 1024
-                : 16 * 1024 * 1024
+                : 16 * 1024 * 1024,
+            label: 'initramfs'
         });
     }
     const biosIndex = (CXL_WEB_CONFIG.arguments || []).indexOf('-bios');
@@ -1150,6 +1225,7 @@ function buildQemuArguments() {
     const args = [
         '-nographic',
         '-no-user-config',
+        '-no-reboot',
         '-M', machine,
         '-m', memoryArg,
         '-smp', '1,sockets=1',
