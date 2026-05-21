@@ -1435,6 +1435,10 @@ function ffi_prep_closure_loc_js(closure,cif,fun,user_data,codeloc) { closure = 
       // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
       if (keepRuntimeAlive() && !implicit) {
         var msg = `program exited (with status: ${status}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
+        Module['onExit']?.(status);
+        if (status === 0) {
+          return;
+        }
         readyPromiseReject(msg);
         err(msg);
       }
@@ -1665,7 +1669,7 @@ function ffi_prep_closure_loc_js(closure,cif,fun,user_data,codeloc) { closure = 
         // instead of just using new URL(import.meta.url) because bundler's only recognize
         // the first case in their bundling step. The latter ends up producing an invalid
         // URL to import from the server (e.g., for webpack the file:// path).
-        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260520-type3-sharedworker1', import.meta.url), workerOptions);
+        worker = new Worker(new URL('qemu-system-x86_64.js?v=20260521-noexit1', import.meta.url), workerOptions);
         PThread.unusedWorkers.push(worker);
       },
   getNewWorker() {

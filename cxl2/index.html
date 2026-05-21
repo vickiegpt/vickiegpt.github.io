@@ -395,7 +395,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix22.js?v=20260521-stable1"></script>
+<script src="./cxl-module-romfix22.js?v=20260521-noexit1"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -478,7 +478,7 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    assetVersion: "20260521-stable1",
+    assetVersion: "20260521-noexit1",
     startTimeoutSec: 180,
     arguments: []
 };
@@ -497,7 +497,7 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL("out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260521-stable1");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260521-noexit1");
 let initEmscriptenModulePromise = null;
 function getInitEmscriptenModule() {
     if (!initEmscriptenModulePromise) {
@@ -511,6 +511,8 @@ function getInitEmscriptenModule() {
     return initEmscriptenModulePromise;
 }
 const qemuArgs = config.arguments || [];
+Module.noExitRuntime = true;
+Module["noExitRuntime"] = true;
 const cxlRequested = config.qemuCxlEnabled === true;
 const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-rp(,|$)/.test(arg))
@@ -685,7 +687,7 @@ async function checkResource(label, url, options = {}) {
 
 function qemuAssetUrl(path) {
     const url = new URL(path, new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-    url.searchParams.set("v", config.assetVersion || "20260521-stable1");
+    url.searchParams.set("v", config.assetVersion || "20260521-noexit1");
     return url.href;
 }
 
@@ -785,7 +787,7 @@ function buildMultiVmDaxUrl(role) {
     if (config.image?.kernelUrl) {
         url.searchParams.set("kernel_url", config.image.kernelUrl);
     }
-    url.searchParams.set("reload", "20260520-type3-sharedworker1");
+    url.searchParams.set("reload", "20260521-noexit1");
     return url.href;
 }
 
@@ -905,6 +907,14 @@ function setStatus(text, ready = false) {
     status.textContent = text;
     status.classList.toggle("ready", ready);
 }
+
+Module.onExit = (code) => {
+    const statusCode = Number(code) || 0;
+    term.writeln(`QEMU exited with status ${statusCode}`);
+    setStatus(statusCode === 0 ? "exited" : `exit ${statusCode}`, statusCode === 0);
+    startButton.disabled = false;
+    booted = false;
+};
 
 function sendGuestText(text, options = {}) {
     if (!text) {

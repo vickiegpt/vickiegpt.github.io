@@ -500,13 +500,13 @@ const CXL_WEB_CONFIG = (() => {
         type2MemBytes,
         type2CacheBytes,
         assetVersion: ({
-            fast: '20260521-stable1',
+            fast: '20260521-noexit1',
             fpcast: '20260512-numfix',
             build: '20260516-build',
             safe: '20260512-safe',
             relfix: '20260512-relfix',
             'o3-clean': '20260512-o3-clean'
-        })[qemuCore] || '20260521-stable1',
+        })[qemuCore] || '20260521-noexit1',
         assetBase: ({
             fast: '/cxl2/images/alpine-x86_64/',
             fpcast: '/cxl2/images/alpine-x86_64-fpcast/',
@@ -530,8 +530,8 @@ const CXL_WEB_CONFIG = (() => {
             port: cxlmemsim.port,
             pool: cxlmemsim.pool,
             size: cxlmemsimSize,
-            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260521-stable1',
-            workerName: 'hetgpu-cxlmemsim-20260521-stable1'
+            workerUrl: '/cxl2/cxlmemsim-pool-worker.js?v=20260521-noexit1',
+            workerName: 'hetgpu-cxlmemsim-20260521-noexit1'
         },
         webgpuNative
     };
