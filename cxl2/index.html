@@ -453,15 +453,92 @@ term.writeln("HETGPU WebGPU x86_64 QEMU ready.");
 term.writeln("Press Start VM. Default boot opens the in-memory initramfs shell; use hpc=1 for MPI/GROMACS tools or rootdisk=1 for /about/qemu.img.");
 term.writeln("");
 
+const fallbackParams = new URLSearchParams(location.search);
+function firstFallbackUrlParam(names) {
+    for (const name of names) {
+        const value = fallbackParams.get(name);
+        if (value) {
+            return value;
+        }
+    }
+    return "";
+}
+
+function fallbackBooleanParam(names, defaultValue = false) {
+    for (const name of names) {
+        if (!fallbackParams.has(name)) {
+            continue;
+        }
+        const value = String(fallbackParams.get(name) || "").trim().toLowerCase();
+        if (["1", "true", "yes", "on"].includes(value)) {
+            return true;
+        }
+        if (["0", "false", "no", "off"].includes(value)) {
+            return false;
+        }
+    }
+    return defaultValue;
+}
+
+function fallbackByteSizeParam(names, defaultValue) {
+    for (const name of names) {
+        const raw = fallbackParams.get(name);
+        if (!raw) {
+            continue;
+        }
+        const match = String(raw).trim().match(/^(\d+(?:\.\d+)?)([kmgt]?i?b?)?$/i);
+        if (!match) {
+            continue;
+        }
+        const amount = Number(match[1]);
+        const unit = (match[2] || "").toLowerCase();
+        const scale = unit.startsWith("k") ? 1024
+            : unit.startsWith("m") ? 1024 ** 2
+            : unit.startsWith("g") ? 1024 ** 3
+            : unit.startsWith("t") ? 1024 ** 4
+            : 1;
+        return Math.floor(amount * scale);
+    }
+    return defaultValue;
+}
+
+function fallbackInitrdProfileFromParams() {
+    const raw = fallbackParams.get("initrd_profile")
+        || fallbackParams.get("initramfs_profile")
+        || fallbackParams.get("toolset")
+        || fallbackParams.get("tools")
+        || (fallbackParams.get("hpc") === "1" ? "hpc" : "");
+    const value = String(raw || "").trim().toLowerCase();
+    return ["hpc", "full", "mpi", "openmpi", "gromacs", "gmx", "llama", "tigon"].includes(value)
+        ? "hpc"
+        : "shell";
+}
+
+const fallbackInitrdProfile = fallbackInitrdProfileFromParams();
+const fallbackInitrdName = fallbackInitrdProfile === "hpc"
+    ? "initramfs-hpc-dax2.cpio.gz"
+    : "initramfs-shell.cpio";
+const fallbackInitrdVersion = fallbackInitrdProfile === "hpc"
+    ? "20260520-type3-sharedworker1"
+    : "20260518-tools2";
+const fallbackDefaultInitrdUrl = fallbackInitrdProfile === "hpc" && /^asplos\.dev$/i.test(location.hostname)
+    ? `https://media.githubusercontent.com/media/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/${fallbackInitrdName}?v=${fallbackInitrdVersion}`
+    : new URL(`/cxl2/images/alpine-x86_64/${fallbackInitrdName}?v=${fallbackInitrdVersion}`, location.href).href;
+const fallbackHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
+    ? "https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=20260520-force-cxl-kernel1"
+    : new URL("/cxl2/images/alpine-x86_64/bzImage-cxl-dax?v=20260520-force-cxl-kernel1", location.href).href;
+
 const config = window.CXL_WEB_CONFIG || {
     profile: "type2",
     backend: "webgpu",
     assetBase: "/cxl2/images/alpine-x86_64/",
     image: {
-        kernelUrl: "/about/bzImage",
+        kernelUrl: firstFallbackUrlParam(["kernel_url", "bzimage_url", "bzImage_url"])
+            || (fallbackInitrdProfile === "hpc" ? fallbackHpcKernelUrl : "/about/bzImage"),
         diskUrl: "/about/qemu.img",
-        initrdProfile: "shell",
-        initrdName: "initramfs-shell.cpio"
+        initrdUrl: firstFallbackUrlParam(["initrd_url", "initramfs_url"]) || fallbackDefaultInitrdUrl,
+        initrdProfile: fallbackInitrdProfile,
+        initrdName: fallbackInitrdName
     },
     network: {
         mode: "browser",
@@ -481,6 +558,8 @@ const config = window.CXL_WEB_CONFIG || {
     qemuMainScript: "out-noexit2.js",
     qemuPthreadScript: "qemu-system-x86_64-noexit2.js",
     assetVersion: "20260521-noexit2",
+    allowBigInitrd: fallbackBooleanParam(["allow_big_initrd", "unsafe_big_initrd"], false),
+    maxStableInitrdSize: fallbackByteSizeParam(["max_stable_initrd", "initrd_stable_limit"], 64 * 1024 * 1024),
     startTimeoutSec: 180,
     arguments: []
 };
@@ -515,10 +594,15 @@ function getInitEmscriptenModule() {
 const qemuArgs = config.arguments || [];
 Module.noExitRuntime = true;
 Module["noExitRuntime"] = true;
+const cxlModuleReady = Boolean(window.CXL_WEB_CONFIG && window.CXL_createRangeBackedFile);
+const cxlModuleArgsReady = Array.isArray(qemuArgs) && qemuArgs.length > 0;
 const cxlRequested = config.qemuCxlEnabled === true;
 const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-rp(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-type[123](,|$)/.test(arg));
+if (!cxlModuleReady) {
+    term.writeln("CXL module warning: cxl-module-romfix24.js did not publish the runtime config; startup is using fallback asset URLs only.");
+}
 term.writeln(`CXL requested: ${cxlRequested ? "on" : "off"}; CXL devices in QEMU args: ${cxlDeviceArgsPresent ? "yes" : "no"}`);
 term.writeln(`QEMU assets: ${config.assetBase || "/cxl2/images/alpine-x86_64/"} v=${config.assetVersion || "unknown"}`);
 if (config.fastLogin !== false) {
@@ -687,6 +771,30 @@ async function checkResource(label, url, options = {}) {
     }
 }
 
+function checkCxlModule() {
+    if (!cxlModuleReady) {
+        return Promise.resolve({
+            label: "cxl module",
+            ok: false,
+            fatal: true,
+            detail: "not loaded; remote HTML/JS is stale or cached. Wait for asplos to serve cxl-module-romfix24.js, then hard reload."
+        });
+    }
+    if (!cxlModuleArgsReady) {
+        return Promise.resolve({
+            label: "cxl module",
+            ok: false,
+            fatal: true,
+            detail: "loaded, but QEMU arguments are empty; reset the URL with defaults=1 or cxl=type2/type3."
+        });
+    }
+    return Promise.resolve({
+        label: "cxl module",
+        ok: true,
+        detail: `loaded; ${qemuArgs.length} qemu args`
+    });
+}
+
 function qemuAssetUrl(path) {
     const url = new URL(path, new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
     url.searchParams.set("v", config.assetVersion || "20260521-noexit2");
@@ -697,6 +805,7 @@ let lastPreflight = null;
 async function runStartupPreflight(options = {}) {
     const strict = options.strict === true;
     const checks = [
+        checkCxlModule(),
         checkResource("qemu js", qemuModuleUrl.href, { checkPointer: true }),
         checkResource("qemu wasm", qemuAssetUrl("qemu-system-x86_64.wasm"), { checkPointer: true }),
         checkResource("pthread worker", qemuAssetUrl(config.qemuPthreadScript || "qemu-system-x86_64.worker.js"), { checkPointer: true }),
