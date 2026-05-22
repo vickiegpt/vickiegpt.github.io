@@ -395,7 +395,7 @@ if (!location.search) {
     history.replaceState(null, "", `${location.pathname}?${fastShellParams.toString()}${location.hash}`);
 }
 </script>
-<script src="./cxl-module-romfix25.js"></script>
+<script src="./cxl-module-romfix26.js"></script>
 <script src="./images/alpine-x86_64/load-rom.20260517-microvm-bios-range.js?v=20260518-rom-alias3"></script>
 <script type="module">
 import "https://unpkg.com/xterm@5.3.0/lib/xterm.js";
@@ -531,7 +531,7 @@ const fallbackHpcKernelUrl = /^asplos\.dev$/i.test(location.hostname)
 const config = window.CXL_WEB_CONFIG || {
     profile: "type2",
     backend: "webgpu",
-    assetBase: "/cxl2/images/alpine-x86_64/",
+    assetBase: "/cxl2/images/alpine-x86_64-may17/",
     image: {
         kernelUrl: firstFallbackUrlParam(["kernel_url", "bzimage_url", "bzImage_url"])
             || (fallbackInitrdProfile === "hpc" ? fallbackHpcKernelUrl : "/about/bzImage"),
@@ -555,9 +555,9 @@ const config = window.CXL_WEB_CONFIG || {
         size: 256 * 1024 * 1024
     },
     qemuCore: "fast",
-    qemuMainScript: "out-noexit2.js",
-    qemuPthreadScript: "qemu-system-x86_64-noexit2.js",
-    assetVersion: "20260521-noexit2",
+    qemuMainScript: "out.js",
+    qemuPthreadScript: "qemu-system-x86_64.js",
+    assetVersion: "20260522-may17-stable1",
     allowBigInitrd: fallbackBooleanParam(["allow_big_initrd", "unsafe_big_initrd"], false),
     maxStableInitrdSize: fallbackByteSizeParam(["max_stable_initrd", "initrd_stable_limit"], 64 * 1024 * 1024),
     startTimeoutSec: 180,
@@ -578,7 +578,7 @@ Module.preRun.push((mod) => {
     }
 });
 const qemuModuleUrl = new URL(config.qemuMainScript || "out.js", new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260521-noexit2");
+qemuModuleUrl.searchParams.set("v", config.assetVersion || "20260522-may17-stable1");
 let initEmscriptenModulePromise = null;
 function getInitEmscriptenModule() {
     if (!initEmscriptenModulePromise) {
@@ -601,7 +601,7 @@ const cxlDeviceArgsPresent = qemuArgs.some((arg) => /(^|,)pxb-cxl(,|$)/.test(arg
     && qemuArgs.some((arg) => /(^|,)cxl-rp(,|$)/.test(arg))
     && qemuArgs.some((arg) => /(^|,)cxl-type[123](,|$)/.test(arg));
 if (!cxlModuleReady) {
-    term.writeln("CXL module warning: cxl-module-romfix25.js did not publish the runtime config; startup is using fallback asset URLs only.");
+    term.writeln("CXL module warning: cxl-module-romfix26.js did not publish the runtime config; startup is using fallback asset URLs only.");
 }
 term.writeln(`CXL requested: ${cxlRequested ? "on" : "off"}; CXL devices in QEMU args: ${cxlDeviceArgsPresent ? "yes" : "no"}`);
 term.writeln(`QEMU assets: ${config.assetBase || "/cxl2/images/alpine-x86_64/"} v=${config.assetVersion || "unknown"}`);
@@ -777,7 +777,7 @@ function checkCxlModule() {
             label: "cxl module",
             ok: false,
             fatal: true,
-            detail: "not loaded; remote HTML/JS is stale or cached. Wait for asplos to serve cxl-module-romfix25.js, then hard reload."
+            detail: "not loaded; remote HTML/JS is stale or cached. Wait for asplos to serve cxl-module-romfix26.js, then hard reload."
         });
     }
     if (!cxlModuleArgsReady) {
@@ -797,7 +797,7 @@ function checkCxlModule() {
 
 function qemuAssetUrl(path) {
     const url = new URL(path, new URL(config.assetBase || "/cxl2/images/alpine-x86_64/", location.href));
-    url.searchParams.set("v", config.assetVersion || "20260521-noexit2");
+    url.searchParams.set("v", config.assetVersion || "20260522-may17-stable1");
     return url.href;
 }
 
@@ -898,7 +898,7 @@ function buildMultiVmDaxUrl(role) {
     if (config.image?.kernelUrl) {
         url.searchParams.set("kernel_url", config.image.kernelUrl);
     }
-    url.searchParams.set("reload", "20260521-noexit2");
+    url.searchParams.set("reload", "20260522-may17-stable1");
     return url.href;
 }
 
