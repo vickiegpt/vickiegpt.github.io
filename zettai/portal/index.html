@@ -47,14 +47,103 @@
             }
         }
     </script>
+    <style>
+        body {
+            background:
+                linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.92) 42%, rgba(2, 6, 23, 0.98)),
+                linear-gradient(45deg, rgba(20, 184, 166, 0.16), rgba(124, 58, 237, 0.14));
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 38%, rgba(20, 184, 166, 0.08) 70%, transparent);
+            background-size: 42px 42px, 42px 42px, 100% 100%;
+            mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.72) 68%, transparent);
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-nav-dark {
+            background: rgba(15, 23, 42, 0.64);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 24px 70px -44px rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(28px) saturate(1.35);
+            -webkit-backdrop-filter: blur(28px) saturate(1.35);
+        }
+
+        .glass-dark,
+        .glass-frame {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.055));
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow:
+                0 32px 86px -54px rgba(0, 0, 0, 0.95),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(26px) saturate(1.3);
+            -webkit-backdrop-filter: blur(26px) saturate(1.3);
+        }
+
+        .glass-dark::before,
+        .glass-frame::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 34%);
+            opacity: 0.72;
+        }
+
+        .glass-dark > *,
+        .glass-frame > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-chip-dark,
+        .glass-button-dark {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 22px 58px -44px rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(20px) saturate(1.25);
+            -webkit-backdrop-filter: blur(20px) saturate(1.25);
+        }
+
+        .glass-primary {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(20, 184, 166, 0.72));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 22px 60px -38px rgba(20, 184, 166, 0.72);
+        }
+
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .glass-nav-dark,
+            .glass-dark,
+            .glass-frame,
+            .glass-chip-dark,
+            .glass-button-dark {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-white font-sans antialiased min-h-screen selection:bg-brand-100 selection:text-brand-900">
+<body class="text-white font-sans antialiased min-h-screen selection:bg-brand-100 selection:text-brand-900">
 
     <!-- Header -->
-    <nav class="fixed w-full bg-slate-900/90 backdrop-blur-sm border-b border-white/10 z-50 transition-all duration-300">
+    <nav class="glass-nav-dark fixed w-full z-50 transition-all duration-300">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex-shrink-0 flex items-center gap-3">
+            <div class="flex justify-between h-16 items-center gap-6">
+                <a href="../" class="flex-shrink-0 flex items-center gap-3" aria-label="zett.ai home">
                     <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -67,31 +156,31 @@
                         <circle cx="62" cy="45" r="3" fill="white"/>
                         <path d="M 35 55 Q 50 65 65 55" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
                     </svg>
-                    <span class="font-mono font-bold text-xl tracking-tight text-brand-400">zett.ai Portal</span>
-                </div>
-                <a href="../" class="text-sm font-medium text-brand-400 hover:text-brand-200 transition-colors flex items-center gap-1.5">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Back to Main Site
+                    <span class="font-mono font-bold text-xl tracking-tight text-brand-400">zett.ai</span>
                 </a>
+                <div class="hidden items-center gap-7 text-sm font-medium md:flex">
+                    <a href="../#products" class="text-slate-300 transition-colors hover:text-brand-200" data-i18n="nav.products">Products</a>
+                    <a href="../lease/" class="text-slate-300 transition-colors hover:text-brand-200" data-i18n="nav.lease">Leasing</a>
+                    <a href="../forum/" class="text-slate-300 transition-colors hover:text-brand-200" data-i18n="nav.forum">Forum</a>
+                    <a href="./" class="text-brand-200 transition-colors hover:text-white" data-i18n="nav.portal">Investor Portal</a>
+                </div>
+                <div class="flex items-center">
+                    <button type="button" class="lang-toggle glass-button-dark rounded-md px-3 py-1.5 text-sm font-medium text-brand-200 transition-colors hover:text-white" aria-label="Switch language">中文</button>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
     <header class="relative pt-32 pb-12 lg:pt-40 lg:pb-16 overflow-hidden">
-        <div class="absolute inset-0 -z-10">
-            <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-            <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-brand-600 opacity-15 blur-[100px]"></div>
-        </div>
-
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-600/20 border border-brand-500/30 text-brand-300 text-xs font-mono font-medium mb-6">
+            <div class="glass-chip-dark inline-flex items-center gap-2 px-3 py-1 rounded-full text-brand-200 text-xs font-mono font-medium mb-6" data-i18n="hero.badge">
                 Insider Access
             </div>
-            <h1 class="text-3xl md:text-5xl font-serif font-bold text-white tracking-tight mb-4">
+            <h1 class="text-3xl md:text-5xl font-serif font-bold text-white tracking-tight mb-4" data-i18n="hero.title">
                 Investor Portal
             </h1>
-            <p class="text-lg text-slate-400 font-light max-w-2xl mx-auto">
+            <p class="text-lg text-slate-400 font-light max-w-2xl mx-auto" data-i18n="hero.subtitle">
                 Confidential documents and resources for investors and partners
             </p>
         </div>
@@ -101,9 +190,9 @@
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
 
         <!-- Document Cards -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <!-- White Paper Card -->
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/10 transition-all">
+            <div class="glass-dark rounded-lg p-6 transition-all hover:border-brand-400/40">
                 <div class="flex items-start gap-4 mb-5">
                     <div class="flex-shrink-0">
                         <svg width="50" height="50" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
@@ -118,28 +207,27 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white mb-1">Zettai White Paper</h3>
-                        <span class="text-xs text-slate-500 font-mono">Technical Documentation</span>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="docs.whitepaperTitle">Zettai White Paper</h3>
+                        <span class="text-xs text-slate-500 font-mono" data-i18n="docs.whitepaperKicker">Technical Documentation</span>
                     </div>
                 </div>
-                <p class="text-sm text-slate-400 leading-relaxed mb-6">
-                    Comprehensive technical deep-dive into Zettai's revolutionary architecture. Covers CXL memory fabric design,
-                    disaggregated computing principles, FPGA acceleration strategies, and our vision for next-generation AI infrastructure.
+                <p class="text-sm text-slate-400 leading-relaxed mb-6" data-i18n="docs.whitepaperDesc">
+                    Comprehensive technical deep-dive into Zettai's CPU + XPU architecture for agentic workloads. Covers CXL memory fabric design, disaggregated compute, programmable acceleration, sandbox isolation, and workload orchestration.
                 </p>
                 <div class="flex flex-wrap gap-3">
-                    <a href="../Zettai_White_Paper.pdf" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" target="_blank">
+                    <a href="../Zettai_White_Paper.pdf" class="glass-primary inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:brightness-110" target="_blank">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        Download PDF
+                        <span data-i18n="common.download">Download PDF</span>
                     </a>
-                    <button class="tab-trigger inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium rounded-md text-sm transition-colors" onclick="showViewer('whitepaper')">
+                    <button class="tab-trigger glass-button-dark inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:bg-white/10" onclick="showViewer('whitepaper')">
                         <i data-lucide="eye" class="w-4 h-4"></i>
-                        View Online
+                        <span data-i18n="common.viewOnline">View Online</span>
                     </button>
                 </div>
             </div>
 
             <!-- Pitch Deck Card -->
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/10 transition-all">
+            <div class="glass-dark rounded-lg p-6 transition-all hover:border-brand-400/40">
                 <div class="flex items-start gap-4 mb-5">
                     <div class="flex-shrink-0">
                         <svg width="50" height="50" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
@@ -152,35 +240,92 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-white mb-1">ZettEngine Pitch Deck</h3>
-                        <span class="text-xs text-slate-500 font-mono">Investor Presentation</span>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="docs.pitchTitle">ZettEngine Pitch Deck</h3>
+                        <span class="text-xs text-slate-500 font-mono" data-i18n="docs.pitchKicker">Investor Presentation</span>
                     </div>
                 </div>
-                <p class="text-sm text-slate-400 leading-relaxed mb-6">
-                    Executive overview of ZettEngine's market positioning, competitive advantages, and business opportunity.
-                    Includes performance benchmarks, cost analysis, and roadmap for the AI infrastructure revolution.
+                <p class="text-sm text-slate-400 leading-relaxed mb-6" data-i18n="docs.pitchDesc">
+                    Executive overview of ZettEngine's market positioning, competitive advantages, and business opportunity. Includes performance benchmarks, cost analysis, and roadmap for CPU + XPU agentic workload infrastructure.
                 </p>
                 <div class="flex flex-wrap gap-3">
-                    <a href="../ZettEngine_CXL_PitchDeck_v1.pdf" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" target="_blank">
+                    <a href="../ZettEngine_CXL_PitchDeck_v1.pdf" class="glass-primary inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:brightness-110" target="_blank">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        Download PDF
+                        <span data-i18n="common.download">Download PDF</span>
                     </a>
-                    <button class="tab-trigger inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium rounded-md text-sm transition-colors" onclick="showViewer('pitchdeck')">
+                    <button class="tab-trigger glass-button-dark inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:bg-white/10" onclick="showViewer('pitchdeck')">
                         <i data-lucide="eye" class="w-4 h-4"></i>
-                        View Online
+                        <span data-i18n="common.viewOnline">View Online</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- Lease Program Card -->
+            <div class="glass-dark rounded-lg p-6 transition-all hover:border-brand-400/40">
+                <div class="flex items-start gap-4 mb-5">
+                    <div class="flex-shrink-0">
+                        <div class="w-[50px] h-[50px] rounded-lg bg-emerald-500/90 flex items-center justify-center">
+                            <i data-lucide="hand-coins" class="w-7 h-7 text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="docs.leaseTitle">Lease Program Materials</h3>
+                        <span class="text-xs text-slate-500 font-mono" data-i18n="docs.leaseKicker">Lease diligence materials</span>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-6" data-i18n="docs.leaseDesc">
+                    Investor-facing summary of CPU + XPU tower kits, 2U1P/2U4P modules, sandbox-pool pilots, 1000-server planning, and project-based leasing structure.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="../lease/" class="glass-primary inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:brightness-110">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <span data-i18n="docs.openLease">Open Lease Page</span>
+                    </a>
+                    <a href="mailto:vickie@zettai.us?subject=Investor%20Lease%20Diligence%20Request" class="glass-button-dark inline-flex items-center gap-2 px-4 py-2 text-white font-medium rounded-md text-sm transition-colors hover:bg-white/10">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <span data-i18n="docs.requestDiligence">Request Diligence</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investor Response Desk -->
+        <section class="border-t border-white/10 pt-12 mb-16">
+            <div class="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+                <div>
+                    <p class="text-sm font-mono font-bold uppercase tracking-wide text-brand-300 mb-2" data-i18n="response.eyebrow">Investor Response Desk</p>
+                    <h2 class="text-2xl font-serif font-bold text-white mb-3" data-i18n="response.title">Investor Replies and Material Requests</h2>
+                    <p class="text-sm leading-6 text-slate-400" data-i18n="response.desc">
+                        Use this section to route follow-up questions after reading the deck or lease page. We can respond with a data-room package, technical diligence notes, or a leasing model tailored to the investor's focus.
+                    </p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-3">
+                    <a href="mailto:vickie@zettai.us?subject=Investor%20Data%20Room%20Request" class="glass-dark rounded-lg p-5 transition-colors hover:border-brand-400/40">
+                        <i data-lucide="lock" class="w-5 h-5 text-brand-300 mb-3"></i>
+                        <h3 class="font-bold text-white" data-i18n="response.dataRoomTitle">Data Room</h3>
+                        <p class="mt-2 text-sm text-slate-400" data-i18n="response.dataRoomDesc">Request confidential docs</p>
+                    </a>
+                    <a href="mailto:vickie@zettai.us?subject=Technical%20Diligence%20Questions" class="glass-dark rounded-lg p-5 transition-colors hover:border-brand-400/40">
+                        <i data-lucide="cpu" class="w-5 h-5 text-brand-300 mb-3"></i>
+                        <h3 class="font-bold text-white" data-i18n="response.qaTitle">Technical Q&A</h3>
+                        <p class="mt-2 text-sm text-slate-400" data-i18n="response.qaDesc">CPU, XPU, CXL, sandbox diligence</p>
+                    </a>
+                    <a href="mailto:vickie@zettai.us?subject=Lease%20Business%20Model%20Request" class="glass-dark rounded-lg p-5 transition-colors hover:border-brand-400/40">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-brand-300 mb-3"></i>
+                        <h3 class="font-bold text-white" data-i18n="response.modelTitle">Lease Model</h3>
+                        <p class="mt-2 text-sm text-slate-400" data-i18n="response.modelDesc">Pilot economics and scale plan</p>
+                    </a>
                 </div>
             </div>
         </section>
 
         <!-- PDF Viewer -->
         <section id="viewer-section" class="border-t border-white/10 pt-12">
-            <h2 class="text-xl font-serif font-bold text-white text-center mb-6">Document Viewer</h2>
+            <h2 class="text-xl font-serif font-bold text-white text-center mb-6" data-i18n="viewer.title">Document Viewer</h2>
             <div class="flex justify-center gap-3 mb-6">
-                <button class="tab-btn active px-5 py-2 rounded-md text-sm font-medium transition-all bg-brand-600 text-white" onclick="showViewer('whitepaper')">White Paper</button>
-                <button class="tab-btn px-5 py-2 rounded-md text-sm font-medium transition-all bg-white/10 text-white border border-white/20 hover:bg-white/15" onclick="showViewer('pitchdeck')">Pitch Deck</button>
+                <button class="tab-btn active px-5 py-2 rounded-md text-sm font-medium transition-all glass-primary text-white" onclick="showViewer('whitepaper')" data-i18n="viewer.whitepaper">White Paper</button>
+                <button class="tab-btn px-5 py-2 rounded-md text-sm font-medium transition-all glass-button-dark text-white hover:bg-white/10" onclick="showViewer('pitchdeck')" data-i18n="viewer.pitchdeck">Pitch Deck</button>
             </div>
-            <div class="bg-white/[0.02] border border-white/10 rounded-lg overflow-hidden h-[700px] max-sm:h-[450px]">
+            <div class="glass-frame rounded-lg overflow-hidden h-[700px] max-sm:h-[450px]">
                 <iframe id="whitepaper-frame" class="pdf-frame w-full h-full border-none" src="../Zettai_White_Paper.pdf" title="Zettai White Paper"></iframe>
                 <iframe id="pitchdeck-frame" class="pdf-frame w-full h-full border-none hidden" src="../ZettEngine_CXL_PitchDeck_v1.pdf" title="ZettEngine Pitch Deck"></iframe>
             </div>
@@ -188,9 +333,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-black/20 border-t border-white/10 py-8 mt-16">
+    <footer class="glass-nav-dark border-t border-white/10 py-8 mt-16">
         <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
-            <p class="text-sm text-slate-500">Confidential - For authorized investors and partners only</p>
+            <p class="text-sm text-slate-500" data-i18n="footer.confidential">Confidential - For authorized investors and partners only</p>
             <p class="text-xs text-slate-600 font-mono">&copy; 2026 zett.ai Absolute Technology</p>
         </div>
     </footer>
@@ -200,13 +345,158 @@
         lucide.createIcons();
     </script>
 
+    <!-- Language Toggle -->
+    <script>
+        (function() {
+            var translations = {
+                en: {
+                    nav: {
+                        products: 'Products',
+                        lease: 'Leasing',
+                        forum: 'Forum',
+                        portal: 'Investor Portal'
+                    },
+                    hero: {
+                        badge: 'Insider Access',
+                        title: 'Investor Portal',
+                        subtitle: 'Confidential documents and resources for investors and partners'
+                    },
+                    docs: {
+                        whitepaperTitle: 'Zettai White Paper',
+                        whitepaperKicker: 'Technical Documentation',
+                        whitepaperDesc: "Comprehensive technical deep-dive into Zettai's CPU + XPU architecture for agentic workloads. Covers CXL memory fabric design, disaggregated compute, programmable acceleration, sandbox isolation, and workload orchestration.",
+                        pitchTitle: 'ZettEngine Pitch Deck',
+                        pitchKicker: 'Investor Presentation',
+                        pitchDesc: "Executive overview of ZettEngine's market positioning, competitive advantages, and business opportunity. Includes performance benchmarks, cost analysis, and roadmap for CPU + XPU agentic workload infrastructure.",
+                        leaseTitle: 'Lease Program Materials',
+                        leaseKicker: 'Lease diligence materials',
+                        leaseDesc: 'Investor-facing summary of CPU + XPU tower kits, 2U1P/2U4P modules, sandbox-pool pilots, 1000-server planning, and project-based leasing structure.',
+                        openLease: 'Open Lease Page',
+                        requestDiligence: 'Request Diligence'
+                    },
+                    response: {
+                        eyebrow: 'Investor Response Desk',
+                        title: 'Investor Replies and Material Requests',
+                        desc: "Use this section to route follow-up questions after reading the deck or lease page. We can respond with a data-room package, technical diligence notes, or a leasing model tailored to the investor's focus.",
+                        dataRoomTitle: 'Data Room',
+                        dataRoomDesc: 'Request confidential docs',
+                        qaTitle: 'Technical Q&A',
+                        qaDesc: 'CPU, XPU, CXL, sandbox diligence',
+                        modelTitle: 'Lease Model',
+                        modelDesc: 'Pilot economics and scale plan'
+                    },
+                    viewer: {
+                        title: 'Document Viewer',
+                        whitepaper: 'White Paper',
+                        pitchdeck: 'Pitch Deck'
+                    },
+                    common: {
+                        download: 'Download PDF',
+                        viewOnline: 'View Online'
+                    },
+                    footer: {
+                        confidential: 'Confidential - For authorized investors and partners only'
+                    }
+                },
+                zh: {
+                    nav: {
+                        products: '产品',
+                        lease: '租赁',
+                        forum: '论坛',
+                        portal: '投资人门户'
+                    },
+                    hero: {
+                        badge: '授权访问',
+                        title: '投资人门户',
+                        subtitle: '面向投资人和合作伙伴的保密资料、项目进展和后续请求入口'
+                    },
+                    docs: {
+                        whitepaperTitle: 'Zettai 白皮书',
+                        whitepaperKicker: '技术文档',
+                        whitepaperDesc: '技术白皮书，覆盖面向 Agentic workloads 的 CPU + XPU 架构、CXL memory fabric、解耦计算、可编程加速、沙箱隔离和负载编排。',
+                        pitchTitle: 'ZettEngine 融资简报',
+                        pitchKicker: '投资人材料',
+                        pitchDesc: '融资与合作简报，覆盖市场定位、竞争优势、成本分析、性能指标和 CPU + XPU Agentic workload 基础设施路线图。',
+                        leaseTitle: '租赁方案材料',
+                        leaseKicker: '租赁方案与尽调资料',
+                        leaseDesc: '面向投资人与合作伙伴的租赁方案说明，覆盖 CPU + XPU 塔式套件、2U1P/2U4P、sandbox pool 试点、1000 台服务器规划和按项目报价逻辑。',
+                        openLease: '打开租赁页',
+                        requestDiligence: '索取尽调资料'
+                    },
+                    response: {
+                        eyebrow: '投资人回复台',
+                        title: '投资人回复与资料请求',
+                        desc: '这里用于承接投资人看完材料后的后续问题：可以回复数据室资料包、技术尽调说明，或按投资人关注点整理租赁商业模型。',
+                        dataRoomTitle: '数据室',
+                        dataRoomDesc: '申请保密资料',
+                        qaTitle: '技术问答',
+                        qaDesc: 'CPU、XPU、CXL、sandbox 技术尽调',
+                        modelTitle: '租赁模型',
+                        modelDesc: '试点经济性与规模部署计划'
+                    },
+                    viewer: {
+                        title: '文档预览',
+                        whitepaper: '白皮书',
+                        pitchdeck: '融资简报'
+                    },
+                    common: {
+                        download: '下载 PDF',
+                        viewOnline: '在线查看'
+                    },
+                    footer: {
+                        confidential: '保密资料，仅限授权投资人与合作伙伴'
+                    }
+                }
+            };
+
+            function getValue(obj, path) {
+                return path.split('.').reduce(function(value, key) {
+                    return value && value[key];
+                }, obj);
+            }
+
+            function applyLanguage(lang) {
+                var dictionary = translations[lang] || translations.en;
+                document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+                document.title = lang === 'zh'
+                    ? '投资人门户 - zett.ai'
+                    : 'Investor Portal - zett.ai';
+
+                document.querySelectorAll('[data-i18n]').forEach(function(element) {
+                    var value = getValue(dictionary, element.getAttribute('data-i18n'));
+                    if (value) element.textContent = value;
+                });
+
+                document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                    button.textContent = lang === 'zh' ? 'EN' : '中文';
+                    button.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换到中文');
+                });
+
+                localStorage.setItem('zettai-language', lang);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var stored = localStorage.getItem('zettai-language');
+                var initial = stored || ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+                applyLanguage(initial);
+
+                document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        var next = document.documentElement.lang === 'zh-CN' ? 'en' : 'zh';
+                        applyLanguage(next);
+                    });
+                });
+            });
+        })();
+    </script>
+
     <!-- Viewer Logic -->
     <script>
         function showViewer(doc) {
             // Update tabs
             document.querySelectorAll('.tab-btn').forEach(function(btn) {
-                btn.classList.remove('active', 'bg-brand-600');
-                btn.classList.add('bg-white/10', 'border', 'border-white/20');
+                btn.classList.remove('active', 'glass-primary');
+                btn.classList.add('glass-button-dark');
             });
 
             // Update frames
@@ -215,12 +505,12 @@
             });
 
             if (doc === 'whitepaper') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active', 'bg-brand-600');
-                document.querySelectorAll('.tab-btn')[0].classList.remove('bg-white/10', 'border', 'border-white/20');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active', 'glass-primary');
+                document.querySelectorAll('.tab-btn')[0].classList.remove('glass-button-dark');
                 document.getElementById('whitepaper-frame').classList.remove('hidden');
             } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active', 'bg-brand-600');
-                document.querySelectorAll('.tab-btn')[1].classList.remove('bg-white/10', 'border', 'border-white/20');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active', 'glass-primary');
+                document.querySelectorAll('.tab-btn')[1].classList.remove('glass-button-dark');
                 document.getElementById('pitchdeck-frame').classList.remove('hidden');
             }
 

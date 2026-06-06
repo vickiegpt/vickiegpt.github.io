@@ -19,7 +19,7 @@
         PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
       }
       var PACKAGE_NAME = 'load-rom.data';
-      var REMOTE_PACKAGE_BASE = 'load-rom.data';
+      var REMOTE_PACKAGE_BASE = 'load-rom.data?v=20260515-linuxboot-rom-cxl';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
         err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
@@ -107,6 +107,17 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
         if (!check) throw msg + new Error().stack;
       }
 Module['FS_createPath']("/", "pack-rom", true, true);
+if (typeof window === 'object'
+    && window.CXL_WEB_CONFIG
+    && window.CXL_WEB_CONFIG.image
+    && window.CXL_WEB_CONFIG.image.biosUrl
+    && typeof window.CXL_createRangeBackedFile === 'function'
+    && !Module['FS'].analyzePath('/pack-rom/bios-microvm.bin').exists) {
+  window.CXL_createRangeBackedFile(Module, '/pack-rom', 'bios-microvm.bin', window.CXL_WEB_CONFIG.image.biosUrl, {
+    allowFullFallback: true,
+    maxFullFallbackSize: 1024 * 1024
+  });
+}
 
       /** @constructor */
       function DataRequest(start, end, audio) {
@@ -174,7 +185,64 @@ Module['FS_createPath']("/", "pack-rom", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/pack-rom/bios-256k.bin", "start": 0, "end": 262144}, {"filename": "/pack-rom/efi-virtio.rom", "start": 262144, "end": 422912}, {"filename": "/pack-rom/kvmvapic.bin", "start": 422912, "end": 432128}, {"filename": "/pack-rom/linuxboot_dma.bin", "start": 432128, "end": 433664}, {"filename": "/pack-rom/vgabios-stdvga.bin", "start": 433664, "end": 473088}], "remote_package_size": 473088});
+    loadPackage({"files": [{"filename": "/pack-rom/bios-256k.bin", "start": 0, "end": 262144}, {"filename": "/pack-rom/efi-virtio.rom", "start": 262144, "end": 422912}, {"filename": "/pack-rom/kvmvapic.bin", "start": 422912, "end": 432128}, {"filename": "/pack-rom/linuxboot.bin", "start": 432128, "end": 433152}, {"filename": "/pack-rom/linuxboot_dma.bin", "start": 433152, "end": 434688}, {"filename": "/pack-rom/vgabios-stdvga.bin", "start": 434688, "end": 474112}], "remote_package_size": 474112});
+    if (!Module['preRun']) Module['preRun'] = [];
+    Module['preRun'].unshift(function() {
+      var FS = Module['FS'];
+      if (!FS) return;
+      var romNames = [
+        'bios-256k.bin',
+        'efi-virtio.rom',
+        'kvmvapic.bin',
+        'linuxboot.bin',
+        'linuxboot_dma.bin',
+        'vgabios-stdvga.bin'
+      ];
+      var aliasDirs = ['/pack-rom', '/', '/qemu/pc-bios', '/usr/local/share/qemu', '/usr/share/qemu'];
+      var externalRoms = {
+        'efi-e1000.rom': '/cxl/images/alpine-x86_64/efi-e1000.rom?v=20260518-e1000-1'
+      };
+      function mkdirp(path) {
+        if (!path || path === '/') return;
+        var parts = path.split('/').filter(Boolean);
+        var current = '';
+        for (var i = 0; i < parts.length; i++) {
+          current += '/' + parts[i];
+          if (!FS.analyzePath(current).exists) {
+            FS.mkdir(current);
+          }
+        }
+      }
+      for (var i = 0; i < romNames.length; i++) {
+        var name = romNames[i];
+        var source = '/pack-rom/' + name;
+        if (!FS.analyzePath(source).exists) continue;
+        var data = FS.readFile(source);
+        for (var j = 0; j < aliasDirs.length; j++) {
+          var dir = aliasDirs[j];
+          mkdirp(dir);
+          var target = (dir === '/' ? '' : dir) + '/' + name;
+          if (!FS.analyzePath(target).exists) {
+            FS.writeFile(target, data);
+          }
+        }
+      }
+      if (typeof window === 'object' && typeof window.CXL_createRangeBackedFile === 'function') {
+        for (var externalName in externalRoms) {
+          var externalUrl = new URL(externalRoms[externalName], location.href).href;
+          for (var k = 0; k < aliasDirs.length; k++) {
+            var aliasDir = aliasDirs[k];
+            mkdirp(aliasDir);
+            var aliasTarget = (aliasDir === '/' ? '' : aliasDir) + '/' + externalName;
+            if (!FS.analyzePath(aliasTarget).exists) {
+              window.CXL_createRangeBackedFile(Module, aliasDir, externalName, externalUrl, {
+                allowFullFallback: true,
+                maxFullFallbackSize: 1024 * 1024
+              });
+            }
+          }
+        }
+      }
+    });
 
   })();
-

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+np="${1:-2}"
+if command -v timeout >/dev/null 2>&1; then
+    exec timeout 20 mpi-local-run -np "$np" /bin/echo mpi-ok
+fi
+exec mpi-local-run -np "$np" /bin/echo mpi-ok

@@ -1,0 +1,53 @@
+#!/bin/sh
+set -u
+
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH
+export PATH
+
+echo "CXL Type3 enumeration smoke"
+echo "kernel: $(uname -r 2>/dev/null)"
+echo "cmdline:"
+cat /proc/cmdline 2>/dev/null | tr ' ' '\n' | grep -E 'cxl|qemu|memmap|dax' || true
+
+echo
+echo "PCI CXL devices:"
+lspci -nn 2>/dev/null | grep -Ei 'cxl|0502|0b40|1b36|8086:7075' || true
+
+echo
+echo "CXL/DAX driver setup:"
+if command -v cxl-dax-setup >/dev/null 2>&1; then
+    cxl-dax-setup --quiet || true
+else
+    echo "WARN: cxl-dax-setup is missing"
+fi
+
+echo
+echo "CXL sysfs:"
+find /sys/bus/cxl/devices -maxdepth 3 -print 2>/dev/null | sort || true
+
+echo
+echo "CXL device uevents:"
+for d in /sys/bus/cxl/devices/*; do
+    [ -e "$d" ] || continue
+    echo "--- ${d##*/}"
+    cat "$d/uevent" 2>/dev/null || true
+done
+
+echo
+echo "CXL/dax dmesg tail:"
+if command -v timeout >/dev/null 2>&1; then
+    timeout 5 dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|dax|region|decoder|root' | tail -120 || true
+else
+    dmesg 2>/dev/null | grep -Ei 'CEDT|ACPI0016|cxl|dax|region|decoder|root' | tail -120 || true
+fi
+
+if find /dev -maxdepth 2 -name 'dax*' -print 2>/dev/null | grep -q .; then
+    echo "PASS: DAX character device is populated."
+    exit 0
+fi
+if find /sys/bus/cxl/devices -maxdepth 1 \( -name 'mem*' -o -name 'decoder*' -o -name 'cache*' \) 2>/dev/null | grep -q .; then
+    echo "PASS: CXL sysfs is populated. If /dev/dax* is missing, run cxl-dax-setup --try-region."
+    exit 0
+fi
+echo "WARN: no Type3 mem/decoder objects found. Boot with cxl=type3 or cxl=all."
+exit 1

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zett.ai - RISC-V CPU + NPU + LPU AI with CXL Infrastructure</title>
+    <title>zett.ai - RISCV + XPU Agentic Workload Infrastructure</title>
 
-    <meta name="description" content="zett.ai builds high-performance AI infrastructure around a server-class RISC-V CPU + NPU + LPU, CXL memory expansion, and LPU acceleration for cloud computing, AI inference, in-memory databases, HPC, networking, and storage.">
-    <meta property="og:title" content="zett.ai | RISC-V CPU + NPU + LPU AI with CXL Infrastructure">
-    <meta property="og:description" content="Server-class RISC-V CPU + NPU + LPU, CXL memory expansion, and LPU acceleration for data-center and AI workloads.">
+    <meta name="description" content="zett.ai builds RISCV + XPU infrastructure for generic agentic workloads that need RISCV orchestration, accelerator runtime, CXL memory expansion, and high-speed data movement.">
+    <meta property="og:title" content="zett.ai | RISCV + XPU Agentic Workload Infrastructure">
+    <meta property="og:description" content="Server-class RISCV orchestration, programmable XPU acceleration, CXL memory expansion, and LPU data movement for agentic workload platforms.">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
 
@@ -83,14 +83,13 @@
                 </div>
 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-8 text-sm font-medium">
-                    <a href="#products" class="text-slate-600 hover:text-brand-700 transition-colors">Products</a>
-                    <a href="#technology" class="text-slate-600 hover:text-brand-700 transition-colors">Architecture</a>
-                    <a href="#features" class="text-slate-600 hover:text-brand-700 transition-colors">Advantages</a>
-                    <a href="#resources" class="text-slate-600 hover:text-brand-700 transition-colors">Resources</a>
-                    <a href="forum/" class="text-slate-600 hover:text-brand-700 transition-colors">Forum</a>
-                    <a href="portal/" class="text-slate-600 hover:text-brand-700 transition-colors">Portal</a>
-                    <a href="#contact" class="px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors">Contact</a>
+                <div class="hidden md:flex items-center space-x-7 text-sm font-medium">
+                    <a href="#products" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.products">Products</a>
+                    <a href="lease/" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.lease">Leasing</a>
+                    <a href="forum/" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.forum">Forum</a>
+                    <a href="portal/" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.portal">Investor Portal</a>
+                    <button type="button" class="lang-toggle rounded-md border border-slate-200 px-3 py-1.5 text-slate-600 transition-colors hover:border-brand-200 hover:text-brand-700" aria-label="Switch language">中文</button>
+                    <a href="#contact" class="px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors" data-i18n="nav.contact">Contact</a>
                 </div>
 
                 <!-- Mobile Menu Button -->
@@ -106,13 +105,12 @@
         <!-- Mobile Menu Panel -->
         <div class="hidden md:hidden border-t border-slate-100 bg-white" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-lg">
-                <a href="#products" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Products</a>
-                <a href="#technology" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Architecture</a>
-                <a href="#features" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Advantages</a>
-                <a href="#resources" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Resources</a>
-                <a href="forum/" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Forum</a>
-                <a href="portal/" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50">Portal</a>
-                <a href="#contact" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-brand-700 font-bold hover:bg-slate-50">Contact</a>
+                <a href="#products" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50" data-i18n="nav.products">Products</a>
+                <a href="lease/" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50" data-i18n="nav.lease">Leasing</a>
+                <a href="forum/" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50" data-i18n="nav.forum">Forum</a>
+                <a href="portal/" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-brand-700 hover:bg-slate-50" data-i18n="nav.portal">Investor Portal</a>
+                <button type="button" class="lang-toggle block w-full rounded-md px-3 py-2 text-left text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-brand-700" aria-label="Switch language">中文</button>
+                <a href="#contact" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-brand-700 font-bold hover:bg-slate-50" data-i18n="nav.contact">Contact</a>
             </div>
         </div>
     </nav>
@@ -124,22 +122,21 @@
             <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-brand-500 opacity-20 blur-[100px]"></div>
         </div>
         <div class="absolute right-6 top-28 hidden xl:block">
-            <a href="mailto:vickie@zettai.us?subject=RISC-V%20AI%20Infrastructure%20Inquiry" class="group flex items-center gap-3 rounded-md border border-rose-200 bg-white/80 px-4 py-3 text-left shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md">
+            <a href="mailto:vickie@zettai.us?subject=Agentic%20Workload%20Infrastructure%20Inquiry" class="group flex items-center gap-3 rounded-md border border-brand-200 bg-white/80 px-4 py-3 text-left shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md">
                 <svg width="52" height="42" viewBox="0 0 104 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="flex-shrink-0">
-                    <path d="M38 44 C38 30 66 30 66 44 C66 60 38 60 38 44Z" fill="#fb7185" stroke="#be123c" stroke-width="3"/>
-                    <path d="M38 44 C26 36 18 30 12 20" stroke="#be123c" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M66 44 C78 36 86 30 92 20" stroke="#be123c" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M10 20 C4 14 6 6 14 8 C20 10 20 18 10 20Z" fill="#f43f5e" stroke="#be123c" stroke-width="3"/>
-                    <path d="M94 20 C100 14 98 6 90 8 C84 10 84 18 94 20Z" fill="#f43f5e" stroke="#be123c" stroke-width="3"/>
-                    <circle cx="45" cy="39" r="3" fill="#111827"/>
-                    <circle cx="59" cy="39" r="3" fill="#111827"/>
-                    <path d="M46 50 Q52 55 58 50" stroke="#7f1d1d" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <path d="M36 54 L24 64 M44 58 L34 74 M60 58 L70 74 M68 54 L80 64" stroke="#be123c" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="24" y="16" width="56" height="52" rx="10" fill="#7c3aed" stroke="#4c1d95" stroke-width="3"/>
+                    <rect x="35" y="27" width="34" height="10" rx="3" fill="#e0e7ff"/>
+                    <rect x="35" y="43" width="34" height="10" rx="3" fill="#a7f3d0"/>
+                    <path d="M18 30 H8 M18 42 H8 M18 54 H8 M86 30 H96 M86 42 H96 M86 54 H96" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="34" cy="68" r="5" fill="#14b8a6"/>
+                    <circle cx="70" cy="68" r="5" fill="#14b8a6"/>
+                    <path d="M52 68 H34 M52 68 H70 M52 68 V76" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="52" cy="76" r="4" fill="#8b5cf6"/>
                 </svg>
                 <span>
-                    <span class="block text-xs font-mono font-bold uppercase tracking-wide text-rose-600">Solution Inquiry</span>
-                    <span class="block text-sm font-semibold text-slate-900">RISC-V CPU + NPU + LPU</span>
-                    <span class="block text-xs text-slate-500">Servers, accelerators, and integration support</span>
+                    <span class="block text-xs font-mono font-bold uppercase tracking-wide text-brand-700" data-i18n="hero.inquiryEyebrow">Workload Inquiry</span>
+                    <span class="block text-sm font-semibold text-slate-900" data-i18n="hero.inquiryTitle">RISCV + XPU + CXL</span>
+                    <span class="block text-xs text-slate-500" data-i18n="hero.inquiryDesc">Agentic systems and integration support</span>
                 </span>
             </a>
         </div>
@@ -148,7 +145,7 @@
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-mono font-medium mb-6">
                 <span class="font-bold text-brand-700">ZETTAI</span>
                 <span class="text-slate-300">|</span>
-                <span>RISC-V AI INFRASTRUCTURE</span>
+                <span data-i18n="hero.badge">AGENTIC WORKLOAD INFRASTRUCTURE</span>
             </div>
 
             <!-- Mascot -->
@@ -172,62 +169,58 @@
             </div>
 
             <h1 class="text-4xl md:text-6xl font-serif font-bold text-slate-900 tracking-tight mb-4">
-                RISC-V CPU + NPU + LPU AI with CXL Infrastructure
+                <span data-i18n="hero.title">RISCV + XPU Infrastructure for Agentic Workloads</span>
             </h1>
-            <p class="text-xl md:text-2xl text-slate-600 font-light mb-4 max-w-3xl mx-auto">
-                A high-performance RISC-V heterogeneous platform <br class="hidden md:block" />
-                for data centers, cloud computing, and AI inference
+            <p class="text-xl md:text-2xl text-slate-600 font-light mb-4 max-w-3xl mx-auto" data-i18n-html="hero.subtitle">
+                Server-class RISCV orchestration, programmable XPU acceleration, and CXL/LPU expansion <br class="hidden md:block" />
+                for tool-using agents, automation, and long-running AI workflows
             </p>
-            <p class="text-lg text-slate-500 mb-8">
-                Built around a 32-core server-class RISC-V CPU, an integrated programmable NPU cluster,
-                plus CXL memory expansion and LPU acceleration, the platform provides a scalable compute base
-                for LLMs, in-memory databases, HPC, networking, storage, and edge AI.
+            <p class="text-lg text-slate-500 mb-8" data-i18n="hero.description">
+                zett.ai brings RISCV scheduling, XPU acceleration, large-memory expansion, and high-speed data movement into one deployable platform for coding agents, research agents, browser/tool automation, RAG, and memory-heavy AI services.
             </p>
 
             <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-12 text-slate-700 font-mono text-sm border-t border-b border-slate-100 py-6 bg-white/50 backdrop-blur-sm">
                 <div class="flex items-center gap-2">
                     <i data-lucide="zap" class="w-5 h-5 text-brand-600"></i>
-                    <span>32-core RISC-V CPU</span>
+                    <span data-i18n="hero.statCpu">RISCV orchestration</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i data-lucide="cpu" class="w-5 h-5 text-brand-600"></i>
-                    <span>300 TOPS INT8 NPU</span>
+                    <span data-i18n="hero.statXpu">XPU acceleration</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i data-lucide="battery-charging" class="w-5 h-5 text-brand-600"></i>
-                    <span>PCIe Gen5 + CXL + LPU</span>
+                    <span data-i18n="hero.statCxl">CXL memory fabric</span>
                 </div>
             </div>
-            <a href="mailto:vickie@zettai.us?subject=RISC-V%20AI%20Infrastructure%20Inquiry" class="mt-6 inline-flex items-center gap-2 rounded-md border border-rose-200 bg-white/80 px-4 py-2 text-sm font-medium text-rose-700 shadow-sm backdrop-blur-sm transition-colors hover:border-rose-300 hover:bg-rose-50 xl:hidden">
-                <span class="font-bold">Solution Inquiry</span>
+            <a href="mailto:vickie@zettai.us?subject=Agentic%20Workload%20Infrastructure%20Inquiry" class="mt-6 inline-flex items-center gap-2 rounded-md border border-brand-200 bg-white/80 px-4 py-2 text-sm font-medium text-brand-700 shadow-sm backdrop-blur-sm transition-colors hover:border-brand-300 hover:bg-brand-50 xl:hidden">
+                <span class="font-bold" data-i18n="hero.inquiryEyebrow">Workload Inquiry</span>
                 <span class="text-slate-400">|</span>
-                <span>RISC-V CPU + NPU / CXL + LPU</span>
+                <span data-i18n="hero.inquiryTitle">RISCV + XPU + CXL</span>
                 <span class="text-slate-400">|</span>
-                <span>Server and accelerator integration</span>
+                <span data-i18n="hero.inquiryShort">Agentic system integration</span>
             </a>
         </div>
     </header>
 
     <!-- Main Content -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-0">
 
         <!-- Products Section -->
         <section id="products" class="space-y-10 mb-20">
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
-                    <p class="text-sm font-mono font-bold uppercase tracking-wide text-brand-700 mb-2">Product Introduction</p>
+                    <p class="text-sm font-mono font-bold uppercase tracking-wide text-brand-700 mb-2" data-i18n="products.eyebrow">Agentic Platform System</p>
                     <h2 class="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
-                        Product Overview
+                        <span data-i18n="products.title">Product Overview</span>
                     </h2>
                 </div>
-                <p class="max-w-2xl text-sm text-slate-600 leading-relaxed">
-                    zett.ai is built around a server-class RISC-V CPU + NPU and can be paired with CXL memory expansion and LPU acceleration
-                    to create a coordinated CPU, NPU, CXL, LPU, and high-speed networking platform. It is designed for data-center
-                    and cloud workloads that need large memory capacity, high-bandwidth I/O, low-latency acceleration, and local deployment.
+                <p class="max-w-2xl text-sm text-slate-600 leading-relaxed" data-i18n="products.desc">
+                    zett.ai organizes the platform around RISCV orchestration, programmable XPU acceleration, and a CXL/LPU expansion layer for agent memory, model runtime, storage, and high-speed I/O.
                 </p>
             </div>
 
-            <!-- RISC-V CPU + NPU - Featured -->
+            <!-- Platform Overview - Featured -->
             <div class="border-2 border-brand-200 rounded-lg p-6 md:p-8 bg-gradient-to-br from-brand-50 to-white hover:shadow-lg transition-shadow">
                 <div class="flex flex-col md:flex-row gap-6">
                     <div class="flex-shrink-0">
@@ -256,27 +249,20 @@
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="bg-brand-100 text-brand-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">Flagship</span>
-                            <h3 class="text-2xl font-serif font-bold text-slate-900">RISC-V CPU + NPU AI Server Platform</h3>
+                            <span class="bg-brand-100 text-brand-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide" data-i18n="products.badge">Platform</span>
+                            <h3 class="text-2xl font-serif font-bold text-slate-900" data-i18n="products.featureTitle">RISCV + XPU + CXL Agentic Workload Infrastructure</h3>
                         </div>
-                        <p class="text-slate-600 mb-4 leading-relaxed">
-                            The server-class processor targets next-generation data-center and cloud environments. It uses a
-                            32-core 64-bit RISC-V architecture, runs at up to 3.0GHz, and combines DDR5, PCIe Gen5,
-                            virtualization, RAS, a hardware security engine, and a programmable NPU acceleration cluster.
-                            The result is a platform that covers general compute, AI inference, vector workloads,
-                            cloud-native virtualization, and trusted boot.
+                        <p class="text-slate-600 mb-4 leading-relaxed" data-i18n="products.featureDesc1">
+                            The compute platform combines a server-class RISCV, DDR5 memory, PCIe Gen5 I/O, virtualization, RAS, hardware security, and programmable XPU acceleration. The RISCV provides orchestration, isolation, tool execution, and system control while XPUs handle model, vector, matrix, and data-path work.
                         </p>
-                        <p class="text-slate-600 mb-4 leading-relaxed">
-                            At the platform level, a CXL/LPU accelerator card can be attached as a programmable
-                            acceleration and large-memory expansion node. It provides PCIe Gen5 x16, CXL, DDR4 RDIMM,
-                            M.2 SSD, and QSFP-DD networking interfaces for real-time analytics, in-memory databases,
-                            AI/ML, HPC, financial modeling, and networking or storage offload workloads.
+                        <p class="text-slate-600 mb-4 leading-relaxed" data-i18n="products.featureDesc2">
+                            The CXL/LPU layer attaches as a programmable acceleration and large-memory expansion node, adding PCIe Gen5 x16, CXL, DDR4 RDIMM, M.2 SSD, and QSFP-DD networking for agent state, retrieval indexes, memory-resident services, and I/O offload.
                         </p>
                         <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">32-core RISC-V</span>
+                            <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">Server CPU</span>
                             <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">DDR5 6400MT/s</span>
                             <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">PCIe Gen5 x64</span>
-                            <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">64TOPS INT8</span>
+                            <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">XPU Runtime</span>
                             <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">CXL + LPU</span>
                         </div>
                     </div>
@@ -284,27 +270,27 @@
 
                 <!-- Config Selector -->
                 <div class="mt-6 border-t border-brand-100 pt-6">
-                    <div class="config-selector flex flex-wrap gap-3" aria-label="RISC-V AI platform configurations">
-                        <button class="config-button active px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-900 text-white" data-config-target="standard">CPU & Memory</button>
-                        <button class="config-button px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-100 text-slate-700 hover:bg-slate-200" data-config-target="pro">NPU AI Acceleration</button>
-                        <button class="config-button px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-100 text-slate-700 hover:bg-slate-200" data-config-target="pro-max">CXL + LPU</button>
+                    <div class="config-selector flex flex-wrap gap-3" aria-label="RISCV and XPU agentic platform configurations">
+                        <button class="config-button active px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-900 text-white" data-config-target="standard" data-i18n="products.tabCpu">RISCV & Memory</button>
+                        <button class="config-button px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-100 text-slate-700 hover:bg-slate-200" data-config-target="pro" data-i18n="products.tabNpu">XPU Acceleration</button>
+                        <button class="config-button px-4 py-2 rounded-md text-sm font-medium transition-all bg-slate-100 text-slate-700 hover:bg-slate-200" data-config-target="pro-max" data-i18n="products.tabCxl">CXL + LPU</button>
                     </div>
                     <div class="config-details mt-4">
                         <div class="config-panel active bg-slate-50 border border-slate-200 rounded-lg p-5" data-config-panel="standard">
                             <ul class="space-y-1.5 text-sm text-slate-600 mb-4">
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>32-core 64-bit RISC-V CPU, up to 3.0GHz, with single-core SPEC2006 greater than 16/G.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>64KB L1 instruction cache, 64KB L1 data cache, 1MB L2 cache, and 32MB L3 cache.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Supports RVA23, RISC-V virtualization extensions, AIA-1.0, RVV 1.0, and virtualized DMA access with IOMMU.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Four DDR5 subsystems up to 6400MT/s, up to 2TB per subsystem, with ECC and RDIMM/UDIMM/SODIMM support.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Four PCIe Gen5 controllers, up to 64 PCIe Gen5 lanes, and up to 32GT/s per lane.</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cpuLi1">Server-class 64-bit RISCV resources for orchestration, scheduling, virtualization, and high-concurrency agent control.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cpuLi2">64KB L1 instruction cache, 64KB L1 data cache, 1MB L2 cache, and 32MB L3 cache.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cpuLi3">Supports virtualization, vector extensions, interrupt virtualization, and IOMMU-backed DMA for isolated agent sandboxes.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cpuLi4">Four DDR5 subsystems up to 6400MT/s, up to 2TB per subsystem, with ECC and RDIMM/UDIMM/SODIMM support.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cpuLi5">Four PCIe Gen5 controllers, up to 64 PCIe Gen5 lanes, and up to 32GT/s per lane.</span></li>
                             </ul>
                             <div class="flex items-center justify-between flex-wrap gap-3">
                                 <div>
-                                    <span class="text-xs text-slate-400 font-mono">CPU</span>
-                                    <span class="block text-lg font-bold text-slate-900">32-core RISC-V</span>
+                                    <span class="text-xs text-slate-400 font-mono">RISCV</span>
+                                    <span class="block text-lg font-bold text-slate-900">Server CPU</span>
                                 </div>
                                 <div>
-                                    <span class="text-xs text-slate-400 font-mono">Memory</span>
+                                    <span class="text-xs text-slate-400 font-mono" data-i18n="products.memoryLabel">Memory</span>
                                     <span class="block text-lg font-bold text-slate-900">DDR5 6400MT/s</span>
                                 </div>
                                 <a href="https://zett-ai.myshopify.com/zh/products/zettengine" class="inline-block px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors">
@@ -314,11 +300,11 @@
                         </div>
                         <div class="config-panel hidden bg-slate-50 border border-slate-200 rounded-lg p-5" data-config-panel="pro">
                             <ul class="space-y-1.5 text-sm text-slate-600 mb-4">
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Up to four NPU/programmable accelerator subsystems for AI, vector, and matrix workloads.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Each NPU subsystem includes four compute cores, 1024-bit VLENV, 512-bit DLENV, and one 64x64 MAC Matrix core.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Supports INT8/16/32/64, FP16/32/64, and BF16 data formats, with peak 300TOPS@INT8 and 80TFLOPs@FP32.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Toolchain coverage includes TensorFlow, PyTorch, and Paddle, with support for DeepSeek, Qwen, Llama, ChatGLM, MiniCPM, Mistral, and related model families.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Image-generation workloads can cover Stable Diffusion and FLUX.1 schnell/dev.</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.npuLi1">Programmable XPU subsystems for model serving, vector search, code analysis, tool-use evaluation, and matrix workloads.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.npuLi2">Each programmable accelerator subsystem can expose vector lanes, matrix cores, and local runtime support for agent loops.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.npuLi3">Supports INT8/16/32/64, FP16/32/64, and BF16 data formats, with peak 75TOPS@INT8 and 16TFLOPs@FP32.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.npuLi4">Toolchain coverage includes TensorFlow, PyTorch, and Paddle, with support for DeepSeek, Qwen, Llama, ChatGLM, MiniCPM, Mistral, and related model families used by agent runtimes.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.npuLi5">Agentic workloads can combine RISCV-managed sandboxes with XPU-backed inference, embeddings, reranking, and multimodal generation.</span></li>
                             </ul>
                             <div class="flex items-center justify-between flex-wrap gap-3">
                                 <div>
@@ -329,29 +315,29 @@
                                     <span class="text-xs text-slate-400 font-mono">FP32</span>
                                     <span class="block text-lg font-bold text-slate-900">80 TFLOPs</span>
                                 </div>
-                                <a href="mailto:vickie@zettai.us?subject=NPU%20Specs%20Request" class="inline-block px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors">
-                                    Request NPU Specs
+                                <a href="mailto:vickie@zettai.us?subject=XPU%20Specs%20Request" class="inline-block px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" data-i18n="products.npuCta">
+                                    Request XPU Specs
                                 </a>
                             </div>
                         </div>
                         <div class="config-panel hidden bg-slate-50 border border-slate-200 rounded-lg p-5" data-config-panel="pro-max">
                             <ul class="space-y-1.5 text-sm text-slate-600 mb-4">
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>CXL/LPU acceleration for GenAI, database, HPC, networking, and storage workloads.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>PCIe Gen5 x16 + CXL host interface, plus two MCIO PCIe Gen5 x8 expansion interfaces.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Four DDR4 RDIMM ECC slots at 2400MT/s, supporting up to 1TB external memory.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Two PCIe Gen5 x4 M.2 SSD slots, up to 16TB storage capacity, with NVMe/SATA support.</li>
-                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i>Two QSFP-DD network ports with 10/25/50/100/200Gbps profiles and a 150W board TDP.</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cxlLi1">CXL/LPU acceleration for agent memory, RAG, artifact stores, model serving, networking, and storage workloads.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cxlLi2">PCIe Gen5 x16 + CXL host interface, plus two MCIO PCIe Gen5 x8 expansion interfaces.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cxlLi3">Four DDR4 RDIMM ECC slots at 2400MT/s, supporting up to 1TB external memory.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cxlLi4">Two PCIe Gen5 x4 M.2 SSD slots, up to 16TB storage capacity, with NVMe/SATA support.</span></li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"></i><span data-i18n="products.cxlLi5">Two QSFP-DD network ports with 10/25/50/100/200Gbps profiles and a 150W board TDP.</span></li>
                             </ul>
                             <div class="flex items-center justify-between flex-wrap gap-3">
                                 <div>
-                                    <span class="text-xs text-slate-400 font-mono">Accelerator</span>
+                                    <span class="text-xs text-slate-400 font-mono" data-i18n="products.accelLabel">Accelerator</span>
                                     <span class="block text-lg font-bold text-slate-900">CXL + LPU</span>
                                 </div>
                                 <div>
                                     <span class="text-xs text-slate-400 font-mono">I/O</span>
                                     <span class="block text-lg font-bold text-slate-900">PCIe Gen5 + CXL</span>
                                 </div>
-                                <a href="mailto:vickie@zettai.us?subject=CXL%20LPU%20Datasheet%20Request" class="inline-block px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors">
+                                <a href="mailto:vickie@zettai.us?subject=CXL%20LPU%20Datasheet%20Request" class="inline-block px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md text-sm transition-colors" data-i18n="products.cxlCta">
                                     Request CXL/LPU Datasheet
                                 </a>
                             </div>
@@ -360,9 +346,9 @@
                 </div>
             </div>
 
-            <!-- Platform Use Cases -->
+            <!-- Platform Building Blocks -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Workloads -->
+                <!-- Compute Platform -->
                 <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div class="mb-4">
                         <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -374,25 +360,22 @@
                             <path d="M 38 52 Q 50 58 62 52" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-serif font-bold text-slate-900 mb-2">Built for AI and Data-Intensive Workloads</h3>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                        The platform supports GenAI/LLM, embedded AI, in-memory databases, real-time feature stores,
-                        big-data analytics, model training, and edge inference. When datasets need to stay resident in memory,
-                        be retrieved quickly, or be processed close to the accelerator, the RISC-V CPU DDR5 subsystem and
-                        the CXL/LPU card's onboard memory and storage provide a more direct data path.
+                    <h3 class="text-xl font-serif font-bold text-slate-900 mb-2" data-i18n="products.computeTitle">RISCV + XPU Compute Platform</h3>
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="products.computeDesc">
+                        A server-class compute base for generic agentic workloads, cloud-native virtualization, secure sandboxes, model inference, vector processing, and local deployment. It provides the RISCV, memory, I/O, and XPU acceleration foundation of the zett.ai platform.
                     </p>
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">LLM Inference</span>
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">In-memory DB</span>
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">Realtime Analytics</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">Server CPU</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">XPU Runtime</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">DDR5 + PCIe Gen5</span>
                     </div>
                     <a href="#resources" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                         <i data-lucide="file-text" class="w-4 h-4"></i>
-                        View product documents
+                        <span data-i18n="products.docsCta">View product documents</span>
                     </a>
                 </div>
 
-                <!-- System Services -->
+                <!-- CXL/LPU Expansion -->
                 <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div class="mb-4">
                         <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -412,21 +395,18 @@
                             <path d="M 47 52 Q 50 54 53 52" stroke="white" stroke-width="1.5" fill="none"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-serif font-bold text-slate-900 mb-2">Integration and Manageability</h3>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                        The RISC-V CPU platform provides REPI-1.0 RAS, trace, debug, secure boot, hardware cryptography,
-                        WorldGuard security-domain isolation, and secure firmware OTA. The CXL/LPU card adds BMC
-                        management for temperature, voltage, current, and power monitoring, making it practical for
-                        server, workstation, and reconfigurable AI platform integration.
+                    <h3 class="text-xl font-serif font-bold text-slate-900 mb-2" data-i18n="products.expansionTitle">CXL + LPU Memory and Data-Path Expansion</h3>
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="products.expansionDesc">
+                        A programmable CXL/LPU card extends the platform with external memory, local SSD capacity, QSFP-DD networking, and BMC monitoring. It is aimed at long-horizon agent state, retrieval indexes, artifact stores, memory-resident services, networking, and storage offload.
                     </p>
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">RAS</span>
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">Secure Boot</span>
-                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">BMC Monitor</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">PCIe Gen5 x16</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">CXL Memory</span>
+                        <span class="bg-slate-100 text-slate-700 text-xs font-mono font-medium px-2.5 py-1 rounded">QSFP-DD</span>
                     </div>
-                    <a href="mailto:vickie@zettai.us?subject=RISC-V%20AI%20Infrastructure%20Integration%20Support" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
+                    <a href="mailto:vickie@zettai.us?subject=Agentic%20Workload%20Infrastructure%20Integration%20Support" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                         <i data-lucide="mail" class="w-4 h-4"></i>
-                        Contact integration support
+                        <span data-i18n="products.integrationCta">Contact agentic workload support</span>
                     </a>
                 </div>
             </div>
@@ -434,45 +414,92 @@
 
         <!-- Features Section -->
         <section id="features" class="mb-20">
-            <h2 class="text-2xl font-serif font-bold text-slate-900 mb-8">Key Advantages</h2>
+            <h2 class="text-2xl font-serif font-bold text-slate-900 mb-8" data-i18n="features.title">Agentic Workload Capabilities</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-brand-100 flex items-center justify-center">
                         <i data-lucide="rocket" class="w-6 h-6 text-brand-600"></i>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Server-Class RISC-V Performance</h4>
-                    <p class="text-sm text-slate-600">32-core 64-bit CPU, up to 3.0GHz, a full cache hierarchy, and PCIe Gen5 I/O for cloud compute and high-concurrency workloads.</p>
+                    <h4 class="font-bold text-slate-900 mb-2" data-i18n="features.computeTitle">RISCV Orchestration and Isolation</h4>
+                    <p class="text-sm text-slate-600" data-i18n="features.computeDesc">Server-class RISCV resources coordinate agents, sandboxes, tool calls, file systems, schedulers, and high-concurrency service control.</p>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
                         <i data-lucide="battery-charging" class="w-6 h-6 text-emerald-600"></i>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Large Memory and Fast Interconnects</h4>
-                    <p class="text-sm text-slate-600">DDR5 up to 6400MT/s and up to 2TB per subsystem; the CXL/LPU card extends the data path through CXL/PCIe and onboard memory.</p>
+                    <h4 class="font-bold text-slate-900 mb-2" data-i18n="features.memoryTitle">Large Memory for Agent State</h4>
+                    <p class="text-sm text-slate-600" data-i18n="features.memoryDesc">DDR5 and CXL memory hold context, KV cache, retrieval indexes, repo snapshots, artifacts, and memory-tiered agent services.</p>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-pink-100 flex items-center justify-center">
                         <i data-lucide="gauge" class="w-6 h-6 text-pink-600"></i>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-2">AI and Vector Acceleration</h4>
-                    <p class="text-sm text-slate-600">The NPU supports INT, FP, and BF16 formats for LLM inference, image generation, vector compute, and matrix operations.</p>
+                    <h4 class="font-bold text-slate-900 mb-2" data-i18n="features.aiTitle">XPU Model and Tool Acceleration</h4>
+                    <p class="text-sm text-slate-600" data-i18n="features.aiDesc">XPUs accelerate LLM inference, embeddings, reranking, multimodal generation, vector compute, and matrix operations for agent loops.</p>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
                         <i data-lucide="target" class="w-6 h-6 text-amber-600"></i>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Security, RAS, and Operations</h4>
-                    <p class="text-sm text-slate-600">CE/UC/UCE error handling, trusted boot, hardware cryptography, trace/debug, and BMC monitoring support production deployments.</p>
+                    <h4 class="font-bold text-slate-900 mb-2" data-i18n="features.opsTitle">Security, RAS, and Operations</h4>
+                    <p class="text-sm text-slate-600" data-i18n="features.opsDesc">CE/UC/UCE error handling, trusted boot, hardware cryptography, trace/debug, and BMC monitoring support production deployments.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section id="use-cases" class="mb-20">
+            <div class="mb-8">
+                <p class="text-sm font-mono font-bold uppercase tracking-wide text-brand-700 mb-2" data-i18n="useCases.eyebrow">Agentic Use Cases</p>
+                <h2 class="text-2xl font-serif font-bold text-slate-900 mb-3" data-i18n="useCases.title">Where RISCV + XPU Agent Platforms Fit First</h2>
+                <p class="max-w-3xl text-sm text-slate-600 leading-relaxed" data-i18n="useCases.desc">
+                    zett.ai is aimed at generic agentic workload deployments where RISCV scheduling, XPU runtime, large context memory, and isolated tool execution directly affect cost, density, and service latency.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 mb-4 rounded-full bg-brand-100 flex items-center justify-center">
+                        <i data-lucide="memory-stick" class="w-6 h-6 text-brand-600"></i>
+                    </div>
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-2" data-i18n="useCases.gb300Title">Coding Agent Runtime</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed" data-i18n="useCases.gb300Desc">
+                        RISCV resources schedule containers, file systems, compilers, and tool calls while XPUs run inference, embeddings, code analysis, and reranking against large repo context.
+                    </p>
+                </div>
+
+                <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 mb-4 rounded-full bg-pink-100 flex items-center justify-center">
+                        <i data-lucide="server" class="w-6 h-6 text-pink-600"></i>
+                    </div>
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-2" data-i18n="useCases.kimiTitle">Research and Browser Agents</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed" data-i18n="useCases.kimiDesc">
+                        Package RISCV-managed browsing, retrieval, document parsing, and API calls with XPU-backed summarization, vision, embeddings, and long-context reasoning.
+                    </p>
+                </div>
+
+                <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <i data-lucide="blocks" class="w-6 h-6 text-emerald-600"></i>
+                    </div>
+                    <h3 class="text-lg font-serif font-bold text-slate-900 mb-2" data-i18n="useCases.gpuServerTitle">Enterprise Agent Sandbox Pool</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed" data-i18n="useCases.gpuServerDesc">
+                        Deploy isolated per-project sandboxes with RISCV and XPU budgets, persistent storage, network controls, reproducible runs, and metered usage for teams.
+                    </p>
                 </div>
             </div>
         </section>
 
         <!-- Architecture Section -->
         <section class="mb-20">
-            <h2 id="technology" class="text-2xl font-serif font-bold text-slate-900 mb-8">System Architecture</h2>
+            <div class="mb-8">
+                <h2 id="technology" class="text-2xl font-serif font-bold text-slate-900 mb-3" data-i18n="architecture.title">Agentic Workload Architecture</h2>
+                <p class="max-w-3xl text-sm text-slate-600 leading-relaxed" data-i18n="architecture.desc">
+                    The architecture separates the RISCV orchestration plane, XPU acceleration plane, and data-movement plane, then connects them through PCIe Gen5 and CXL so agent loops, memory expansion, and I/O offload can scale together.
+                </p>
+            </div>
             <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 md:p-8 overflow-x-auto">
                 <svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" class="mx-auto max-w-full h-auto">
                     <defs>
@@ -486,31 +513,31 @@
                     </defs>
                     <rect x="0" y="0" width="600" height="400" fill="url(#bgGrad)" rx="12"/>
 
-                    <text x="300" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b" font-family="Inter, sans-serif">RISC-V CPU + NPU, CXL, and LPU Architecture</text>
+                    <text x="300" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b" font-family="Inter, sans-serif" data-i18n="architecture.svgTitle">RISCV + XPU, CXL, and LPU Agentic Architecture</text>
 
-                    <!-- NPU Block -->
+                    <!-- XPU Block -->
                     <rect x="50" y="80" width="120" height="80" rx="8" fill="#667eea" stroke="#5a67d8" stroke-width="2"/>
-                    <text x="110" y="110" text-anchor="middle" fill="white" font-weight="bold" font-size="14" font-family="Inter, sans-serif">NPU Cluster</text>
-                    <text x="110" y="130" text-anchor="middle" font-size="11" fill="white" opacity="0.8" font-family="Inter, sans-serif">300TOPS INT8</text>
+                    <text x="110" y="110" text-anchor="middle" fill="white" font-weight="bold" font-size="14" font-family="Inter, sans-serif" data-i18n="architecture.svgNpu">XPU Cluster</text>
+                    <text x="110" y="130" text-anchor="middle" font-size="11" fill="white" opacity="0.8" font-family="Inter, sans-serif">75TOPS INT8</text>
 
-                    <!-- CPU Bridge -->
+                    <!-- RISCV Bridge -->
                     <rect x="220" y="100" width="160" height="40" rx="20" fill="#ffd93d" stroke="#f39c12" stroke-width="2"/>
-                    <text x="300" y="125" text-anchor="middle" fill="#333" font-weight="bold" font-size="13" font-family="Inter, sans-serif">RISC-V CPU Fabric</text>
+                    <text x="300" y="125" text-anchor="middle" fill="#333" font-weight="bold" font-size="13" font-family="Inter, sans-serif" data-i18n="architecture.svgFabric">RISCV Control Fabric</text>
 
                     <!-- CXL/LPU Block -->
                     <rect x="430" y="80" width="120" height="80" rx="8" fill="#ff6b9d" stroke="#e91e63" stroke-width="2"/>
                     <text x="490" y="110" text-anchor="middle" fill="white" font-weight="bold" font-size="14" font-family="Inter, sans-serif">CXL + LPU</text>
                     <text x="490" y="130" text-anchor="middle" font-size="11" fill="white" opacity="0.8" font-family="Inter, sans-serif">PCIe Gen5 + CXL</text>
 
-                    <!-- CPU Block -->
+                    <!-- RISCV Block -->
                     <rect x="220" y="200" width="160" height="60" rx="8" fill="#95e1d3" stroke="#4ecdc4" stroke-width="2"/>
-                    <text x="300" y="225" text-anchor="middle" fill="#333" font-weight="bold" font-size="13" font-family="Inter, sans-serif">32-core RISC-V CPU</text>
-                    <text x="300" y="245" text-anchor="middle" font-size="11" fill="#333" font-family="Inter, sans-serif">Control + Compute Plane</text>
+                    <text x="300" y="225" text-anchor="middle" fill="#333" font-weight="bold" font-size="13" font-family="Inter, sans-serif" data-i18n="architecture.svgCpu">Server CPU</text>
+                    <text x="300" y="245" text-anchor="middle" font-size="11" fill="#333" font-family="Inter, sans-serif" data-i18n="architecture.svgControl">Control + Compute Plane</text>
 
-                    <!-- Local Inference -->
+                    <!-- Agent Runtime -->
                     <rect x="200" y="310" width="200" height="55" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
-                    <text x="300" y="335" text-anchor="middle" fill="white" font-weight="bold" font-size="13" font-family="Inter, sans-serif">AI + Data Runtime</text>
-                    <text x="300" y="352" text-anchor="middle" font-size="11" fill="white" opacity="0.8" font-family="Inter, sans-serif">Inference, DB, HPC</text>
+                    <text x="300" y="335" text-anchor="middle" fill="white" font-weight="bold" font-size="13" font-family="Inter, sans-serif" data-i18n="architecture.svgRuntime">Agent Runtime</text>
+                    <text x="300" y="352" text-anchor="middle" font-size="11" fill="white" opacity="0.8" font-family="Inter, sans-serif" data-i18n="architecture.svgWorkloads">Tool Use, RAG, Code</text>
 
                     <!-- Connections -->
                     <path d="M 170 120 L 220 120" stroke="#667eea" stroke-width="2.5" marker-end="url(#arrowhead)"/>
@@ -519,10 +546,10 @@
                     <path d="M 300 260 L 300 310" stroke="#4ecdc4" stroke-width="2.5" marker-end="url(#arrowhead)"/>
 
                     <!-- Labels -->
-                    <text x="195" y="112" font-size="10" fill="#64748b" font-family="Inter, sans-serif">NPU Path</text>
-                    <text x="385" y="112" font-size="10" fill="#64748b" font-family="Inter, sans-serif">CXL Path</text>
-                    <text x="310" y="175" font-size="10" fill="#64748b" font-family="Inter, sans-serif">Schedule</text>
-                    <text x="310" y="290" font-size="10" fill="#64748b" font-family="Inter, sans-serif">Serve</text>
+                    <text x="195" y="112" font-size="10" fill="#64748b" font-family="Inter, sans-serif" data-i18n="architecture.svgNpuPath">XPU Path</text>
+                    <text x="385" y="112" font-size="10" fill="#64748b" font-family="Inter, sans-serif" data-i18n="architecture.svgCxlPath">CXL Path</text>
+                    <text x="310" y="175" font-size="10" fill="#64748b" font-family="Inter, sans-serif" data-i18n="architecture.svgSchedule">Dispatch</text>
+                    <text x="310" y="290" font-size="10" fill="#64748b" font-family="Inter, sans-serif" data-i18n="architecture.svgServe">Serve</text>
 
                     <!-- Performance badge -->
                     <circle cx="545" cy="345" r="28" fill="#8b5cf6" opacity="0.15"/>
@@ -532,24 +559,79 @@
             </div>
         </section>
 
+        <!-- Specifications Section -->
+        <section id="specs" class="mb-20">
+            <div class="mb-8">
+                <p class="text-sm font-mono font-bold uppercase tracking-wide text-brand-700 mb-2" data-i18n="specs.eyebrow">Specifications</p>
+                <h2 class="text-2xl font-serif font-bold text-slate-900 mb-3" data-i18n="specs.title">Agentic Platform Specs at a Glance</h2>
+                <p class="max-w-3xl text-sm text-slate-600 leading-relaxed" data-i18n="specs.desc">
+                    A single, scannable view of the RISCV, XPU, memory, and data-path components an agentic infrastructure buyer needs first.
+                </p>
+            </div>
+            <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                            <tr>
+                                <th class="px-5 py-3 font-mono" data-i18n="specs.category">Category</th>
+                                <th class="px-5 py-3 font-mono" data-i18n="specs.platform">zett.ai Platform</th>
+                                <th class="px-5 py-3 font-mono" data-i18n="specs.role">Role</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-700">
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.cpuKey">RISCV</td>
+                                <td class="px-5 py-4">Server-class 64-bit RISCV resources</td>
+                                <td class="px-5 py-4" data-i18n="specs.cpuRole">Agent orchestration, scheduling, virtualization, sandbox isolation, and system control.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.memoryKey">Memory</td>
+                                <td class="px-5 py-4">DDR5 6400MT/s, up to 2TB per subsystem, ECC</td>
+                                <td class="px-5 py-4" data-i18n="specs.memoryRole">Agent state, KV cache, retrieval indexes, repo snapshots, artifacts, and memory-heavy services.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.ioKey">Host I/O</td>
+                                <td class="px-5 py-4">PCIe Gen5 x64, 32GT/s per lane</td>
+                                <td class="px-5 py-4" data-i18n="specs.ioRole">High-bandwidth attachment for XPUs, storage, networking, and data movement.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.npuKey">XPU</td>
+                                <td class="px-5 py-4">XPU acceleration across GPU, NPU, and RPU-class devices</td>
+                                <td class="px-5 py-4" data-i18n="specs.npuRole">Programmable model, vector, matrix, and data-path acceleration for agent workloads.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.cxlKey">CXL/LPU Card</td>
+                                <td class="px-5 py-4">PCIe Gen5 x16 + CXL, DDR4 RDIMM ECC, M.2 SSD, QSFP-DD</td>
+                                <td class="px-5 py-4" data-i18n="specs.cxlRole">Agent memory expansion, data-path acceleration, storage, and network offload.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-slate-900" data-i18n="specs.opsKey">Operations</td>
+                                <td class="px-5 py-4">RAS, secure boot, hardware crypto, trace/debug, BMC monitoring</td>
+                                <td class="px-5 py-4" data-i18n="specs.opsRole">Production deployment, isolation, telemetry, and lifecycle management.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- Resources Section -->
-        <section id="resources" class="mb-20">
-            <h2 class="text-2xl font-serif font-bold text-slate-900 mb-8">Resources & Documentation</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section id="resources" class="mb-4">
+            <h2 class="text-2xl font-serif font-bold text-slate-900 mb-8" data-i18n="resources.title">Resources & Documentation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
                             <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900">RISC-V CPU + NPU Brief</h3>
+                        <h3 class="font-bold text-slate-900" data-i18n="resources.cpuTitle">RISCV + XPU Architecture Brief</h3>
                     </div>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                        Product brief covering the 32-core RISC-V CPU, DDR5 memory subsystem, PCIe Gen5 I/O, NPU performance,
-                        virtualization, RAS, security, and operating-system support.
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="resources.cpuDesc">
+                        Product brief covering RISCV orchestration, XPU acceleration, DDR5 memory, PCIe Gen5 I/O, virtualization, RAS, security, and operating-system support for agentic workloads.
                     </p>
-                    <a href="mailto:vickie@zettai.us?subject=CPU%20NPU%20Brief%20Request" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
+                    <a href="mailto:vickie@zettai.us?subject=RISCV%20XPU%20Architecture%20Brief%20Request" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                         <i data-lucide="mail" class="w-4 h-4"></i>
-                        Request CPU + NPU Brief
+                        <span data-i18n="products.cpuCta">Request RISCV + XPU Brief</span>
                     </a>
                 </div>
 
@@ -558,15 +640,14 @@
                         <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
                             <i data-lucide="presentation" class="w-5 h-5 text-pink-600"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900">CXL + LPU Card Datasheet</h3>
+                        <h3 class="font-bold text-slate-900" data-i18n="resources.cxlTitle">CXL + LPU Card Datasheet</h3>
                     </div>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                        Datasheet for the CXL/LPU accelerator card with PCIe Gen5 x16 + CXL, DDR4 RDIMM memory,
-                        M.2 storage, MCIO expansion, QSFP-DD networking, and BMC monitoring.
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="resources.cxlDesc">
+                        Datasheet for the CXL/LPU accelerator card with PCIe Gen5 x16 + CXL, DDR4 RDIMM memory, M.2 storage, MCIO expansion, QSFP-DD networking, and BMC monitoring for agent memory and data movement.
                     </p>
                     <a href="mailto:vickie@zettai.us?subject=CXL%20LPU%20Datasheet%20Request" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                         <i data-lucide="mail" class="w-4 h-4"></i>
-                        Request CXL/LPU Datasheet
+                        <span data-i18n="products.cxlCta">Request CXL/LPU Datasheet</span>
                     </a>
                 </div>
 
@@ -575,42 +656,64 @@
                         <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0">
                             <i data-lucide="messages-square" class="w-5 h-5 text-sky-700"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900">Community Forum</h3>
+                        <h3 class="font-bold text-slate-900" data-i18n="resources.forumTitle">Community Forum</h3>
                     </div>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                        Public discussion board for architecture questions, product feedback, support topics,
-                        demos, proposals, and announcements, backed by GitHub Issues.
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="resources.forumDesc">
+                        Public discussion board for architecture questions, product feedback, support topics, demos, proposals, and announcements.
                     </p>
                     <a href="forum/" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                         <i data-lucide="message-square-plus" class="w-4 h-4"></i>
-                        Open Forum
+                        <span data-i18n="resources.openForum">Open Forum</span>
                     </a>
                 </div>
-            </div>
 
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="forum/" class="inline-block px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-md hover:border-brand-200 hover:text-brand-700 transition-colors text-sm">
-                    Join Community Forum
-                </a>
-                <a href="portal/" class="inline-block px-6 py-3 bg-slate-900 text-white font-medium rounded-md hover:bg-slate-800 transition-colors text-sm">
-                    Access Investor Portal
-                </a>
+                <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="hand-coins" class="w-5 h-5 text-emerald-700"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900" data-i18n="resources.leaseTitle">Lease Program</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="resources.leaseDesc">
+                        Evaluation and pilot leasing for RISCV + XPU tower kits, 2U1P/2U4P modules, CXL/LPU expansion, GPU systems, and agent sandbox clusters.
+                    </p>
+                    <a href="lease/" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <span data-i18n="resources.openLease">Open Lease Program</span>
+                    </a>
+                </div>
+
+                <div class="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="lock" class="w-5 h-5 text-slate-700"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900" data-i18n="resources.portalTitle">Investor Portal</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="resources.portalDesc">
+                        Confidential white papers, pitch materials, lease-program diligence, and investor follow-up requests for authorized partners.
+                    </p>
+                    <a href="portal/" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <span data-i18n="resources.openPortal">Access Investor Portal</span>
+                    </a>
+                </div>
             </div>
         </section>
     </div>
 
     <!-- Footer -->
-    <footer id="contact" class="bg-slate-50 border-t border-slate-200 py-12 mt-12">
-        <div class="max-w-6xl mx-auto px-4 text-center space-y-4">
-            <h3 class="font-serif font-bold text-slate-900 text-lg">Let's Build the Future Together</h3>
-            <p class="text-sm text-slate-500">Pioneering AI Infrastructure Since 2025</p>
+    <footer id="contact" class="bg-slate-50 border-t border-slate-200 py-5">
+        <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
+            <h3 class="font-serif font-bold text-slate-900 text-lg" data-i18n="footer.title">Let's Build Agentic Infrastructure</h3>
+            <p class="text-sm text-slate-500" data-i18n="footer.subtitle">RISCV + XPU systems for agentic workloads</p>
             <div class="flex justify-center items-center gap-4">
                 <a href="mailto:vickie@zettai.us" class="inline-flex items-center gap-1.5 text-sm font-mono text-brand-600 hover:underline">
                     <i data-lucide="mail" class="w-4 h-4"></i>
                     vickie@zettai.us
                 </a>
             </div>
-            <p class="text-xs text-slate-400 pt-4 border-t border-slate-200 font-mono">
+            <p class="text-xs text-slate-400 pt-2 border-t border-slate-200 font-mono">
                 &copy; 2026 zett.ai Absolute Technology
             </p>
         </div>
@@ -619,6 +722,352 @@
     <!-- Init Lucide Icons -->
     <script>
         lucide.createIcons();
+    </script>
+
+    <!-- Language Toggle -->
+    <script>
+        (function() {
+            var translations = {
+                en: {
+                    nav: {
+                        products: 'Products',
+                        architecture: 'Architecture',
+                        capabilities: 'Capabilities',
+                        resources: 'Resources',
+                        lease: 'Leasing',
+                        forum: 'Forum',
+                        portal: 'Investor Portal',
+                        contact: 'Contact'
+                    },
+                    hero: {
+                        inquiryEyebrow: 'Workload Inquiry',
+                        inquiryTitle: 'RISCV + XPU + CXL',
+                        inquiryDesc: 'Agentic systems and integration support',
+                        inquiryShort: 'Agentic system integration',
+                        badge: 'AGENTIC WORKLOAD INFRASTRUCTURE',
+                        title: 'RISCV + XPU Infrastructure for Agentic Workloads',
+                        subtitle: 'Server-class RISCV orchestration, programmable XPU acceleration, and CXL/LPU expansion <br class="hidden md:block" /> for tool-using agents, automation, and long-running AI workflows',
+                        description: 'zett.ai brings RISCV scheduling, XPU acceleration, large-memory expansion, and high-speed data movement into one deployable platform for coding agents, research agents, browser/tool automation, RAG, and memory-heavy AI services.',
+                        statCpu: 'RISCV orchestration',
+                        statXpu: 'XPU acceleration',
+                        statCxl: 'CXL memory fabric'
+                    },
+                    products: {
+                        eyebrow: 'Agentic Platform System',
+                        title: 'Product Overview',
+                        desc: 'zett.ai organizes the platform around RISCV orchestration, programmable XPU acceleration, and a CXL/LPU expansion layer for agent memory, model runtime, storage, and high-speed I/O.',
+                        badge: 'Platform',
+                        featureTitle: 'RISCV + XPU + CXL Agentic Workload Infrastructure',
+                        featureDesc1: 'The compute platform combines a server-class RISCV, DDR5 memory, PCIe Gen5 I/O, virtualization, RAS, hardware security, and programmable XPU acceleration. The RISCV provides orchestration, isolation, tool execution, and system control while XPUs handle model, vector, matrix, and data-path work.',
+                        featureDesc2: 'The CXL/LPU layer attaches as a programmable acceleration and large-memory expansion node, adding PCIe Gen5 x16, CXL, DDR4 RDIMM, M.2 SSD, and QSFP-DD networking for agent state, retrieval indexes, memory-resident services, and I/O offload.',
+                        tabCpu: 'RISCV & Memory',
+                        tabNpu: 'XPU Acceleration',
+                        tabCxl: 'CXL + LPU',
+                        cpuLi1: 'Server-class 64-bit RISCV resources for orchestration, scheduling, virtualization, and high-concurrency agent control.',
+                        cpuLi2: '64KB L1 instruction cache, 64KB L1 data cache, 1MB L2 cache, and 32MB L3 cache.',
+                        cpuLi3: 'Supports virtualization, vector extensions, interrupt virtualization, and IOMMU-backed DMA for isolated agent sandboxes.',
+                        cpuLi4: 'Four DDR5 subsystems up to 6400MT/s, up to 2TB per subsystem, with ECC and RDIMM/UDIMM/SODIMM support.',
+                        cpuLi5: 'Four PCIe Gen5 controllers, up to 64 PCIe Gen5 lanes, and up to 32GT/s per lane.',
+                        memoryLabel: 'Memory',
+                        cpuCta: 'Request RISCV + XPU Brief',
+                        npuLi1: 'Programmable XPU subsystems for model serving, vector search, code analysis, tool-use evaluation, and matrix workloads.',
+                        npuLi2: 'Each programmable accelerator subsystem can expose vector lanes, matrix cores, and local runtime support for agent loops.',
+                        npuLi3: 'Supports INT8/16/32/64, FP16/32/64, and BF16 data formats, with peak 75TOPS@INT8 and 16TFLOPs@FP32.',
+                        npuLi4: 'Toolchain coverage includes TensorFlow, PyTorch, and Paddle, with support for DeepSeek, Qwen, Llama, ChatGLM, MiniCPM, Mistral, and related model families used by agent runtimes.',
+                        npuLi5: 'Agentic workloads can combine RISCV-managed sandboxes with XPU-backed inference, embeddings, reranking, and multimodal generation.',
+                        npuCta: 'Request XPU Specs',
+                        cxlLi1: 'CXL/LPU acceleration for agent memory, RAG, artifact stores, model serving, networking, and storage workloads.',
+                        cxlLi2: 'PCIe Gen5 x16 + CXL host interface, plus two MCIO PCIe Gen5 x8 expansion interfaces.',
+                        cxlLi3: 'Four DDR4 RDIMM ECC slots at 2400MT/s, supporting up to 1TB external memory.',
+                        cxlLi4: 'Two PCIe Gen5 x4 M.2 SSD slots, up to 16TB storage capacity, with NVMe/SATA support.',
+                        cxlLi5: 'Two QSFP-DD network ports with 10/25/50/100/200Gbps profiles and a 150W board TDP.',
+                        accelLabel: 'Accelerator',
+                        cxlCta: 'Request CXL/LPU Datasheet',
+                        computeTitle: 'RISCV + XPU Compute Platform',
+                        computeDesc: 'A server-class compute base for generic agentic workloads, cloud-native virtualization, secure sandboxes, model inference, vector processing, and local deployment. It provides the RISCV, memory, I/O, and XPU acceleration foundation of the zett.ai platform.',
+                        docsCta: 'View product documents',
+                        expansionTitle: 'CXL + LPU Memory and Data-Path Expansion',
+                        expansionDesc: 'A programmable CXL/LPU card extends the platform with external memory, local SSD capacity, QSFP-DD networking, and BMC monitoring. It is aimed at long-horizon agent state, retrieval indexes, artifact stores, memory-resident services, networking, and storage offload.',
+                        integrationCta: 'Contact agentic workload support'
+                    },
+                    features: {
+                        title: 'Agentic Workload Capabilities',
+                        computeTitle: 'RISCV Orchestration and Isolation',
+                        computeDesc: 'Server-class RISCV resources coordinate agents, sandboxes, tool calls, file systems, schedulers, and high-concurrency service control.',
+                        memoryTitle: 'Large Memory for Agent State',
+                        memoryDesc: 'DDR5 and CXL memory hold context, KV cache, retrieval indexes, repo snapshots, artifacts, and memory-tiered agent services.',
+                        aiTitle: 'XPU Model and Tool Acceleration',
+                        aiDesc: 'XPUs accelerate LLM inference, embeddings, reranking, multimodal generation, vector compute, and matrix operations for agent loops.',
+                        opsTitle: 'Security, RAS, and Operations',
+                        opsDesc: 'CE/UC/UCE error handling, trusted boot, hardware cryptography, trace/debug, and BMC monitoring support production deployments.'
+                    },
+                    useCases: {
+                        eyebrow: 'Agentic Use Cases',
+                        title: 'Where RISCV + XPU Agent Platforms Fit First',
+                        desc: 'zett.ai is aimed at generic agentic workload deployments where RISCV scheduling, XPU runtime, large context memory, and isolated tool execution directly affect cost, density, and service latency.',
+                        gb300Title: 'Coding Agent Runtime',
+                        gb300Desc: 'RISCV resources schedule containers, file systems, compilers, and tool calls while XPUs run inference, embeddings, code analysis, and reranking against large repo context.',
+                        kimiTitle: 'Research and Browser Agents',
+                        kimiDesc: 'Package RISCV-managed browsing, retrieval, document parsing, and API calls with XPU-backed summarization, vision, embeddings, and long-context reasoning.',
+                        gpuServerTitle: 'Enterprise Agent Sandbox Pool',
+                        gpuServerDesc: 'Deploy isolated per-project sandboxes with RISCV and XPU budgets, persistent storage, network controls, reproducible runs, and metered usage for teams.'
+                    },
+                    architecture: {
+                        title: 'Agentic Workload Architecture',
+                        desc: 'The architecture separates the RISCV orchestration plane, XPU acceleration plane, and data-movement plane, then connects them through PCIe Gen5 and CXL so agent loops, memory expansion, and I/O offload can scale together.',
+                        svgTitle: 'RISCV + XPU, CXL, and LPU Agentic Architecture',
+                        svgNpu: 'XPU Cluster',
+                        svgFabric: 'RISCV Control Fabric',
+                        svgCpu: 'Server CPU',
+                        svgControl: 'Control + Compute Plane',
+                        svgRuntime: 'Agent Runtime',
+                        svgWorkloads: 'Tool Use, RAG, Code',
+                        svgNpuPath: 'XPU Path',
+                        svgCxlPath: 'CXL Path',
+                        svgSchedule: 'Dispatch',
+                        svgServe: 'Serve'
+                    },
+                    specs: {
+                        eyebrow: 'Specifications',
+                        title: 'Agentic Platform Specs at a Glance',
+                        desc: 'A single, scannable view of the RISCV, XPU, memory, and data-path components an agentic infrastructure buyer needs first.',
+                        category: 'Category',
+                        platform: 'zett.ai Platform',
+                        role: 'Role',
+                        cpuKey: 'RISCV',
+                        cpuRole: 'Agent orchestration, scheduling, virtualization, sandbox isolation, and system control.',
+                        memoryKey: 'Memory',
+                        memoryRole: 'Agent state, KV cache, retrieval indexes, repo snapshots, artifacts, and memory-heavy services.',
+                        ioKey: 'Host I/O',
+                        ioRole: 'High-bandwidth attachment for XPUs, storage, networking, and data movement.',
+                        npuKey: 'XPU',
+                        npuRole: 'Programmable model, vector, matrix, and data-path acceleration for agent workloads.',
+                        cxlKey: 'CXL/LPU Card',
+                        cxlRole: 'Agent memory expansion, data-path acceleration, storage, and network offload.',
+                        opsKey: 'Operations',
+                        opsRole: 'Production deployment, isolation, telemetry, and lifecycle management.'
+                    },
+                    resources: {
+                        title: 'Resources & Documentation',
+                        cpuTitle: 'RISCV + XPU Architecture Brief',
+                        cpuDesc: 'Product brief covering RISCV orchestration, XPU acceleration, DDR5 memory, PCIe Gen5 I/O, virtualization, RAS, security, and operating-system support for agentic workloads.',
+                        cxlTitle: 'CXL + LPU Card Datasheet',
+                        cxlDesc: 'Datasheet for the CXL/LPU accelerator card with PCIe Gen5 x16 + CXL, DDR4 RDIMM memory, M.2 storage, MCIO expansion, QSFP-DD networking, and BMC monitoring for agent memory and data movement.',
+                        forumTitle: 'Community Forum',
+                        forumDesc: 'Public discussion board for architecture questions, product feedback, support topics, demos, proposals, and announcements.',
+                        leaseTitle: 'Lease Program',
+                        leaseDesc: 'Evaluation and pilot leasing for RISCV + XPU tower kits, 2U1P/2U4P modules, CXL/LPU expansion, GPU systems, and agent sandbox clusters.',
+                        aiBillingTitle: 'Agentic Workload Billing',
+                        aiBillingDesc: 'Usage-based billing for RISCV + XPU runtime, sandbox instances, tokens, CXL memory, persistent storage, and managed agentic service support.',
+                        agentBillingTitle: 'Agent Sandbox Billing',
+                        agentBillingDesc: 'Metered isolated sandboxes for generic coding, research, browser, and automation agents that require RISCV isolation and XPU acceleration.',
+                        portalTitle: 'Investor Portal',
+                        portalDesc: 'Confidential white papers, pitch materials, lease-program diligence, and investor follow-up requests for authorized partners.',
+                        openForum: 'Open Forum',
+                        openLease: 'Open Lease Program',
+                        openAiBilling: 'Ask about workload billing',
+                        openAgentBilling: 'Ask about sandbox billing',
+                        joinForum: 'Join Community Forum',
+                        openPortal: 'Access Investor Portal'
+                    },
+                    footer: {
+                        title: "Let's Build Agentic Infrastructure",
+                        subtitle: 'RISCV + XPU systems for agentic workloads'
+                    }
+                },
+                zh: {
+                    nav: {
+                        products: '产品',
+                        architecture: '架构',
+                        capabilities: '能力',
+                        resources: '资源',
+                        lease: '租赁',
+                        forum: '论坛',
+                        portal: '投资人门户',
+                        contact: '联系'
+                    },
+                    hero: {
+                        inquiryEyebrow: '负载咨询',
+                        inquiryTitle: 'RISCV + XPU + CXL',
+                        inquiryDesc: 'Agentic 系统与集成支持',
+                        inquiryShort: 'Agentic 系统集成',
+                        badge: 'AGENTIC WORKLOAD 基础设施',
+                        title: '面向 Agentic Workloads 的 RISCV + XPU 基础设施',
+                        subtitle: '服务器级 RISCV 编排、可编程 XPU 加速与 CXL/LPU 扩展 <br class="hidden md:block" /> 面向工具调用 Agent、自动化和长时间运行的 AI 工作流',
+                        description: 'zett.ai 将 RISCV 调度、XPU 加速、大内存扩展和高速数据移动整合到一个可部署平台，服务 Coding Agent、研究 Agent、浏览器/工具自动化、RAG 和内存密集型 AI 服务。',
+                        statCpu: 'RISCV 编排',
+                        statXpu: 'XPU 加速',
+                        statCxl: 'CXL 内存结构'
+                    },
+                    products: {
+                        eyebrow: 'Agentic 平台系统',
+                        title: '产品概览',
+                        desc: 'zett.ai 围绕 RISCV 编排、可编程 XPU 加速，以及用于 Agent 内存、模型运行时、存储和高速 I/O 的 CXL/LPU 扩展层组织平台。',
+                        badge: '平台',
+                        featureTitle: 'RISCV + XPU + CXL Agentic Workload 基础设施',
+                        featureDesc1: '计算平台结合服务器级 RISCV、DDR5 内存、PCIe Gen5 I/O、虚拟化、RAS、硬件安全能力和可编程 XPU 加速。RISCV 负责编排、隔离、工具执行和系统控制，XPU 负责模型、向量、矩阵和数据路径工作。',
+                        featureDesc2: 'CXL/LPU 层作为可编程加速与大内存扩展节点接入，提供 PCIe Gen5 x16、CXL、DDR4 RDIMM、M.2 SSD 和 QSFP-DD 网络接口，用于 Agent 状态、检索索引、内存驻留服务和 I/O 卸载。',
+                        tabCpu: 'RISCV 与内存',
+                        tabNpu: 'XPU 加速',
+                        tabCxl: 'CXL + LPU',
+                        cpuLi1: '服务器级 64 位 RISCV 资源，用于编排、调度、虚拟化和高并发 Agent 控制。',
+                        cpuLi2: '64KB L1 指令缓存、64KB L1 数据缓存、1MB L2 缓存和 32MB L3 缓存。',
+                        cpuLi3: '支持虚拟化、向量扩展、中断虚拟化，以及面向隔离 Agent 沙箱的 IOMMU-backed DMA。',
+                        cpuLi4: '四个 DDR5 子系统，最高 6400MT/s，每个子系统最高 2TB，支持 ECC 与 RDIMM/UDIMM/SODIMM。',
+                        cpuLi5: '四个 PCIe Gen5 控制器，最多 64 条 PCIe Gen5 通道，单通道最高 32GT/s。',
+                        memoryLabel: '内存',
+                        cpuCta: '索取 RISCV + XPU 简报',
+                        npuLi1: '可编程 XPU 子系统，面向模型服务、向量搜索、代码分析、工具调用评估和矩阵负载。',
+                        npuLi2: '每个可编程加速子系统可提供向量通道、矩阵核心和面向 Agent 循环的本地 runtime 支持。',
+                        npuLi3: '支持 INT8/16/32/64、FP16/32/64 和 BF16 数据格式，峰值 64TOPS@INT8、16TFLOPs@FP32。',
+                        npuLi4: '工具链覆盖 TensorFlow、PyTorch、Paddle，并支持 Agent runtime 常用的 DeepSeek、Qwen、Llama、ChatGLM、MiniCPM、Mistral 等模型家族。',
+                        npuLi5: 'Agentic workload 可以将 RISCV 管理的沙箱与 XPU 支撑的推理、embedding、reranking 和多模态生成结合。',
+                        npuCta: '索取 XPU 规格',
+                        cxlLi1: 'CXL/LPU 加速面向 Agent 内存、RAG、artifact store、模型服务、网络和存储负载。',
+                        cxlLi2: 'PCIe Gen5 x16 + CXL 主机接口，并提供两个 MCIO PCIe Gen5 x8 扩展接口。',
+                        cxlLi3: '四个 DDR4 RDIMM ECC 插槽，2400MT/s，支持最高 1TB 外部内存。',
+                        cxlLi4: '两个 PCIe Gen5 x4 M.2 SSD 插槽，最高 16TB 存储容量，支持 NVMe/SATA。',
+                        cxlLi5: '两个 QSFP-DD 网络端口，支持 10/25/50/100/200Gbps 配置，板卡 TDP 150W。',
+                        accelLabel: '加速器',
+                        cxlCta: '索取 CXL/LPU 数据表',
+                        computeTitle: 'RISCV + XPU 计算平台',
+                        computeDesc: '服务器级计算底座，面向通用 Agentic workloads、云原生虚拟化、安全沙箱、模型推理、向量处理和本地部署，为 zett.ai 平台提供 RISCV、内存、I/O 与 XPU 加速基础。',
+                        docsCta: '查看产品资料',
+                        expansionTitle: 'CXL + LPU 内存与数据路径扩展',
+                        expansionDesc: '可编程 CXL/LPU 卡通过外部内存、本地 SSD、QSFP-DD 网络和 BMC 监控扩展平台能力，面向长周期 Agent 状态、检索索引、artifact store、内存驻留服务、网络和存储卸载。',
+                        integrationCta: '联系 Agentic workload 支持'
+                    },
+                    features: {
+                        title: 'Agentic Workload 核心能力',
+                        computeTitle: 'RISCV 编排与隔离',
+                        computeDesc: '服务器级 RISCV 资源协调 Agent、沙箱、工具调用、文件系统、调度器和高并发服务控制。',
+                        memoryTitle: '面向 Agent 状态的大内存',
+                        memoryDesc: 'DDR5 与 CXL memory 承载上下文、KV cache、检索索引、repo snapshot、artifact 和分层内存 Agent 服务。',
+                        aiTitle: 'XPU 模型与工具加速',
+                        aiDesc: 'XPU 为 Agent 循环加速 LLM 推理、embedding、reranking、多模态生成、向量计算和矩阵运算。',
+                        opsTitle: '安全、RAS 与运维',
+                        opsDesc: 'CE/UC/UCE 错误处理、可信启动、硬件密码学、Trace/Debug 和 BMC 监控支持生产级部署。'
+                    },
+                    useCases: {
+                        eyebrow: 'Agentic 使用场景',
+                        title: 'RISCV + XPU Agent 平台优先落地场景',
+                        desc: 'zett.ai 面向通用 Agentic workload 部署：RISCV 调度、XPU runtime、大上下文内存和隔离工具执行会直接影响成本、密度与服务延迟。',
+                        gb300Title: 'Coding Agent Runtime',
+                        gb300Desc: 'RISCV 资源调度容器、文件系统、编译器和工具调用；XPU 针对大 repo 上下文运行推理、embedding、代码分析和 reranking。',
+                        kimiTitle: '研究与浏览器 Agent',
+                        kimiDesc: '将 RISCV 管理的浏览、检索、文档解析和 API 调用，与 XPU 支撑的摘要、视觉、embedding 和长上下文推理打包部署。',
+                        gpuServerTitle: '企业 Agent Sandbox 资源池',
+                        gpuServerDesc: '为团队部署按项目隔离的沙箱，提供 RISCV 与 XPU 预算、持久化存储、网络控制、可复现运行和用量计费。'
+                    },
+                    architecture: {
+                        title: 'Agentic Workload 架构',
+                        desc: '架构上将 RISCV 编排平面、XPU 加速平面和数据移动平面拆分，再通过 PCIe Gen5 与 CXL 连接，使 Agent 循环、内存扩展和 I/O 卸载能够协同扩展。',
+                        svgTitle: 'RISCV + XPU、CXL 与 LPU Agentic 架构',
+                        svgNpu: 'XPU 集群',
+                        svgFabric: 'RISCV 控制 Fabric',
+                        svgCpu: '服务器 RISCV',
+                        svgControl: '控制 + 计算平面',
+                        svgRuntime: 'Agent Runtime',
+                        svgWorkloads: '工具调用、RAG、代码',
+                        svgNpuPath: 'XPU 路径',
+                        svgCxlPath: 'CXL 路径',
+                        svgSchedule: '分发',
+                        svgServe: '服务'
+                    },
+                    specs: {
+                        eyebrow: '规格',
+                        title: 'Agentic 平台规格一览',
+                        desc: '以可快速扫描的方式呈现 Agentic 基础设施采购方首先需要的 RISCV、XPU、内存和数据路径组件。',
+                        category: '类别',
+                        platform: 'zett.ai 平台',
+                        role: '作用',
+                        cpuKey: 'RISCV',
+                        cpuRole: 'Agent 编排、调度、虚拟化、沙箱隔离和系统控制。',
+                        memoryKey: '内存',
+                        memoryRole: '支撑 Agent 状态、KV cache、检索索引、repo snapshot、artifact 和内存密集型服务。',
+                        ioKey: '主机 I/O',
+                        ioRole: '为 XPU、存储、网络和数据移动提供高带宽连接。',
+                        npuKey: 'XPU',
+                        npuRole: '面向 Agent 负载的可编程模型、向量、矩阵和数据路径加速。',
+                        cxlKey: 'CXL/LPU 卡',
+                        cxlRole: 'Agent 内存扩展、数据路径加速、存储和网络卸载。',
+                        opsKey: '运维',
+                        opsRole: '生产部署、隔离、遥测和生命周期管理。'
+                    },
+                    resources: {
+                        title: '资源与文档',
+                        cpuTitle: 'RISCV + XPU 架构简报',
+                        cpuDesc: '产品简报覆盖面向 Agentic workloads 的 RISCV 编排、XPU 加速、DDR5 内存、PCIe Gen5 I/O、虚拟化、RAS、安全和操作系统支持。',
+                        cxlTitle: 'CXL + LPU 卡数据表',
+                        cxlDesc: '数据表覆盖 CXL/LPU 加速卡的 PCIe Gen5 x16 + CXL、DDR4 RDIMM 内存、M.2 存储、MCIO 扩展、QSFP-DD 网络和面向 Agent 内存与数据移动的 BMC 监控。',
+                        forumTitle: '社区论坛',
+                        forumDesc: '公开讨论区，用于架构问题、产品反馈、支持主题、演示、提案和公告。',
+                        leaseTitle: '租赁方案',
+                        leaseDesc: '面向 RISCV + XPU 塔式套件、2U1P/2U4P 模块、CXL/LPU 扩展、GPU 系统和 Agent sandbox 集群的评估租赁方案。',
+                        aiBillingTitle: 'Agentic Workload 计费',
+                        aiBillingDesc: '面向 RISCV + XPU runtime、sandbox 实例、tokens、CXL memory、持久化存储和托管 Agentic 服务支持的用量计费。',
+                        agentBillingTitle: 'Agent Sandbox 计费',
+                        agentBillingDesc: '面向需要 RISCV 隔离和 XPU 加速的通用 Coding、研究、浏览器和自动化 Agent 的隔离沙箱计费。',
+                        portalTitle: '投资人门户',
+                        portalDesc: '面向授权伙伴的保密白皮书、融资材料、租赁方案尽调资料和投资人跟进请求入口。',
+                        openForum: '打开论坛',
+                        openLease: '打开租赁方案',
+                        openAiBilling: '咨询负载计费',
+                        openAgentBilling: '咨询沙箱计费',
+                        joinForum: '加入社区论坛',
+                        openPortal: '访问投资人门户'
+                    },
+                    footer: {
+                        title: '一起构建 Agentic 基础设施',
+                        subtitle: '面向 Agentic workloads 的 RISCV + XPU 系统'
+                    }
+                }
+            };
+
+            function getValue(obj, path) {
+                return path.split('.').reduce(function(value, key) {
+                    return value && value[key];
+                }, obj);
+            }
+
+            function applyLanguage(lang) {
+                var dictionary = translations[lang] || translations.en;
+                document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+                document.title = lang === 'zh'
+                    ? 'zett.ai - RISCV + XPU Agentic Workload 基础设施'
+                    : 'zett.ai - RISCV + XPU Agentic Workload Infrastructure';
+
+                document.querySelectorAll('[data-i18n]').forEach(function(element) {
+                    var value = getValue(dictionary, element.getAttribute('data-i18n'));
+                    if (value) element.textContent = value;
+                });
+
+                document.querySelectorAll('[data-i18n-html]').forEach(function(element) {
+                    var value = getValue(dictionary, element.getAttribute('data-i18n-html'));
+                    if (value) element.innerHTML = value;
+                });
+
+                document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                    button.textContent = lang === 'zh' ? 'EN' : '中文';
+                    button.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换到中文');
+                });
+
+                localStorage.setItem('zettai-language', lang);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var stored = localStorage.getItem('zettai-language');
+                var initial = stored || ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+                applyLanguage(initial);
+
+                document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        var next = document.documentElement.lang === 'zh-CN' ? 'en' : 'zh';
+                        applyLanguage(next);
+                    });
+                });
+            });
+        })();
     </script>
 
     <!-- Mobile Menu Logic -->

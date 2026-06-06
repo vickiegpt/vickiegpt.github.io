@@ -27,11 +27,24 @@ if (typeof window === 'undefined') {
             return;
         }
 
-        const request = (coepCredentialless && r.mode === "no-cors")
+        let request = (coepCredentialless && r.mode === "no-cors")
             ? new Request(r, {
                 credentials: "omit",
             })
             : r;
+        const url = new URL(request.url);
+        if (url.origin === self.location.origin &&
+            url.pathname === "/cxl/images/alpine-x86_64/qemu-system-x86_64") {
+            const compatUrl = new URL("/cxl/images/alpine-x86_64/qemu-system-x86_64.js", self.location.origin);
+            compatUrl.searchParams.set("v", "20260518-worker-import2");
+            request = new Request(compatUrl.href, { cache: "reload", credentials: request.credentials });
+        } else if (url.origin === self.location.origin &&
+            url.pathname === "/cxl/images/alpine-x86_64/qemu-system-x86_64.worker.js" &&
+            !url.search) {
+            const compatUrl = new URL("/cxl/images/alpine-x86_64/qemu-system-x86_64.worker.js", self.location.origin);
+            compatUrl.searchParams.set("v", "20260518-worker-import2");
+            request = new Request(compatUrl.href, { cache: "reload", credentials: request.credentials });
+        }
         event.respondWith(
             fetch(request)
                 .then((response) => {
@@ -45,7 +58,12 @@ if (typeof window === 'undefined') {
                     );
                     newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
 
-                    return new Response(response.body, {
+                    /* Null-body statuses (101 / 204 / 205 / 304) cannot
+                     * carry a body — Response() throws if we pass one. */
+                    const nullBodyStatus = response.status === 101 ||
+                        response.status === 204 || response.status === 205 ||
+                        response.status === 304;
+                    return new Response(nullBodyStatus ? null : response.body, {
                         status: response.status,
                         statusText: response.statusText,
                         headers: newHeaders,
@@ -68,6 +86,7 @@ if (typeof window === 'undefined') {
         };
 
         const n = navigator;
+        const currentScriptUrl = window.document.currentScript && window.document.currentScript.src;
 
         if (n.serviceWorker && n.serviceWorker.controller) {
             n.serviceWorker.controller.postMessage({
@@ -77,6 +96,19 @@ if (typeof window === 'undefined') {
 
             if (coi.shouldDeregister()) {
                 n.serviceWorker.controller.postMessage({ type: "deregister" });
+            }
+
+            if (currentScriptUrl && n.serviceWorker.controller.scriptURL !== currentScriptUrl) {
+                n.serviceWorker.register(currentScriptUrl).then(
+                    (registration) => {
+                        registration.update && registration.update();
+                        setTimeout(() => coi.doReload(), 250);
+                    },
+                    (err) => {
+                        !coi.quiet && console.error("COOP/COEP Service Worker update failed:", err);
+                    }
+                );
+                return;
             }
         }
 

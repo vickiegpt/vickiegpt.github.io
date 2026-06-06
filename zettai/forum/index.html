@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zettai Forum - GitHub Issues Discussion Board</title>
-    <meta name="description" content="A public discussion forum for zett.ai, backed by GitHub Issues.">
+    <title>Zettai Forum - Discussion Board</title>
+    <meta name="description" content="A public discussion forum for zett.ai.">
 
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
 
@@ -13,6 +13,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 
     <script>
         tailwind.config = {
@@ -61,6 +79,155 @@
             text-decoration: underline;
             text-underline-offset: 3px;
         }
+
+        .forum-body {
+            overflow-wrap: anywhere;
+        }
+
+        .forum-body > * + * {
+            margin-top: 0.85rem;
+        }
+
+        .forum-body h1,
+        .forum-body h2,
+        .forum-body h3 {
+            color: #0f172a;
+            font-family: Merriweather, serif;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .forum-body h1 {
+            font-size: 1.45rem;
+        }
+
+        .forum-body h2 {
+            font-size: 1.25rem;
+        }
+
+        .forum-body h3 {
+            font-size: 1.05rem;
+        }
+
+        .forum-body ul,
+        .forum-body ol {
+            padding-left: 1.25rem;
+        }
+
+        .forum-body ul {
+            list-style: disc;
+        }
+
+        .forum-body ol {
+            list-style: decimal;
+        }
+
+        .forum-body li + li {
+            margin-top: 0.35rem;
+        }
+
+        .forum-body blockquote {
+            border-left: 3px solid #c4b5fd;
+            background: #f8fafc;
+            color: #475569;
+            padding: 0.75rem 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .forum-body code {
+            border-radius: 0.375rem;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 0.1rem 0.35rem;
+            font-family: JetBrains Mono, monospace;
+            font-size: 0.88em;
+        }
+
+        .forum-body pre {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            background: #0f172a;
+            padding: 1rem;
+        }
+
+        .forum-body pre code {
+            background: transparent;
+            color: #e2e8f0;
+            padding: 0;
+        }
+
+        .forum-body table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            font-size: 0.92em;
+        }
+
+        .forum-body th,
+        .forum-body td {
+            border: 1px solid #e2e8f0;
+            padding: 0.55rem 0.7rem;
+            vertical-align: top;
+        }
+
+        .forum-body th {
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .forum-body hr {
+            border: 0;
+            border-top: 1px solid #e2e8f0;
+            margin: 1rem 0;
+        }
+
+        .forum-body img {
+            max-width: 100%;
+            border-radius: 0.75rem;
+        }
+
+        .forum-body input[type="checkbox"] {
+            margin-right: 0.45rem;
+        }
+
+        .forum-body .contains-task-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .forum-body mjx-container[jax="CHTML"][display="true"] {
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+            padding: 0.5rem 0;
+        }
+
+        .translate-widget {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .goog-te-banner-frame.skiptranslate,
+        .goog-te-gadget,
+        .goog-te-balloon-frame,
+        body > .skiptranslate,
+        iframe.skiptranslate,
+        #goog-gt-tt {
+            display: none !important;
+        }
+
+        body {
+            top: 0 !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-brand-100 selection:text-brand-900">
@@ -84,24 +251,21 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-7 text-sm font-medium">
-                    <a href="../#products" class="text-slate-600 hover:text-brand-700 transition-colors">Products</a>
-                    <a href="../#technology" class="text-slate-600 hover:text-brand-700 transition-colors">Architecture</a>
-                    <a href="../#resources" class="text-slate-600 hover:text-brand-700 transition-colors">Resources</a>
-                    <a href="../portal/" class="text-slate-600 hover:text-brand-700 transition-colors">Portal</a>
-                    <a href="https://github.com/CXLMemUring/Zettai.github.io/issues" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-slate-600 hover:text-brand-700 transition-colors">
-                        <i data-lucide="github" class="w-4 h-4"></i>
-                        Issues
-                    </a>
+                    <a href="../#products" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.products">Products</a>
+                    <a href="../lease/" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.lease">Leasing</a>
+                    <a href="./" class="text-brand-700 hover:text-brand-900 transition-colors" data-i18n="nav.forum">Forum</a>
+                    <a href="../portal/" class="text-slate-600 hover:text-brand-700 transition-colors" data-i18n="nav.portal">Investor Portal</a>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button id="token-button" type="button" class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-700" title="GitHub token">
+                    <button type="button" class="lang-toggle inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-700 sm:px-3" aria-label="Switch language">中文</button>
+                    <button id="token-button" type="button" class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-700" title="GitHub token" data-i18n-title="actions.githubToken">
                         <i data-lucide="key-round" class="w-4 h-4"></i>
-                        <span id="token-button-label" class="hidden sm:inline">Connect</span>
+                        <span id="token-button-label" class="hidden sm:inline">Login</span>
                     </button>
                     <button id="new-thread-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
                         <i data-lucide="square-pen" class="w-4 h-4"></i>
-                        New Thread
+                        <span class="hidden sm:inline" data-i18n="actions.newThread">New Thread</span>
                     </button>
                 </div>
             </div>
@@ -112,23 +276,23 @@
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
-                    <p class="text-sm font-mono font-bold uppercase text-brand-700">Zettai Forum</p>
-                    <h1 class="mt-2 text-3xl font-serif font-bold text-slate-950">GitHub Issues Discussion Board</h1>
-                    <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    <p class="text-sm font-mono font-bold uppercase text-brand-700" data-i18n="hero.eyebrow">Zettai Forum</p>
+                    <h1 class="mt-2 text-3xl font-serif font-bold text-slate-950" data-i18n="hero.title">Zettai Discussion Board</h1>
+                    <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600" data-i18n="hero.subtitle">
                         Public engineering questions, product feedback, partner notes, and roadmap discussions.
                     </p>
                 </div>
                 <div class="grid grid-cols-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                     <div class="border-r border-slate-200 px-4 py-3">
-                        <p class="text-xs font-mono uppercase text-slate-500">Threads</p>
+                        <p class="text-xs font-mono uppercase text-slate-500" data-i18n="stats.threads">Threads</p>
                         <p id="stat-total" class="mt-1 text-xl font-bold text-slate-950">0</p>
                     </div>
                     <div class="border-r border-slate-200 px-4 py-3">
-                        <p class="text-xs font-mono uppercase text-slate-500">Open</p>
+                        <p class="text-xs font-mono uppercase text-slate-500" data-i18n="stats.open">Open</p>
                         <p id="stat-open" class="mt-1 text-xl font-bold text-emerald-700">0</p>
                     </div>
                     <div class="px-4 py-3">
-                        <p class="text-xs font-mono uppercase text-slate-500">Replies</p>
+                        <p class="text-xs font-mono uppercase text-slate-500" data-i18n="stats.replies">Replies</p>
                         <p id="stat-comments" class="mt-1 text-xl font-bold text-brand-700">0</p>
                     </div>
                 </div>
@@ -140,33 +304,33 @@
                 <aside class="rounded-lg border border-slate-200 bg-white shadow-sm">
                     <div class="border-b border-slate-200 p-4">
                         <div class="flex gap-2">
-                            <label for="forum-search" class="sr-only">Search forum</label>
+                            <label for="forum-search" class="sr-only" data-i18n="filters.searchLabel">Search forum</label>
                             <div class="relative min-w-0 flex-1">
                                 <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
-                                <input id="forum-search" type="search" class="w-full rounded-md border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm outline-none transition-colors focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100" placeholder="Search threads">
+                                <input id="forum-search" type="search" class="w-full rounded-md border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm outline-none transition-colors focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100" placeholder="Search threads" data-i18n-placeholder="filters.searchPlaceholder">
                             </div>
-                            <button id="refresh-button" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition-colors hover:border-brand-200 hover:text-brand-700" title="Refresh">
+                            <button id="refresh-button" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition-colors hover:border-brand-200 hover:text-brand-700" title="Refresh" data-i18n-title="actions.refresh">
                                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                             </button>
                         </div>
 
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <label for="category-filter" class="sr-only">Category</label>
+                            <label for="category-filter" class="sr-only" data-i18n="filters.category">Category</label>
                             <select id="category-filter" class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
                                 <option value="all">All categories</option>
                             </select>
 
-                            <label for="state-filter" class="sr-only">State</label>
+                            <label for="state-filter" class="sr-only" data-i18n="filters.state">State</label>
                             <select id="state-filter" class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
-                                <option value="open">Open threads</option>
-                                <option value="closed">Closed threads</option>
-                                <option value="all">All states</option>
+                                <option value="open" data-i18n="filters.openThreads">Open threads</option>
+                                <option value="closed" data-i18n="filters.closedThreads">Closed threads</option>
+                                <option value="all" data-i18n="filters.allStates">All states</option>
                             </select>
                         </div>
                     </div>
 
                     <div id="thread-list" class="forum-scrollbar max-h-[calc(100vh-260px)] min-h-[420px] overflow-y-auto p-2">
-                        <div class="p-4 text-sm text-slate-500">Loading forum threads...</div>
+                        <div class="p-4 text-sm text-slate-500" data-i18n="states.loadingThreads">Loading forum threads...</div>
                     </div>
                 </aside>
 
@@ -176,8 +340,8 @@
                             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
                                 <i data-lucide="messages-square" class="w-6 h-6"></i>
                             </div>
-                            <h2 class="text-xl font-serif font-bold text-slate-950">Select a thread</h2>
-                            <p class="mt-2 max-w-md text-sm leading-6 text-slate-500">Choose a topic from the list, or start a new discussion backed by GitHub Issues.</p>
+                            <h2 class="text-xl font-serif font-bold text-slate-950" data-i18n="states.selectThread">Select a thread</h2>
+                            <p class="mt-2 max-w-md text-sm leading-6 text-slate-500" data-i18n="states.selectThreadDesc">Choose a topic from the list, or start a new discussion.</p>
                         </div>
                     </div>
                 </section>
@@ -189,30 +353,30 @@
         <div class="w-full max-w-2xl rounded-lg bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-950">New Forum Thread</h2>
-                    <p class="text-xs text-slate-500">Creates a public GitHub Issue in CXLMemUring/Zettai.github.io.</p>
+                    <h2 class="text-lg font-bold text-slate-950" data-i18n="modal.newTitle">New Forum Thread</h2>
+                    <p class="text-xs text-slate-500" data-i18n="modal.newDesc">Creates a public discussion in CXLMemUring/Zettai.github.io.</p>
                 </div>
-                <button type="button" class="modal-close inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" title="Close">
+                <button type="button" class="modal-close inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" title="Close" data-i18n-title="actions.close">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <form id="new-thread-form" class="space-y-4 px-5 py-5">
                 <div>
-                    <label for="thread-title" class="mb-1 block text-sm font-semibold text-slate-800">Title</label>
-                    <input id="thread-title" name="title" required maxlength="120" class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="What should this discussion be called?">
+                    <label for="thread-title" class="mb-1 block text-sm font-semibold text-slate-800" data-i18n="modal.titleLabel">Title</label>
+                    <input id="thread-title" name="title" required maxlength="120" class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="What should this discussion be called?" data-i18n-placeholder="modal.titlePlaceholder">
                 </div>
                 <div>
-                    <label for="thread-category" class="mb-1 block text-sm font-semibold text-slate-800">Category</label>
+                    <label for="thread-category" class="mb-1 block text-sm font-semibold text-slate-800" data-i18n="modal.categoryLabel">Category</label>
                     <select id="thread-category" name="category" class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"></select>
                 </div>
                 <div>
-                    <label for="thread-body" class="mb-1 block text-sm font-semibold text-slate-800">Body</label>
-                    <textarea id="thread-body" name="body" required rows="8" class="w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="Write the context, question, proposal, or feedback. Markdown is supported on GitHub."></textarea>
+                    <label for="thread-body" class="mb-1 block text-sm font-semibold text-slate-800" data-i18n="modal.bodyLabel">Body</label>
+                    <textarea id="thread-body" name="body" required rows="8" class="w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="Write with Markdown, code fences, tables, and LaTeX such as $E=mc^2$ or $$x^2$$." data-i18n-placeholder="modal.bodyPlaceholder"></textarea>
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <button id="open-github-new" type="button" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700">
                         <i data-lucide="github" class="w-4 h-4"></i>
-                        Open in GitHub
+                        <span data-i18n="actions.openInGithub">Open in GitHub</span>
                     </button>
                     <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800">
                         <i data-lucide="send" class="w-4 h-4"></i>
@@ -227,34 +391,34 @@
         <div class="w-full max-w-xl rounded-lg bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-950">GitHub Access</h2>
+                    <h2 class="text-lg font-bold text-slate-950" data-i18n="token.title">GitHub Access</h2>
                     <p id="token-status" class="text-xs text-slate-500">Read access works without a token.</p>
                 </div>
-                <button type="button" class="modal-close inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" title="Close">
+                <button type="button" class="modal-close inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" title="Close" data-i18n-title="actions.close">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div class="space-y-4 px-5 py-5">
-                <div class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">
-                    Use a fine-grained personal access token limited to this repository with Issues read/write permission. The token stays in this browser only.
+                <div class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900" data-i18n="token.help">
+                    Use a fine-grained personal access token limited to this repository with forum read/write permission. The token stays in this browser only.
                 </div>
                 <div>
-                    <label for="github-token" class="mb-1 block text-sm font-semibold text-slate-800">Token</label>
+                    <label for="github-token" class="mb-1 block text-sm font-semibold text-slate-800" data-i18n="token.tokenLabel">Token</label>
                     <input id="github-token" type="password" autocomplete="off" class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="github_pat_...">
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
                     <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700">
                         <i data-lucide="external-link" class="w-4 h-4"></i>
-                        GitHub Tokens
+                        <span data-i18n="token.githubTokens">GitHub Tokens</span>
                     </a>
                     <div class="flex flex-col gap-2 sm:flex-row">
                         <button id="clear-token" type="button" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-rose-200 hover:text-rose-700">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            Clear
+                            <span data-i18n="actions.clear">Clear</span>
                         </button>
                         <button id="save-token" type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800">
                             <i data-lucide="check" class="w-4 h-4"></i>
-                            Save
+                            <span data-i18n="actions.save">Save</span>
                         </button>
                     </div>
                 </div>
@@ -267,10 +431,12 @@
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                 <i data-lucide="inbox" class="w-6 h-6"></i>
             </div>
-            <p class="font-semibold text-slate-900">No threads found</p>
-            <p class="mt-2 text-sm leading-6 text-slate-500">Try another filter or create the first forum thread.</p>
+            <p class="font-semibold text-slate-900" data-i18n="states.noThreads">No threads found</p>
+            <p class="mt-2 text-sm leading-6 text-slate-500" data-i18n="states.noThreadsDesc">Try another filter or create the first forum thread.</p>
         </div>
     </template>
+
+    <div id="google_translate_element" class="translate-widget" aria-hidden="true"></div>
 
     <script>
         var REPO = {
@@ -280,14 +446,271 @@
 
         var FORUM_LABEL = 'forum';
         var TITLE_PREFIX = '[Forum] ';
+        var googleTranslateRetryTimer = null;
+
+        var forumTranslations = {
+            en: {
+                page: {
+                    title: 'Zettai Forum - Discussion Board'
+                },
+                nav: {
+                    products: 'Products',
+                    lease: 'Leasing',
+                    forum: 'Forum',
+                    portal: 'Investor Portal'
+                },
+                hero: {
+                    eyebrow: 'Zettai Forum',
+                    title: 'Zettai Discussion Board',
+                    subtitle: 'Public engineering questions, product feedback, partner notes, and roadmap discussions.'
+                },
+                stats: {
+                    threads: 'Threads',
+                    open: 'Open',
+                    replies: 'Replies'
+                },
+                actions: {
+                    githubToken: 'GitHub token',
+                    newThread: 'New Thread',
+                    refresh: 'Refresh',
+                    close: 'Close',
+                    openInGithub: 'Open in GitHub',
+                    createThread: 'Create Thread',
+                    openGithub: 'Open GitHub',
+                    login: 'Login',
+                    loggedIn: 'Logged in',
+                    clear: 'Clear',
+                    save: 'Save',
+                    reply: 'Reply',
+                    replyOnGithub: 'Reply on GitHub',
+                    closeThread: 'Close',
+                    reopenThread: 'Reopen'
+                },
+                filters: {
+                    searchLabel: 'Search forum',
+                    searchPlaceholder: 'Search threads',
+                    category: 'Category',
+                    state: 'State',
+                    allCategories: 'All categories',
+                    openThreads: 'Open threads',
+                    closedThreads: 'Closed threads',
+                    allStates: 'All states'
+                },
+                states: {
+                    loadingThreads: 'Loading forum threads...',
+                    selectThread: 'Select a thread',
+                    selectThreadDesc: 'Choose a topic from the list, or start a new discussion.',
+                    noThreads: 'No threads found',
+                    noThreadsDesc: 'Try another filter or create the first forum thread.',
+                    threadNotFound: 'Thread not found.',
+                    loadingReplies: 'Loading replies...',
+                    noReplies: 'No replies yet.',
+                    closedThread: 'This thread is closed.',
+                    noBodyText: 'No body text.',
+                    justNow: 'just now'
+                },
+                modal: {
+                    newTitle: 'New Forum Thread',
+                    newDesc: 'Creates a public discussion in CXLMemUring/Zettai.github.io.',
+                    titleLabel: 'Title',
+                    titlePlaceholder: 'What should this discussion be called?',
+                    categoryLabel: 'Category',
+                    bodyLabel: 'Body',
+                    bodyPlaceholder: 'Write with Markdown, code fences, tables, and LaTeX such as $E=mc^2$ or $$x^2$$.'
+                },
+                token: {
+                    title: 'GitHub Access',
+                    help: 'Use a fine-grained personal access token limited to this repository with forum read/write permission. The token stays in this browser only.',
+                    tokenLabel: 'Token',
+                    githubTokens: 'GitHub Tokens',
+                    saved: 'Token saved in this browser.',
+                    readOnly: 'Read access works without a token.'
+                },
+                categories: {
+                    discussion: 'Discussion',
+                    question: 'Question',
+                    proposal: 'Proposal',
+                    support: 'Support',
+                    showcase: 'Showcase',
+                    announcement: 'Announcement'
+                },
+                issue: {
+                    github: 'GitHub',
+                    stateOpen: 'Open',
+                    stateClosed: 'Closed',
+                    openedBy: 'Opened by',
+                    on: 'on',
+                    replies: 'Replies',
+                    total: 'total',
+                    logInToReply: 'Log in with GitHub to reply here, or continue on GitHub.',
+                    replyPlaceholder: 'Write a reply with Markdown or LaTeX...',
+                    newDiscussion: 'New discussion',
+                    discussionDetails: 'Write the discussion details here.'
+                },
+                notices: {
+                    tokenCleared: 'GitHub token cleared.',
+                    createdWithoutLabels: 'Thread created without labels. Run the forum label sync workflow to enable category filters on GitHub.',
+                    threadCreated: 'Thread created on GitHub.',
+                    replyPosted: 'Reply posted to GitHub.',
+                    threadClosed: 'Thread closed.',
+                    threadReopened: 'Thread reopened.',
+                    connectedAs: 'Connected as {login}.'
+                },
+                errors: {
+                    apiFailed: 'GitHub API request failed.',
+                    forumDisabled: 'The forum may be disabled for this repository.',
+                    tokenInvalid: 'GitHub token could not be verified.'
+                }
+            },
+            zh: {
+                page: {
+                    title: 'Zettai 论坛 - 讨论区'
+                },
+                nav: {
+                    products: '产品',
+                    lease: '租赁',
+                    forum: '论坛',
+                    portal: '投资人门户'
+                },
+                hero: {
+                    eyebrow: 'Zettai 论坛',
+                    title: 'Zettai 讨论区',
+                    subtitle: '公开讨论工程问题、产品反馈、合作伙伴信息和路线图。'
+                },
+                stats: {
+                    threads: '主题',
+                    open: '开放',
+                    replies: '回复'
+                },
+                actions: {
+                    githubToken: 'GitHub token',
+                    newThread: '新主题',
+                    refresh: '刷新',
+                    close: '关闭',
+                    openInGithub: '在 GitHub 打开',
+                    createThread: '创建主题',
+                    openGithub: '打开 GitHub',
+                    login: '登录',
+                    loggedIn: '已登录',
+                    clear: '清除',
+                    save: '保存',
+                    reply: '回复',
+                    replyOnGithub: '在 GitHub 回复',
+                    closeThread: '关闭',
+                    reopenThread: '重新打开'
+                },
+                filters: {
+                    searchLabel: '搜索论坛',
+                    searchPlaceholder: '搜索主题',
+                    category: '分类',
+                    state: '状态',
+                    allCategories: '全部分类',
+                    openThreads: '开放主题',
+                    closedThreads: '已关闭主题',
+                    allStates: '全部状态'
+                },
+                states: {
+                    loadingThreads: '正在加载论坛主题...',
+                    selectThread: '选择一个主题',
+                    selectThreadDesc: '从列表中选择一个话题，或发起新的讨论。',
+                    noThreads: '没有找到主题',
+                    noThreadsDesc: '换一个筛选条件，或创建第一个论坛主题。',
+                    threadNotFound: '没有找到该主题。',
+                    loadingReplies: '正在加载回复...',
+                    noReplies: '还没有回复。',
+                    closedThread: '该主题已关闭。',
+                    noBodyText: '没有正文内容。',
+                    justNow: '刚刚'
+                },
+                modal: {
+                    newTitle: '新建论坛主题',
+                    newDesc: '将在 CXLMemUring/Zettai.github.io 创建公开讨论。',
+                    titleLabel: '标题',
+                    titlePlaceholder: '这次讨论叫什么？',
+                    categoryLabel: '分类',
+                    bodyLabel: '正文',
+                    bodyPlaceholder: '支持 Markdown、代码块、表格和 LaTeX，例如 $E=mc^2$ 或 $$x^2$$。'
+                },
+                token: {
+                    title: 'GitHub 访问',
+                    help: '请使用仅限此仓库、具备论坛读写权限的 fine-grained personal access token。Token 只保存在当前浏览器。',
+                    tokenLabel: 'Token',
+                    githubTokens: 'GitHub Tokens',
+                    saved: 'Token 已保存在当前浏览器。',
+                    readOnly: '不填 token 也可以读取内容。'
+                },
+                categories: {
+                    discussion: '讨论',
+                    question: '问题',
+                    proposal: '提案',
+                    support: '支持',
+                    showcase: '展示',
+                    announcement: '公告'
+                },
+                issue: {
+                    github: 'GitHub',
+                    stateOpen: '开放',
+                    stateClosed: '已关闭',
+                    openedBy: '由',
+                    on: '发表于',
+                    replies: '回复',
+                    total: '总计',
+                    logInToReply: '登录 GitHub 后可在这里回复，也可以继续前往 GitHub。',
+                    replyPlaceholder: '用 Markdown 或 LaTeX 写回复...',
+                    newDiscussion: '新的讨论',
+                    discussionDetails: '在这里写讨论详情。'
+                },
+                notices: {
+                    tokenCleared: 'GitHub token 已清除。',
+                    createdWithoutLabels: '主题已创建，但没有标签。请运行 forum label sync workflow 以启用 GitHub 分类筛选。',
+                    threadCreated: '主题已创建到 GitHub。',
+                    replyPosted: '回复已发布到 GitHub。',
+                    threadClosed: '主题已关闭。',
+                    threadReopened: '主题已重新打开。',
+                    connectedAs: '已连接为 {login}。'
+                },
+                errors: {
+                    apiFailed: 'GitHub API 请求失败。',
+                    forumDisabled: '这个仓库可能尚未启用论坛。',
+                    tokenInvalid: 'GitHub token 无法验证。'
+                }
+            }
+        };
+
+        function getInitialForumLanguage() {
+            var stored = localStorage.getItem('zettai-language');
+            if (stored === 'zh' || stored === 'en') return stored;
+            return (navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+        }
+
+        var initialForumLanguage = getInitialForumLanguage();
+
+        function getValue(obj, path) {
+            return path.split('.').reduce(function(value, key) {
+                return value && value[key];
+            }, obj);
+        }
+
+        function t(path) {
+            var language = state && state.language ? state.language : initialForumLanguage;
+            var dictionary = forumTranslations[language] || forumTranslations.en;
+            return getValue(dictionary, path) || getValue(forumTranslations.en, path) || path;
+        }
+
+        if (window.marked) {
+            marked.setOptions({
+                breaks: true,
+                gfm: true
+            });
+        }
 
         var categories = [
-            { value: 'forum:discussion', label: 'Discussion', color: 'bg-sky-100 text-sky-800 border-sky-200' },
-            { value: 'forum:question', label: 'Question', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-            { value: 'forum:proposal', label: 'Proposal', color: 'bg-brand-100 text-brand-800 border-brand-200' },
-            { value: 'forum:support', label: 'Support', color: 'bg-amber-100 text-amber-900 border-amber-200' },
-            { value: 'forum:showcase', label: 'Showcase', color: 'bg-rose-100 text-rose-800 border-rose-200' },
-            { value: 'forum:announcement', label: 'Announcement', color: 'bg-slate-200 text-slate-800 border-slate-300' }
+            { value: 'forum:discussion', key: 'discussion', label: 'Discussion', color: 'bg-sky-100 text-sky-800 border-sky-200' },
+            { value: 'forum:question', key: 'question', label: 'Question', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+            { value: 'forum:proposal', key: 'proposal', label: 'Proposal', color: 'bg-brand-100 text-brand-800 border-brand-200' },
+            { value: 'forum:support', key: 'support', label: 'Support', color: 'bg-amber-100 text-amber-900 border-amber-200' },
+            { value: 'forum:showcase', key: 'showcase', label: 'Showcase', color: 'bg-rose-100 text-rose-800 border-rose-200' },
+            { value: 'forum:announcement', key: 'announcement', label: 'Announcement', color: 'bg-slate-200 text-slate-800 border-slate-300' }
         ];
 
         var state = {
@@ -298,6 +721,7 @@
             category: 'all',
             issueState: 'open',
             token: localStorage.getItem('zettai_forum_token') || '',
+            language: initialForumLanguage,
             loading: false
         };
 
@@ -332,26 +756,55 @@
 
             populateCategories();
             bindEvents();
-            updateTokenUi();
+            applyForumLanguage(state.language);
             loadIssues();
             lucide.createIcons();
         });
 
         function populateCategories() {
+            if (!els.categoryFilter || !els.threadCategory) return;
+
+            var currentFilter = els.categoryFilter.value || state.category;
+            var currentFormCategory = els.threadCategory.value || categories[0].value;
+            els.categoryFilter.innerHTML = '';
+            els.threadCategory.innerHTML = '';
+
+            var allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = t('filters.allCategories');
+            els.categoryFilter.appendChild(allOption);
+
             categories.forEach(function(category) {
                 var filterOption = document.createElement('option');
                 filterOption.value = category.value;
-                filterOption.textContent = category.label;
+                filterOption.textContent = categoryLabel(category);
                 els.categoryFilter.appendChild(filterOption);
 
                 var formOption = document.createElement('option');
                 formOption.value = category.value;
-                formOption.textContent = category.label;
+                formOption.textContent = categoryLabel(category);
                 els.threadCategory.appendChild(formOption);
             });
+
+            els.categoryFilter.value = currentFilter;
+            if (els.categoryFilter.value !== currentFilter) {
+                els.categoryFilter.value = 'all';
+                state.category = 'all';
+            }
+
+            els.threadCategory.value = currentFormCategory;
+            if (els.threadCategory.value !== currentFormCategory) {
+                els.threadCategory.value = categories[0].value;
+            }
         }
 
         function bindEvents() {
+            document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    applyForumLanguage(state.language === 'zh' ? 'en' : 'zh');
+                });
+            });
+
             els.search.addEventListener('input', function(event) {
                 state.query = event.target.value.trim().toLowerCase();
                 renderIssueList();
@@ -388,11 +841,8 @@
             });
 
             els.tokenButton.addEventListener('click', function() {
-                els.tokenInput.value = state.token;
-                openModal(els.tokenModal);
-                setTimeout(function() {
-                    els.tokenInput.focus();
-                }, 50);
+                var returnPath = window.location.pathname + window.location.search + window.location.hash;
+                window.location.href = '../login/?return=' + encodeURIComponent(returnPath);
             });
 
             els.saveToken.addEventListener('click', function() {
@@ -404,7 +854,7 @@
                 localStorage.removeItem('zettai_forum_token');
                 els.tokenInput.value = '';
                 updateTokenUi();
-                showNotice('GitHub token cleared.', 'neutral');
+                showNotice(t('notices.tokenCleared'), 'neutral');
             });
 
             document.querySelectorAll('.modal-close').forEach(function(button) {
@@ -426,15 +876,130 @@
 
         function updateTokenUi() {
             if (state.token) {
-                els.tokenButtonLabel.textContent = 'Connected';
-                els.createSubmitLabel.textContent = 'Create Thread';
-                els.tokenStatus.textContent = 'Token saved in this browser.';
+                els.tokenButtonLabel.textContent = t('actions.loggedIn');
+                els.createSubmitLabel.textContent = t('actions.createThread');
+                els.tokenStatus.textContent = t('token.saved');
             } else {
-                els.tokenButtonLabel.textContent = 'Connect';
-                els.createSubmitLabel.textContent = 'Open GitHub';
-                els.tokenStatus.textContent = 'Read access works without a token.';
+                els.tokenButtonLabel.textContent = t('actions.login');
+                els.createSubmitLabel.textContent = t('actions.openGithub');
+                els.tokenStatus.textContent = t('token.readOnly');
             }
         }
+
+        function applyForumLanguage(lang) {
+            state.language = lang === 'zh' ? 'zh' : 'en';
+            document.documentElement.lang = state.language === 'zh' ? 'zh-CN' : 'en';
+            document.title = t('page.title');
+
+            applyI18nTo(document);
+            populateCategories();
+            updateTokenUi();
+
+            document.querySelectorAll('.lang-toggle').forEach(function(button) {
+                button.textContent = state.language === 'zh' ? 'EN' : '中文';
+                button.setAttribute('aria-label', state.language === 'zh' ? 'Switch to English' : '切换到中文');
+            });
+
+            localStorage.setItem('zettai-language', state.language);
+
+            if (state.issues.length) {
+                renderStats();
+                renderIssueList();
+                if (state.selectedNumber) renderIssueDetail();
+            }
+
+            setGoogleTranslateLanguage(state.language);
+        }
+
+        function applyI18nTo(root) {
+            var target = root || document;
+            updateI18nNodes(target, '[data-i18n]', function(element, value) {
+                element.textContent = value;
+            });
+            updateI18nNodes(target, '[data-i18n-placeholder]', function(element, value) {
+                element.setAttribute('placeholder', value);
+            });
+            updateI18nNodes(target, '[data-i18n-title]', function(element, value) {
+                element.setAttribute('title', value);
+            });
+        }
+
+        function updateI18nNodes(root, selector, updater) {
+            var attribute = selector === '[data-i18n]'
+                ? 'data-i18n'
+                : selector === '[data-i18n-placeholder]'
+                    ? 'data-i18n-placeholder'
+                    : 'data-i18n-title';
+            var nodes = [];
+            if (root.nodeType === 1 && root.matches(selector)) nodes.push(root);
+            root.querySelectorAll(selector).forEach(function(element) {
+                nodes.push(element);
+            });
+
+            nodes.forEach(function(element) {
+                var key = element.getAttribute(attribute);
+                var value = t(key);
+                if (value) updater(element, value);
+            });
+        }
+
+        function categoryLabel(category) {
+            return category && category.key ? t('categories.' + category.key) : '';
+        }
+
+        function stateLabel(value) {
+            return value === 'open' ? t('issue.stateOpen') : t('issue.stateClosed');
+        }
+
+        function setGoogleTranslateLanguage(lang, attempt) {
+            var retries = attempt || 0;
+            var targetValue = lang === 'zh' ? 'zh-CN' : '';
+
+            if (lang === 'en') {
+                clearGoogleTranslateCookie();
+            } else {
+                setGoogleTranslateCookie(targetValue);
+            }
+
+            var combo = document.querySelector('select.goog-te-combo');
+            if (!combo) {
+                if (retries < 24) {
+                    window.clearTimeout(googleTranslateRetryTimer);
+                    googleTranslateRetryTimer = window.setTimeout(function() {
+                        setGoogleTranslateLanguage(lang, retries + 1);
+                    }, 250);
+                }
+                return;
+            }
+
+            if (combo.value !== targetValue) {
+                combo.value = targetValue;
+                combo.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function setGoogleTranslateCookie(value) {
+            document.cookie = 'googtrans=/en/' + value + '; path=/';
+        }
+
+        function clearGoogleTranslateCookie() {
+            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=' + window.location.hostname;
+        }
+
+        window.googleTranslateElementInit = function() {
+            if (!window.google || !google.translate || !google.translate.TranslateElement) return;
+
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,zh-CN',
+                autoDisplay: false
+            }, 'google_translate_element');
+
+            window.setTimeout(function() {
+                setGoogleTranslateLanguage(state.language);
+            }, 400);
+        };
 
         function openModal(modal) {
             modal.classList.remove('hidden');
@@ -484,7 +1049,7 @@
             }
 
             if (!response.ok) {
-                var message = data && data.message ? data.message : 'GitHub API request failed.';
+                var message = data && data.message ? data.message : t('errors.apiFailed');
                 var error = new Error(message);
                 error.status = response.status;
                 error.data = data;
@@ -599,6 +1164,7 @@
                 var template = document.getElementById('empty-list-template');
                 els.threadList.innerHTML = '';
                 els.threadList.appendChild(template.content.cloneNode(true));
+                applyI18nTo(els.threadList);
                 lucide.createIcons();
                 return;
             }
@@ -643,6 +1209,7 @@
             });
 
             lucide.createIcons();
+            setGoogleTranslateLanguage(state.language);
         }
 
         function filteredIssues() {
@@ -669,14 +1236,14 @@
             });
 
             if (!issue) {
-                els.threadDetail.innerHTML = '<div class="flex min-h-[620px] items-center justify-center px-6 text-center text-sm text-slate-500">Thread not found.</div>';
+                els.threadDetail.innerHTML = '<div class="flex min-h-[620px] items-center justify-center px-6 text-center text-sm text-slate-500">' + escapeHtml(t('states.threadNotFound')) + '</div>';
                 return;
             }
 
             var category = getIssueCategory(issue);
             var canManage = Boolean(state.token);
             var nextState = issue.state === 'open' ? 'closed' : 'open';
-            var stateActionLabel = issue.state === 'open' ? 'Close' : 'Reopen';
+            var stateActionLabel = issue.state === 'open' ? t('actions.closeThread') : t('actions.reopenThread');
 
             els.threadDetail.innerHTML = '<article class="flex min-h-[620px] flex-col">' +
                 '<header class="border-b border-slate-200 px-5 py-5">' +
@@ -688,10 +1255,10 @@
                     '<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">' +
                         '<div class="min-w-0">' +
                             '<h2 class="text-2xl font-serif font-bold text-slate-950">' + escapeHtml(cleanForumTitle(issue.title)) + '</h2>' +
-                            '<p class="mt-2 text-sm text-slate-500">Opened by <a class="font-medium text-slate-700 hover:text-brand-700" target="_blank" rel="noopener" href="' + escapeAttribute(issue.user.html_url) + '">' + escapeHtml(issue.user.login) + '</a> on ' + formatDate(issue.created_at) + '</p>' +
+                            '<p class="mt-2 text-sm text-slate-500">' + escapeHtml(t('issue.openedBy')) + ' <a class="font-medium text-slate-700 hover:text-brand-700" target="_blank" rel="noopener" href="' + escapeAttribute(issue.user.html_url) + '">' + escapeHtml(issue.user.login) + '</a> ' + escapeHtml(t('issue.on')) + ' ' + formatDate(issue.created_at) + '</p>' +
                         '</div>' +
                         '<div class="flex shrink-0 flex-wrap gap-2">' +
-                            '<a href="' + escapeAttribute(issue.html_url) + '" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700"><i data-lucide="github" class="w-4 h-4"></i>GitHub</a>' +
+                            '<a href="' + escapeAttribute(issue.html_url) + '" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700"><i data-lucide="github" class="w-4 h-4"></i>' + escapeHtml(t('issue.github')) + '</a>' +
                             (canManage ? '<button type="button" id="toggle-thread-state" data-next-state="' + nextState + '" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"><i data-lucide="' + (issue.state === 'open' ? 'circle-slash' : 'circle') + '" class="w-4 h-4"></i>' + stateActionLabel + '</button>' : '') +
                         '</div>' +
                     '</div>' +
@@ -700,8 +1267,8 @@
                     '<div class="forum-body rounded-lg border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">' + formatBody(stripForumFooter(issue.body || '')) + '</div>' +
                     '<div class="mt-6">' +
                         '<div class="mb-3 flex items-center justify-between">' +
-                            '<h3 class="font-bold text-slate-950">Replies</h3>' +
-                            '<span class="text-xs font-mono text-slate-500">' + issue.comments + ' total</span>' +
+                            '<h3 class="font-bold text-slate-950">' + escapeHtml(t('issue.replies')) + '</h3>' +
+                            '<span class="text-xs font-mono text-slate-500">' + issue.comments + ' ' + escapeHtml(t('issue.total')) + '</span>' +
                         '</div>' +
                         '<div id="comments-list" class="space-y-3">' + renderCommentsPlaceholder(issue.number) + '</div>' +
                     '</div>' +
@@ -733,11 +1300,13 @@
             }
 
             lucide.createIcons();
+            setGoogleTranslateLanguage(state.language);
+            typesetForumMath(els.threadDetail);
         }
 
         function renderCommentsPlaceholder(number) {
             if (state.comments[number]) return '';
-            return '<div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">Loading replies...</div>';
+            return '<div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">' + escapeHtml(t('states.loadingReplies')) + '</div>';
         }
 
         async function loadComments(number) {
@@ -759,7 +1328,7 @@
 
             var comments = state.comments[number] || [];
             if (!comments.length) {
-                commentsList.innerHTML = '<div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">No replies yet.</div>';
+                commentsList.innerHTML = '<div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">' + escapeHtml(t('states.noReplies')) + '</div>';
                 return;
             }
 
@@ -775,25 +1344,31 @@
                     '<div class="forum-body text-sm leading-6 text-slate-700">' + formatBody(comment.body || '') + '</div>' +
                 '</div>';
             }).join('');
+
+            typesetForumMath(commentsList);
+            setGoogleTranslateLanguage(state.language);
         }
 
         function renderCommentComposer(issue) {
             if (!state.token) {
                 return '<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">' +
-                    '<p class="text-sm text-slate-500">Connect GitHub to reply here, or continue on GitHub.</p>' +
-                    '<a href="' + escapeAttribute(issue.html_url) + '" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700"><i data-lucide="external-link" class="w-4 h-4"></i>Reply on GitHub</a>' +
+                    '<p class="text-sm text-slate-500">' + escapeHtml(t('issue.logInToReply')) + '</p>' +
+                    '<div class="flex flex-col gap-2 sm:flex-row">' +
+                        '<a href="../login/?return=' + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash) + '" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"><i data-lucide="log-in" class="w-4 h-4"></i>' + escapeHtml(t('actions.login')) + '</a>' +
+                        '<a href="' + escapeAttribute(issue.html_url) + '" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700"><i data-lucide="external-link" class="w-4 h-4"></i>' + escapeHtml(t('actions.replyOnGithub')) + '</a>' +
+                    '</div>' +
                 '</div>';
             }
 
             if (issue.state !== 'open') {
-                return '<p class="text-sm text-slate-500">This thread is closed.</p>';
+                return '<p class="text-sm text-slate-500">' + escapeHtml(t('states.closedThread')) + '</p>';
             }
 
             return '<form id="comment-form" class="space-y-3">' +
-                '<label for="comment-body" class="sr-only">Reply</label>' +
-                '<textarea id="comment-body" required rows="3" class="w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="Write a reply..."></textarea>' +
+                '<label for="comment-body" class="sr-only">' + escapeHtml(t('actions.reply')) + '</label>' +
+                '<textarea id="comment-body" required rows="3" class="w-full resize-y rounded-md border border-slate-200 px-3 py-2 text-sm leading-6 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100" placeholder="' + escapeAttribute(t('issue.replyPlaceholder')) + '"></textarea>' +
                 '<div class="flex justify-end">' +
-                    '<button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"><i data-lucide="send" class="w-4 h-4"></i>Reply</button>' +
+                    '<button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"><i data-lucide="send" class="w-4 h-4"></i>' + escapeHtml(t('actions.reply')) + '</button>' +
                 '</div>' +
             '</form>';
         }
@@ -831,7 +1406,7 @@
                             body: payload.body
                         }
                     });
-                    showNotice('Thread created without labels. Run the forum label sync workflow to enable category filters on GitHub.', 'warning');
+                    showNotice(t('notices.createdWithoutLabels'), 'warning');
                 }
 
                 state.issues.unshift(issue);
@@ -841,7 +1416,7 @@
                 renderStats();
                 renderIssueList();
                 renderIssueDetail();
-                showNotice('Thread created on GitHub Issues.', 'success');
+                showNotice(t('notices.threadCreated'), 'success');
             } catch (error) {
                 showNotice(error.message, 'error');
             } finally {
@@ -876,7 +1451,7 @@
                 renderStats();
                 renderIssueList();
                 renderComments(number);
-                showNotice('Reply posted to GitHub Issues.', 'success');
+                showNotice(t('notices.replyPosted'), 'success');
             } catch (error) {
                 showNotice(error.message, 'error');
             }
@@ -896,15 +1471,15 @@
                 renderStats();
                 renderIssueList();
                 renderIssueDetail();
-                showNotice(nextState === 'closed' ? 'Thread closed.' : 'Thread reopened.', 'success');
+                showNotice(nextState === 'closed' ? t('notices.threadClosed') : t('notices.threadReopened'), 'success');
             } catch (error) {
                 showNotice(error.message, 'error');
             }
         }
 
         function openPrefilledGithubIssue() {
-            var title = els.threadTitle.value.trim() || 'New discussion';
-            var body = els.threadBody.value.trim() || 'Write the discussion details here.';
+            var title = els.threadTitle.value.trim() || t('issue.newDiscussion');
+            var body = els.threadBody.value.trim() || t('issue.discussionDetails');
             var category = els.threadCategory.value || categories[0].value;
             var payload = buildIssuePayload(title, body, category);
             var params = new URLSearchParams({
@@ -960,14 +1535,14 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('GitHub token could not be verified.');
+                    throw new Error(t('errors.tokenInvalid'));
                 }
 
                 var user = await response.json();
                 localStorage.setItem('zettai_forum_token', token);
                 updateTokenUi();
                 closeAllModals();
-                showNotice('Connected as ' + user.login + '.', 'success');
+                showNotice(t('notices.connectedAs').replace('{login}', user.login), 'success');
                 loadIssues(true);
             } catch (error) {
                 state.token = '';
@@ -1006,14 +1581,14 @@
         }
 
         function badgeHtml(category) {
-            return '<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ' + category.color + '">' + escapeHtml(category.label) + '</span>';
+            return '<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ' + category.color + '">' + escapeHtml(categoryLabel(category)) + '</span>';
         }
 
         function stateBadgeHtml(value) {
             var classes = value === 'open'
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                 : 'border-slate-300 bg-slate-100 text-slate-600';
-            return '<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ' + classes + '">' + escapeHtml(value) + '</span>';
+            return '<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ' + classes + '">' + escapeHtml(stateLabel(value)) + '</span>';
         }
 
         function simpleLabelHtml(label) {
@@ -1021,8 +1596,8 @@
         }
 
         function excerptText(text, limit) {
-            var compact = stripForumFooter(text).replace(/\s+/g, ' ').trim();
-            if (compact.length <= limit) return compact || 'No body text.';
+            var compact = markdownPlainText(stripForumFooter(text)).replace(/\s+/g, ' ').trim();
+            if (compact.length <= limit) return compact || t('states.noBodyText');
             return compact.slice(0, limit - 1) + '...';
         }
 
@@ -1030,7 +1605,53 @@
             return String(text || '').replace(/\n?---\nForum category:[\s\S]*$/i, '').trim();
         }
 
+        function markdownPlainText(text) {
+            var source = String(text || '');
+
+            if (window.marked && window.DOMPurify) {
+                var container = document.createElement('div');
+                container.innerHTML = DOMPurify.sanitize(marked.parse(source));
+                return container.textContent || '';
+            }
+
+            return source
+                .replace(/```[\s\S]*?```/g, ' ')
+                .replace(/`([^`]+)`/g, '$1')
+                .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/^#{1,6}\s+/gm, '')
+                .replace(/^>\s?/gm, '')
+                .replace(/[*_~>#-]/g, ' ');
+        }
+
         function formatBody(text) {
+            var source = String(text || '').trim();
+            if (!source) return '<p class="text-slate-500">' + escapeHtml(t('states.noBodyText')) + '</p>';
+
+            if (window.marked && window.DOMPurify) {
+                var rendered = marked.parse(source);
+                var sanitized = DOMPurify.sanitize(rendered, {
+                    ADD_ATTR: ['target']
+                });
+                var container = document.createElement('div');
+                container.innerHTML = sanitized;
+
+                container.querySelectorAll('a[href]').forEach(function(link) {
+                    link.setAttribute('target', '_blank');
+                    link.setAttribute('rel', 'noopener noreferrer');
+                });
+
+                container.querySelectorAll('input[type="checkbox"]').forEach(function(input) {
+                    input.disabled = true;
+                });
+
+                return container.innerHTML;
+            }
+
+            return fallbackFormatBody(source);
+        }
+
+        function fallbackFormatBody(text) {
             var parts = String(text || '').split(/(https?:\/\/[^\s]+)/g);
             var html = parts.map(function(part) {
                 if (!/^https?:\/\//.test(part)) return escapeHtml(part);
@@ -1043,8 +1664,26 @@
             return html.replace(/\n/g, '<br>');
         }
 
+        function typesetForumMath(root, attempt) {
+            var retries = attempt || 0;
+
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise(root ? [root] : undefined).catch(function(error) {
+                    console.warn('MathJax typeset failed:', error);
+                });
+                return;
+            }
+
+            if (retries < 20) {
+                window.setTimeout(function() {
+                    typesetForumMath(root, retries + 1);
+                }, 250);
+            }
+        }
+
         function formatDate(value) {
-            return new Intl.DateTimeFormat(undefined, {
+            var locale = state.language === 'zh' ? 'zh-CN' : 'en';
+            return new Intl.DateTimeFormat(locale, {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -1067,11 +1706,12 @@
 
             for (var i = 0; i < units.length; i += 1) {
                 if (abs >= units[i].seconds) {
-                    return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(Math.round(diff / units[i].seconds), units[i].name);
+                    var locale = state.language === 'zh' ? 'zh-CN' : 'en';
+                    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(Math.round(diff / units[i].seconds), units[i].name);
                 }
             }
 
-            return 'just now';
+            return t('states.justNow');
         }
 
         function showNotice(message, type) {
@@ -1093,7 +1733,7 @@
 
         function renderError(error) {
             var message = error.status === 404
-                ? 'GitHub Issues may be disabled for this repository.'
+                ? t('errors.forumDisabled')
                 : error.message;
 
             els.threadList.innerHTML = '<div class="p-4 text-sm text-rose-700">' + escapeHtml(message) + '</div>';
@@ -1116,5 +1756,6 @@
             return escapeHtml(value).replace(/`/g, '&#096;');
         }
     </script>
+    <script async src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

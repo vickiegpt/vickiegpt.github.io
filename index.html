@@ -93,7 +93,7 @@
 
             } catch (error) {
                 console.error('Claude API error:', error);
-                showMessage('Chat service is temporarily unavailable', 3000);
+                showMessage('yyw 现在有点忙，稍后再试一下～', 3000);
             }
         };
         // Page Loading and Animation Effects
@@ -274,7 +274,7 @@
                 if (!message) return;
 
                 // Add the user message to the chat history.
-                chatMessages.append(`<div style="margin-bottom: 5px;"><strong>You:</strong> ${message}</div>`);
+                chatMessages.append(`<div style="margin-bottom: 5px;"><strong>你:</strong> ${message}</div>`);
                 chatInput.val('');
                 chatMessages.scrollTop(chatMessages[0].scrollHeight);
 
@@ -2139,7 +2139,7 @@
                         <div class="publication-date">May 2026</div>
                     </div>
                     <div class="publication-links">
-                        <a class="btn btn-outline-primary" href="https://www.ipdps.org/ipdps2026/2026-tutorials.html"
+                        <a class="btn btn-outline-primary" href="https://www.bilibili.com/video/BV1ALGU66ETv/?spm_id_from=333.1387.homepage.video_card.click"
                             target="_blank" rel="noopener">IPDPS26 Tutorial</a>
                     </div>
                 </div>
@@ -2161,7 +2161,7 @@
                         <div class="publication-date">Apr 2026</div>
                     </div>
                     <div class="publication-links">
-                        <a class="btn btn-outline-primary" href="https://www.ebpftravel.com/" target="_blank"
+                        <a class="btn btn-outline-primary" href="https://www.bilibili.com/video/BV1BYoZBNEnm/?share_source=copy_web&vd_source=1eb773ad08afa9a71889900542e01615" target="_blank"
                             rel="noopener">eBPFTravel26</a>
                     </div>
                 </div>
@@ -2203,50 +2203,70 @@
                 </div>
             </div>
         </div>
-        <div class="section row" align="center">
-            <script type='text/javascript' id='clustrmaps'
-                src='//cdn.clustrmaps.com/map_v2.js?cl=080808&w=200&t=tt&d=C01WBCWmUAOyr-bipPuCTgqvEdr6to0o6r84Bjx1Ve8&co=ffffff&cmo=3acc3a&cmn=ff5353&ct=808080'></script>
-        </div>
         <!-- TODO LLM with VR on local deployment-->
         <script>
             (function () {
                 const modal = document.getElementById('modal');
                 if (!modal) return;
 
+                document.body.appendChild(modal);
+                modal.classList.remove('fade');
+
                 const codeBlock = modal.querySelector('.modal-body code');
                 const errorBox = document.getElementById('modal-error');
                 const downloadLink = modal.querySelector('.js-download-cite');
                 let backdrop = null;
 
+                function removeBackdrops() {
+                    document.querySelectorAll('.modal-backdrop').forEach((node) => node.remove());
+                    backdrop = null;
+                }
+
+                function disableLegacyCitationHandlers() {
+                    if (window.jQuery) {
+                        window.jQuery('.js-cite-modal').off('click');
+                    }
+                }
+
                 function setModalVisible(visible) {
                     if (visible) {
+                        removeBackdrops();
                         modal.style.display = 'block';
-                        modal.style.zIndex = '12000';
+                        modal.style.position = 'fixed';
+                        modal.style.inset = '0';
+                        modal.style.overflowX = 'hidden';
+                        modal.style.overflowY = 'auto';
+                        modal.style.zIndex = '20001';
                         modal.removeAttribute('aria-hidden');
                         modal.setAttribute('aria-modal', 'true');
                         modal.classList.add('show');
                         document.body.classList.add('modal-open');
 
-                        if (!backdrop) {
-                            backdrop = document.createElement('div');
-                            backdrop.className = 'modal-backdrop fade show';
-                            backdrop.style.zIndex = '11990';
-                            document.body.appendChild(backdrop);
-                            backdrop.addEventListener('click', function () {
-                                setModalVisible(false);
-                            });
+                        const dialog = modal.querySelector('.modal-dialog');
+                        if (dialog) {
+                            dialog.style.maxWidth = '760px';
+                            dialog.style.margin = '10vh auto';
+                            dialog.style.pointerEvents = 'auto';
                         }
+
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop show';
+                        backdrop.style.position = 'fixed';
+                        backdrop.style.inset = '0';
+                        backdrop.style.zIndex = '20000';
+                        backdrop.style.background = '#000';
+                        backdrop.style.opacity = '0.5';
+                        document.body.appendChild(backdrop);
+                        backdrop.addEventListener('click', function () {
+                            setModalVisible(false);
+                        });
                     } else {
                         modal.classList.remove('show');
                         modal.style.display = 'none';
                         modal.removeAttribute('aria-modal');
                         modal.setAttribute('aria-hidden', 'true');
                         document.body.classList.remove('modal-open');
-
-                        if (backdrop) {
-                            backdrop.remove();
-                            backdrop = null;
-                        }
+                        removeBackdrops();
                     }
                 }
 
@@ -2272,6 +2292,7 @@
                     const citeButton = event.target.closest('.js-cite-modal');
                     if (citeButton) {
                         event.preventDefault();
+                        event.stopPropagation();
                         event.stopImmediatePropagation();
                         openCitation(citeButton.getAttribute('data-filename'));
                         return;
@@ -2309,6 +2330,9 @@
                         setModalVisible(false);
                     }
                 });
+
+                window.addEventListener('load', disableLegacyCitationHandlers);
+                disableLegacyCitationHandlers();
             })();
         </script>
         <footer>

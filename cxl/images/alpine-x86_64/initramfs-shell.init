@@ -1,0 +1,36 @@
+#!/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PATH
+
+mkdir -p /dev /proc /sys /tmp /run /mnt/root
+chmod 1777 /tmp 2>/dev/null || true
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+[ -c /dev/console ] || mknod -m 600 /dev/console c 5 1 2>/dev/null || true
+[ -c /dev/null ] || mknod -m 666 /dev/null c 1 3 2>/dev/null || true
+mkdir -p /dev/shm
+chmod 1777 /dev/shm 2>/dev/null || true
+mount -t tmpfs tmpfs /dev/shm 2>/dev/null || true
+mount -t proc proc /proc 2>/dev/null || true
+mount -t sysfs sysfs /sys 2>/dev/null || true
+
+if [ -r /etc/profile.d/hpc.sh ]; then
+    . /etc/profile.d/hpc.sh
+fi
+
+echo
+echo FAST_INITRAMFS_SHELL_READY
+echo "cmdline: $(cat /proc/cmdline 2>/dev/null)"
+echo "root disk is detached by default; add attach_disk=1 or rootdisk=1 to expose it."
+echo "with virtio disk attached: mount -t ext4 -o ro /dev/vda /mnt/root"
+echo "with legacy SATA attached: mount -t ext4 -o ro /dev/sda /mnt/root"
+echo "tools: lspci, findmnt, dmesg, and common BusyBox applets are available."
+if command -v hpc-status >/dev/null 2>&1; then
+    hpc-status
+fi
+echo
+
+echo "starting interactive shell on /dev/console"
+if [ -c /dev/console ]; then
+    exec /bin/sh -i </dev/console >/dev/console 2>&1
+fi
+exec /bin/sh -i

@@ -1,5 +1,5 @@
 let messages = {
-    "body": ["大坏蛋！你都多久没理人家了呀，嘤嘤嘤～", "嗨～快来逗我玩吧！", "拿小拳拳锤你胸口！", "不要动手动脚的！快把手拿开~~", "真…真的是不知羞耻！", "Hentai！", "再摸的话我可要报警了！⌇●﹏●⌇", "110吗，这里有个变态一直在摸我(ó﹏ò｡)"]
+    "body": ["You meanie! How long has it been since you last paid attention to me?", "Hey~ come hang out with me!", "I'll bonk your chest with my tiny fists!", "Hey, hands off! Move your hand away~~", "Y-you really have no shame!", "Pervert!", "If you keep touching me, I'm calling the cops! ⌇●﹏●⌇", "Hello, police? Someone keeps poking me here (ó﹏ò｡)"]
 }
 
 // Claude API 配置 (暂时禁用 - CORS 限制)
@@ -243,6 +243,19 @@ async function synthesizeVoice(text, voiceType = 'paimon') {
     }
 }
 
+async function playAudioBase64(audio) {
+    if (!audio || !audio.base64) return false;
+
+    try {
+        const audioEl = new Audio(`data:${audio.contentType || 'audio/wav'};base64,${audio.base64}`);
+        await audioEl.play();
+        return true;
+    } catch (error) {
+        console.error('[TTS] base64 audio playback failed:', error);
+        return false;
+    }
+}
+
 // 与 yyw 聊天 (Gemini 真实回复)
 async function chatWithClaude(userMessage) {
     const selectedVoice = $('#voice-select').val() || 'paimon';
@@ -252,6 +265,7 @@ async function chatWithClaude(userMessage) {
     showMessage(thinking, 1000);
 
     let reply = '';
+    let audio = null;
     try {
         const resp = await fetch('/api/chat', {
             method: 'POST',
@@ -260,6 +274,7 @@ async function chatWithClaude(userMessage) {
         });
         const data = await resp.json();
         reply = data.reply || '';
+        audio = data.audio || null;
     } catch (e) {
         console.error('chat API error:', e);
     }
@@ -277,9 +292,12 @@ async function chatWithClaude(userMessage) {
         chatMessages.scrollTop(chatMessages[0].scrollHeight);
     }
 
-    console.log('[Chat] calling synthesizeVoice with reply:', reply);
+    console.log('[Chat] playing reply audio:', reply);
     try {
-        await synthesizeVoice(reply, selectedVoice);
+        const playedServerAudio = await playAudioBase64(audio);
+        if (!playedServerAudio) {
+            await synthesizeVoice(reply, selectedVoice);
+        }
     } catch (e) {
         console.error('[Chat] TTS error:', e);
     }

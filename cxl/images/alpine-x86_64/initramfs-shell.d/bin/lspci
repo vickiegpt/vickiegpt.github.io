@@ -1,0 +1,84 @@
+#!/bin/sh
+set -eu
+
+show_domain=0
+numeric=0
+
+for arg in "$@"; do
+    case "$arg" in
+        -D)
+            show_domain=1
+            ;;
+        -n|-nn)
+            numeric=1
+            ;;
+        -h|--help)
+            echo "usage: lspci [-D] [-n|-nn]"
+            exit 0
+            ;;
+    esac
+done
+
+class_name() {
+    case "$1" in
+        060000) echo "Host bridge" ;;
+        060100) echo "ISA bridge" ;;
+        060400) echo "PCI bridge" ;;
+        010000) echo "SCSI storage controller" ;;
+        010601) echo "SATA controller" ;;
+        020000) echo "Ethernet controller" ;;
+        00ff00) echo "Unclassified device" ;;
+        0b4000) echo "Co-processor" ;;
+        *) echo "Device" ;;
+    esac
+}
+
+vendor_name() {
+    case "$1" in
+        0x8086) echo "Intel Corporation" ;;
+        0x1af4) echo "Red Hat, Inc." ;;
+        0x1b36) echo "QEMU" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+device_name() {
+    case "$1:$2" in
+        0x8086:0x0d92) echo "CXL Type 2 Accelerator" ;;
+        0x8086:0x0d93) echo "CXL Type 3 Memory Device" ;;
+        0x8086:0x2918) echo "ICH9 LPC Interface Controller" ;;
+        0x8086:0x2922) echo "ICH9 AHCI Controller" ;;
+        0x8086:0x2930) echo "ICH9 SMBus Controller" ;;
+        0x8086:0x7075) echo "CXL Root Port" ;;
+        0x1af4:0x1000) echo "Virtio network device" ;;
+        0x1af4:0x1001) echo "Virtio block device" ;;
+        0x1af4:0x1005) echo "Virtio RNG device" ;;
+        *) echo "$2" ;;
+    esac
+}
+
+for path in /sys/bus/pci/devices/*; do
+    [ -r "$path/vendor" ] || continue
+    id=${path##*/}
+    slot=${id#0000:}
+    [ "$show_domain" -eq 1 ] && slot=$id
+
+    vendor=$(cat "$path/vendor")
+    device=$(cat "$path/device")
+    class=$(cat "$path/class")
+    class_hex=${class#0x}
+    class_short=${class_hex%??}
+
+    if [ "$numeric" -eq 1 ]; then
+        printf '%s %s: %s:%s\n' "$slot" "$class_short" "${vendor#0x}" "${device#0x}"
+    else
+        printf '%s %s [%s]: %s %s [%s:%s]\n' \
+            "$slot" \
+            "$(class_name "$class_hex")" \
+            "$class_short" \
+            "$(vendor_name "$vendor")" \
+            "$(device_name "$vendor" "$device")" \
+            "${vendor#0x}" \
+            "${device#0x}"
+    fi
+done

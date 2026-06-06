@@ -1,5 +1,0 @@
-#!/bin/sh
-set -eu
-np=${1:-2}
-echo "launching llama-bench under MPI, np=$np"
-exec mpi-local-run --timeout 25 -np "$np" llama-bench --help
