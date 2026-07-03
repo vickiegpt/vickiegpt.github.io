@@ -157,8 +157,12 @@
             });
 
             // Add typing animation to name
-            const nameElement = document.querySelector('.name');
+            const nameElement = document.querySelector('.hero-title .hero-name');
             if (nameElement) {
+                const nameWidth = Math.ceil(nameElement.getBoundingClientRect().width);
+                if (nameWidth > 0) {
+                    nameElement.style.setProperty('--typing-width', `${nameWidth}px`);
+                }
                 nameElement.classList.add('typing-text');
             }
 
@@ -567,19 +571,22 @@
 
         /* Typing animation */
         .typing-text {
+            display: inline-block;
             overflow: hidden;
+            max-width: 0;
             border-right: 2px solid #333;
             white-space: nowrap;
-            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+            vertical-align: bottom;
+            animation: typing 2.2s steps(10, end) forwards, blink-caret 0.75s step-end infinite;
         }
 
         @keyframes typing {
             from {
-                width: 0;
+                max-width: 0;
             }
 
             to {
-                width: 100%;
+                max-width: var(--typing-width, 12rem);
             }
         }
 
@@ -780,6 +787,11 @@
             font-size: clamp(2.4rem, 3.8vw, 4rem);
             line-height: 0.95;
             letter-spacing: -0.04em;
+        }
+
+        .hero-title .hero-name {
+            display: inline-block;
+            font-size: 1em;
         }
 
         .hero-alias {
@@ -1413,6 +1425,12 @@
                 font-size: 0.98rem;
             }
 
+            .hero-alias {
+                display: block;
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
             .publication-header {
                 flex-direction: column;
                 gap: 6px;
@@ -1496,7 +1514,7 @@
                 <div class="hero-copy">
                     <div class="hero-kicker">Systems Research • Startup Builder • CXL Maximalist</div>
                     <h1 class="hero-title">
-                        <span class="name">Yiwei Yang</span>
+                        <span class="hero-name">Yiwei Yang</span>
                         <span class="hero-alias">(VickieGPT)</span>
                     </h1>
                     <p class="hero-summary">
@@ -1831,6 +1849,24 @@
         <div class="section row">
             <h2 class="col" id="publication">Publications</h2>
             <div class="section-text col-right">
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Concordia: JIT-Compiled Persistent-Kernel Checkpointing for
+                            Fault-Tolerant LLM Inference</h3>
+                        <div class="publication-date">June 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2606.23521" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2606.23521" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_concordia.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/vickiegpt/Concordia">Code</a>
+                    </div>
+                    <div class="publication-authors">Yuhang Gan, <b>Yiwei Yang</b>, Yuyi Li, Xiangyu Gao, Yichen Wang,
+                        Rain Jiang, Xiaoning Ding, Andi Quinn, Chen Qian</div>
+                </div>
                 <div class="publication-item">
                     <div class="publication-header">
                         <h3 class="publication-title">GPUOS: A GPU Operating System Primitive for Transparent Operation
