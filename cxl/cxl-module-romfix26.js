@@ -283,9 +283,7 @@ function parseImageConfig(params) {
         || (localImageRequested && imageDir
             ? new URL('bzImage', imageDir).href
             : (initrdProfile === 'hpc' ? defaultHpcKernelUrl : '/about/bzImage'));
-    const defaultInitrdUrl = initrdProfile === 'hpc' && /^asplos\.dev$/i.test(location.hostname)
-        ? `https://media.githubusercontent.com/media/vickiegpt/vickiegpt.github.io/main/cxl/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`
-        : new URL(`/cxl/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
+    const defaultInitrdUrl = new URL(`/cxl/images/alpine-x86_64/${initrdName}?v=${initrdVersion}`, location.href).href;
     const initrdUrl = firstUrlParam(params, ['initrd_url', 'initramfs_url'])
         || defaultInitrdUrl;
     const biosUrl = firstUrlParam(params, ['bios_url', 'microvm_bios_url'])

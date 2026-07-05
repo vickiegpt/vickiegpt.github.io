@@ -360,6 +360,7 @@ if (!location.search) {
         cxl: "type3",
         hpc: "1",
         initrd_profile: "hpc",
+        initrd_url: "/cxl/images/alpine-x86_64/initramfs-hpc-dax2.cpio.gz?v=20260520-type3-sharedworker1",
         fast_shell_machine: "q35",
         kernel_url: "/cxl/images/alpine-x86_64/bzImage-cxl-dax?v=20260520-force-cxl-kernel1",
         qemu_core: "fast",
@@ -531,6 +532,7 @@ function buildMultiVmDaxUrl(role) {
     url.searchParams.set("cxl", "type3");
     url.searchParams.set("hpc", "1");
     url.searchParams.set("initrd_profile", "hpc");
+    url.searchParams.set("initrd_url", config.image?.initrdUrl || "/cxl/images/alpine-x86_64/initramfs-hpc-dax2.cpio.gz?v=20260520-type3-sharedworker1");
     url.searchParams.set("fast_shell_machine", "q35");
     url.searchParams.set("qemu_core", config.qemuCore || "fast");
     url.searchParams.set("acpi", "on");
@@ -562,6 +564,7 @@ openHpcToolsButton.addEventListener("click", () => {
     const url = new URL(location.href);
     url.searchParams.set("hpc", "1");
     url.searchParams.set("initrd_profile", "hpc");
+    url.searchParams.set("initrd_url", config.image?.initrdUrl || "/cxl/images/alpine-x86_64/initramfs-hpc-dax2.cpio.gz?v=20260520-type3-sharedworker1");
     url.searchParams.set("fast_shell_machine", "q35");
     url.searchParams.set("kernel_url", config.image?.kernelUrl || "/about/bzImage");
     location.href = url.href;
