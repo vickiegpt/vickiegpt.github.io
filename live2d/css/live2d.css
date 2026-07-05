@@ -32,8 +32,8 @@
 #landlord {
     user-select: none;
     position: fixed; 
-    right: 30px;
-    bottom: 0;
+    right: -12px;
+    bottom: -58px;
     width: 200px;
     height: 400px;
     z-index: 100;

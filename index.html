@@ -156,15 +156,7 @@
                 }, index * 200);
             });
 
-            // Add typing animation to name
-            const nameElement = document.querySelector('.hero-title .hero-name');
-            if (nameElement) {
-                const nameWidth = Math.ceil(nameElement.getBoundingClientRect().width);
-                if (nameWidth > 0) {
-                    nameElement.style.setProperty('--typing-width', `${nameWidth}px`);
-                }
-                nameElement.classList.add('typing-text');
-            }
+            typeHeroName();
 
             // Initialize scroll reveal
             initScrollReveal();
@@ -202,6 +194,31 @@
                     card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
                 });
             });
+        }
+
+        function typeHeroName() {
+            const nameElement = document.querySelector('.hero-title .hero-name');
+            if (!nameElement || nameElement.dataset.typed === 'true') return;
+
+            const fullText = nameElement.dataset.fullText || nameElement.textContent.trim();
+            nameElement.dataset.fullText = fullText;
+            nameElement.dataset.typed = 'true';
+            nameElement.textContent = '';
+            nameElement.classList.add('typing-text');
+
+            let index = 0;
+            const typeNext = () => {
+                nameElement.textContent = fullText.slice(0, index + 1);
+                index += 1;
+
+                if (index < fullText.length) {
+                    const previous = fullText[index - 1];
+                    const delay = previous === ' ' ? 130 : 72 + Math.round(Math.random() * 38);
+                    window.setTimeout(typeNext, delay);
+                }
+            };
+
+            window.setTimeout(typeNext, 180);
         }
 
         function initHeroAnchorLinks() {
@@ -594,23 +611,11 @@
         /* Typing animation */
         .typing-text {
             display: inline-block;
-            overflow: hidden;
-            max-width: 0;
-            border-right: 2px solid #333;
-            white-space: normal;
-            overflow-wrap: break-word;
+            min-width: 8.6ch;
+            border-right: 2px solid var(--typing-caret, #333);
+            white-space: nowrap;
             vertical-align: bottom;
-            animation: typing 2.2s steps(10, end) forwards, blink-caret 0.75s step-end infinite;
-        }
-
-        @keyframes typing {
-            from {
-                max-width: 0;
-            }
-
-            to {
-                max-width: var(--typing-width, 12rem);
-            }
+            animation: blink-caret 0.75s step-end infinite;
         }
 
         @keyframes blink-caret {
@@ -621,7 +626,7 @@
             }
 
             50% {
-                border-color: #333;
+                border-color: var(--typing-caret, #333);
             }
         }
 
@@ -818,6 +823,7 @@
             display: inline-block;
             font-size: 1em;
             max-width: 100%;
+            white-space: nowrap;
         }
 
         .hero-alias {
@@ -1358,6 +1364,7 @@
 
         body.dark-mode {
             color: #f2efff;
+            --typing-caret: #f4f0ff;
             background:
                 radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 26%),
                 radial-gradient(circle at top right, rgba(22, 198, 163, 0.16), transparent 24%),
@@ -1814,17 +1821,11 @@
                     </div>
                     <div class="cxl-wasm-actions">
                         <a class="cxl-launch-button"
-                            href="/cxl/type3-romfix17.html?cxl=type3&amp;hpc=1&amp;initrd_profile=hpc&amp;initrd_url=%2Fcxl%2Fimages%2Falpine-x86_64%2Finitramfs-hpc-dax2.cpio.gz%3Fv%3D20260520-type3-sharedworker1&amp;fast_shell_machine=q35&amp;kernel_url=%2Fcxl%2Fimages%2Falpine-x86_64%2FbzImage-cxl-dax%3Fv%3D20260520-force-cxl-kernel1&amp;qemu_core=fast&amp;defaults=1"
+                            href="/cxl/type3-romfix17.html?cxl=type3&amp;hpc=0&amp;initrd_profile=shell&amp;initrd_url=%2Fcxl%2Fimages%2Falpine-x86_64%2Finitramfs-shell.cpio%3Fv%3D20260518-tools2&amp;fast_shell_machine=q35&amp;kernel_url=%2Fcxl%2Fimages%2Falpine-x86_64%2FbzImage-cxl-dax%3Fv%3D20260520-force-cxl-kernel1&amp;qemu_core=fast&amp;defaults=1"
                             target="_blank" rel="noopener noreferrer">Launch CXL WASM</a>
                         <a class="cxl-launch-button secondary"
                             href="/cxl/cxlmemsim.html?pool=CXLMemSim&amp;size=268435456" target="_blank"
                             rel="noopener noreferrer">Open CXLMemSim</a>
-                    </div>
-                    <div class="cxl-runtime-grid">
-                        <div class="cxl-runtime-item"><span>Entry</span><strong>type3-romfix17</strong></div>
-                        <div class="cxl-runtime-item"><span>QEMU</span><strong>x86_64 wasm32</strong></div>
-                        <div class="cxl-runtime-item"><span>Pool</span><strong>256 MiB</strong></div>
-                        <div class="cxl-runtime-item"><span>Probe</span><strong>cxl-type3-test</strong></div>
                     </div>
                 </div>
             </div>
