@@ -169,6 +169,7 @@
             // Initialize scroll reveal
             initScrollReveal();
             initSpotlightCards();
+            initHeroAnchorLinks();
         }
 
         function initScrollReveal() {
@@ -202,6 +203,27 @@
                 });
             });
         }
+
+        function initHeroAnchorLinks() {
+            document.querySelectorAll('.hero-actions a[href^="#"]').forEach((link) => {
+                if (link.dataset.anchorBound === 'true') return;
+                link.dataset.anchorBound = 'true';
+
+                link.addEventListener('click', (event) => {
+                    const hash = link.getAttribute('href');
+                    const target = hash && document.querySelector(hash);
+                    if (!target) return;
+
+                    event.preventDefault();
+                    history.pushState(null, '', hash);
+                    requestAnimationFrame(() => {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initHeroAnchorLinks);
 
         // 添加到现有的JavaScript文件末尾或新建<script>标签
         document.addEventListener('DOMContentLoaded', function () {
@@ -575,7 +597,8 @@
             overflow: hidden;
             max-width: 0;
             border-right: 2px solid #333;
-            white-space: nowrap;
+            white-space: normal;
+            overflow-wrap: break-word;
             vertical-align: bottom;
             animation: typing 2.2s steps(10, end) forwards, blink-caret 0.75s step-end infinite;
         }
@@ -784,14 +807,17 @@
 
         .hero-title {
             margin: 18px 0 14px;
-            font-size: clamp(2.4rem, 3.8vw, 4rem);
+            max-width: 100%;
+            font-size: 4.4rem;
             line-height: 0.95;
-            letter-spacing: -0.04em;
+            letter-spacing: 0;
+            overflow-wrap: break-word;
         }
 
         .hero-title .hero-name {
             display: inline-block;
             font-size: 1em;
+            max-width: 100%;
         }
 
         .hero-alias {
@@ -1166,10 +1192,10 @@
         .bio-code-block code,
         .bio-code-block code.hljs {
             display: block;
-            padding: 22px 24px 24px !important;
+            padding: 20px 22px 22px !important;
             background: transparent !important;
-            font-size: 0.94rem;
-            line-height: 1.75;
+            font-size: 0.82rem;
+            line-height: 1.6;
             color: #172033 !important;
             text-shadow: none !important;
         }
@@ -1212,6 +1238,105 @@
         .bio-code-block .hljs-punctuation,
         .bio-code-block .hljs-operator {
             color: #334155 !important;
+        }
+
+        .cxl-wasm-launcher {
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px solid rgba(123, 56, 255, 0.14);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.76);
+            box-shadow: 0 12px 28px rgba(33, 24, 58, 0.08);
+        }
+
+        .cxl-wasm-topline,
+        .cxl-wasm-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cxl-wasm-topline {
+            justify-content: space-between;
+        }
+
+        .cxl-wasm-topline strong {
+            color: var(--ink-strong);
+        }
+
+        .cxl-wasm-status {
+            color: var(--ink-soft);
+            font-size: 0.88rem;
+        }
+
+        .cxl-wasm-actions {
+            margin: 14px 0;
+        }
+
+        .cxl-launch-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--brand-violet), var(--brand-indigo)) !important;
+            color: #fff !important;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none !important;
+            box-shadow: 0 12px 24px rgba(123, 56, 255, 0.18);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .cxl-launch-button.secondary {
+            background: rgba(123, 56, 255, 0.08) !important;
+            color: var(--brand-violet) !important;
+            border: 1px solid rgba(123, 56, 255, 0.16);
+            box-shadow: none;
+        }
+
+        .cxl-launch-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .cxl-runtime-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(86px, 1fr));
+            gap: 10px;
+            margin: 14px 0;
+        }
+
+        .cxl-runtime-item {
+            min-width: 0;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(123, 56, 255, 0.07);
+            border: 1px solid rgba(123, 56, 255, 0.1);
+        }
+
+        .cxl-runtime-item span {
+            display: block;
+            color: var(--ink-soft);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .cxl-runtime-item strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 4px;
+            color: var(--ink-strong);
+            font-size: 0.98rem;
+            white-space: nowrap;
+        }
+
+        .block-frame,
+        .mycode {
+            transition: filter 0.25s ease, opacity 0.25s ease;
         }
 
         .section>h2.col {
@@ -1385,13 +1510,57 @@
             color: #dbeafe !important;
         }
 
+        body.dark-mode .cxl-wasm-launcher,
+        body.dark .cxl-wasm-launcher {
+            border-color: rgba(140, 127, 255, 0.24);
+            background: rgba(20, 24, 38, 0.86);
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+        }
+
+        body.dark-mode .cxl-wasm-status,
+        body.dark-mode .cxl-runtime-item span,
+        body.dark .cxl-wasm-status,
+        body.dark .cxl-runtime-item span {
+            color: #a7b4ce;
+        }
+
+        body.dark-mode .cxl-wasm-topline strong,
+        body.dark .cxl-wasm-topline strong {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .cxl-runtime-item,
+        body.dark .cxl-runtime-item {
+            border-color: rgba(140, 127, 255, 0.18);
+            background: rgba(123, 56, 255, 0.12);
+        }
+
+        body.dark-mode .cxl-runtime-item strong,
+        body.dark .cxl-runtime-item strong {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .cxl-launch-button.secondary,
+        body.dark .cxl-launch-button.secondary {
+            background: rgba(140, 127, 255, 0.14);
+            color: #d8ccff;
+            border-color: rgba(140, 127, 255, 0.24);
+        }
+
+        body.dark-mode .block-frame,
+        body.dark-mode .mycode,
+        body.dark .block-frame,
+        body.dark .mycode {
+            filter: invert(1) hue-rotate(180deg) contrast(0.94) saturate(0.92);
+        }
+
         @media (max-width: 991px) {
             .hero-shell {
                 grid-template-columns: 1fr;
             }
 
             .hero-title {
-                font-size: clamp(2.4rem, 11vw, 3.7rem);
+                font-size: 3.7rem;
             }
 
             .playground-head {
@@ -1443,6 +1612,25 @@
             .fact-card,
             .play-card {
                 flex-basis: 100%;
+            }
+
+            .cxl-runtime-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .hero-title {
+                font-size: 3rem;
+                line-height: 1;
+            }
+
+            .cxl-runtime-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cxl-launch-button {
+                width: 100%;
             }
         }
     </style>
@@ -1619,13 +1807,33 @@
     Ok(paper)
 }
 </code></pre>
+                <div class="cxl-wasm-launcher">
+                    <div class="cxl-wasm-topline">
+                        <strong>Real CXL WASM runtime</strong>
+                        <span class="cxl-wasm-status">QEMU wasm + CXLMemSim shared pool</span>
+                    </div>
+                    <div class="cxl-wasm-actions">
+                        <a class="cxl-launch-button"
+                            href="/cxl/type3-romfix17.html?cxl=type3&amp;hpc=1&amp;initrd_profile=hpc&amp;fast_shell_machine=q35&amp;kernel_url=%2Fcxl%2Fimages%2Falpine-x86_64%2FbzImage-cxl-dax%3Fv%3D20260520-force-cxl-kernel1&amp;qemu_core=fast&amp;defaults=1"
+                            target="_blank" rel="noopener noreferrer">Launch CXL WASM</a>
+                        <a class="cxl-launch-button secondary"
+                            href="/cxl/cxlmemsim.html?pool=CXLMemSim&amp;size=268435456" target="_blank"
+                            rel="noopener noreferrer">Open CXLMemSim</a>
+                    </div>
+                    <div class="cxl-runtime-grid">
+                        <div class="cxl-runtime-item"><span>Entry</span><strong>type3-romfix17</strong></div>
+                        <div class="cxl-runtime-item"><span>QEMU</span><strong>x86_64 wasm32</strong></div>
+                        <div class="cxl-runtime-item"><span>Pool</span><strong>256 MiB</strong></div>
+                        <div class="cxl-runtime-item"><span>Probe</span><strong>cxl-type3-test</strong></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="section row">
             <h2 class="col" id="skills-section">Skills</h2>
             <div class="section-text col-right skill" style="position: relative;left:30px;">
-                <iframe src="/block" width="530" height="290" frameborder="0"
+                <iframe class="block-frame" src="/block" width="530" height="290" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen> </iframe>
             </div>
