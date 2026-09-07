@@ -1,228 +1,224 @@
-const initialFiles = {
-  'README.md': '# Browser workspace\n\nAsk Claude to inspect or improve this file.\n',
-  'app.js': "export function hello(name) {\n  return `Hello, ${name}`;\n}\n",
-};
+import { FitAddon } from "@xterm/addon-fit";
+import { Terminal } from "@xterm/xterm";
+import "@xterm/xterm/css/xterm.css";
+import "./styles.css";
 
-const storedFiles = localStorage.getItem('vickie-claude-files');
-const state = {
-  files: storedFiles ? JSON.parse(storedFiles) : initialFiles,
-  active: 'README.md',
-  messages: [],
-  busy: false,
-};
+import { BrowserNodeRuntime } from "./src/runtime.js";
+import {
+  RuntimeController,
+  ensureCrossOriginIsolation,
+  loadPublicConfig,
+  requestCapability,
+} from "./src/main.js";
+
+const FIXED_WISP_URL = "wss://asplos.dev/wisp/";
+const MANIFEST_URL = "https://asplos.dev/about/runtime-manifest.json";
+const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 const $ = (selector) => document.querySelector(selector);
-const editor = $('#editor');
-const fileList = $('#file-list');
-const messages = $('#messages');
-const prompt = $('#prompt');
-const dialog = $('#settings-dialog');
+const statusText = $("#status-text");
+const statusDot = $("#status-dot");
+const startButton = $("#start-runtime");
+const stopButton = $("#stop-runtime");
+const progress = $("#runtime-progress");
+const progressFill = $("#progress-fill");
 
-function saveFiles() {
-  localStorage.setItem('vickie-claude-files', JSON.stringify(state.files));
+function setProgress(percent, label) {
+  const value = Math.max(0, Math.min(100, Math.round(percent || 0)));
+  progress.setAttribute("aria-valuenow", String(value));
+  progress.textContent = label;
+  progressFill.style.width = `${value}%`;
 }
 
-function renderFiles() {
-  fileList.replaceChildren(...Object.keys(state.files).map((name) => {
-    const button = document.createElement('button');
-    button.className = `file${name === state.active ? ' active' : ''}`;
-    button.textContent = name;
-    button.type = 'button';
-    button.onclick = () => openFile(name);
-    return button;
-  }));
-  $('#context-label').textContent = `${Object.keys(state.files).length} files available`;
+function setState(state) {
+  document.body.dataset.state = state;
+  statusDot.className = state;
+  const active = ["challenge", "starting", "running", "stopping"].includes(state);
+  startButton.disabled = active;
+  stopButton.disabled = !active;
+  const labels = {
+    idle: "runtime offline",
+    challenge: "waiting for verification",
+    starting: "starting browser Node",
+    running: "Claude Code running",
+    stopping: "stopping runtime",
+    exited: "process exited",
+    failed: "runtime failed",
+  };
+  statusText.textContent = labels[state] || state;
 }
 
-function openFile(name) {
-  state.active = name;
-  editor.value = state.files[name];
-  $('#active-file-name').textContent = name;
-  $('#dirty-indicator').classList.remove('dirty');
-  renderFiles();
-  updateCursor();
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing && globalThis.turnstile) return resolve();
+    const script = existing || document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Security challenge failed to load"));
+    if (!existing) document.head.append(script);
+  });
 }
 
-function updateCursor() {
-  const before = editor.value.slice(0, editor.selectionStart);
-  const lines = before.split('\n');
-  $('#cursor-position').textContent = `Ln ${lines.length}, Col ${lines.at(-1).length + 1}`;
-}
-
-function addMessage(role, text) {
-  const node = $('#message-template').content.firstElementChild.cloneNode(true);
-  node.classList.add(role);
-  node.querySelector('.message-meta').textContent = role === 'user' ? 'You' : role === 'error' ? 'Connection error' : 'Claude';
-  node.querySelector('.message-body').textContent = text;
-  messages.append(node);
-  messages.scrollTop = messages.scrollHeight;
-  state.messages.push({ role: role === 'error' ? 'assistant' : role, content: text });
-}
-
-function settings() {
+async function createChallenge(siteKey) {
+  await loadScript(TURNSTILE_SCRIPT);
+  let resolveToken = null;
+  let rejectToken = null;
+  const widget = globalThis.turnstile.render("#turnstile", {
+    sitekey: siteKey,
+    action: "claude-session",
+    execution: "execute",
+    appearance: "interaction-only",
+    size: "flexible",
+    callback(token) {
+      resolveToken?.(token);
+      resolveToken = null;
+      rejectToken = null;
+    },
+    "error-callback"() {
+      rejectToken?.(new Error("Security challenge was not completed"));
+      resolveToken = null;
+      rejectToken = null;
+    },
+    "expired-callback"() {
+      rejectToken?.(new Error("Security challenge expired"));
+      resolveToken = null;
+      rejectToken = null;
+    },
+  });
   return {
-    endpoint: sessionStorage.getItem('vickie-claude-endpoint') || '',
-    key: sessionStorage.getItem('vickie-claude-key') || '',
-    model: sessionStorage.getItem('vickie-claude-model') || 'glm-4.7',
+    execute() {
+      if (resolveToken) throw new Error("Security challenge is already active");
+      const token = new Promise((resolve, reject) => {
+        resolveToken = resolve;
+        rejectToken = reject;
+      });
+      globalThis.turnstile.execute(widget);
+      return token;
+    },
+    reset() {
+      resolveToken = null;
+      rejectToken = null;
+      globalThis.turnstile.reset(widget);
+    },
   };
 }
 
-function showSettings() {
-  const current = settings();
-  $('#endpoint').value = current.endpoint;
-  $('#api-key').value = current.key;
-  $('#model').value = current.model;
-  dialog.showModal();
+function safeMessage(error) {
+  if (error?.name === "AbortError") return "Startup cancelled.";
+  const allowed = [
+    "Runtime configuration is unavailable",
+    "Runtime configuration is invalid",
+    "Session authorization failed",
+    "Security challenge failed to load",
+    "Security challenge was not completed",
+    "Security challenge expired",
+    "Cross-origin isolation could not be enabled",
+    "This browser cannot create an isolated WebAssembly runtime",
+  ];
+  return allowed.includes(error?.message)
+    ? `${error.message}.`
+    : "The browser runtime could not start. Check memory and network access.";
 }
 
-async function requestClaude(userText) {
-  const config = settings();
-  if (!config.endpoint) {
-    showSettings();
-    throw new Error('Set a Claude-compatible relay endpoint first.');
-  }
+async function boot() {
+  if (!await ensureCrossOriginIsolation()) return;
 
-  const context = Object.entries(state.files)
-    .map(([name, content]) => `<file path="${name}">\n${content}\n</file>`)
-    .join('\n\n');
-  const history = state.messages.slice(-12).map(({ role, content }, index, recent) => ({
-    role,
-    content: index === recent.length - 1 && role === 'user'
-      ? `${content}\n\nBrowser workspace:\n${context}`
-      : content,
-  }));
-
-  const endpoint = normalizeEndpoint(config.endpoint);
-  const headers = { 'content-type': 'application/json', 'anthropic-version': '2023-06-01' };
-  if (config.key) headers.authorization = `Bearer ${config.key}`;
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      model: config.model,
-      max_tokens: 4096,
-      system: 'You are Claude Code in a browser sandbox. Give precise coding help. You may propose file replacements, but never claim to have executed shell commands.',
-      messages: history,
-    }),
+  const terminal = new Terminal({
+    convertEol: true,
+    cursorBlink: true,
+    cursorStyle: "bar",
+    fontFamily: '"IBM Plex Mono", "Cascadia Code", monospace',
+    fontSize: 13,
+    lineHeight: 1.25,
+    scrollback: 8_000,
+    theme: {
+      background: "#0b0e0a",
+      foreground: "#dce4d4",
+      cursor: "#c7ff4a",
+      cursorAccent: "#0b0e0a",
+      selectionBackground: "#485537",
+      black: "#171b15",
+      red: "#ff7657",
+      green: "#c7ff4a",
+      yellow: "#f3c969",
+      blue: "#70b7ff",
+      magenta: "#efa8ff",
+      cyan: "#68ddd3",
+      white: "#dce4d4",
+    },
   });
-  if (!response.ok) throw new Error(`${response.status} ${await response.text()}`);
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('text/event-stream')) {
-    return extractEventStreamText(await response.text());
-  }
-  return extractResponseText(await response.json());
-}
+  const fit = new FitAddon();
+  terminal.loadAddon(fit);
+  terminal.open($("#terminal"));
+  fit.fit();
+  terminal.writeln("\x1b[38;2;199;255;74mNode WASIX runtime ready to download.\x1b[0m");
+  terminal.writeln("Press Start runtime to launch Claude Code.\r\n");
 
-function normalizeEndpoint(value) {
-  const endpoint = value.trim().replace(/\/+$/, '');
-  if (/\/v1\/messages$/i.test(endpoint) || /\/messages$/i.test(endpoint)) return endpoint;
-  return `${endpoint}/v1/messages`;
-}
+  const publicConfig = await loadPublicConfig();
+  const challenge = await createChallenge(publicConfig.turnstileSiteKey);
+  const runtime = new BrowserNodeRuntime({
+    manifestUrl: MANIFEST_URL,
+    wispUrl: FIXED_WISP_URL,
+    onProgress(loaded, total) {
+      const detail = typeof loaded === "object" ? loaded : { loaded, total };
+      const percent = detail.total ? (detail.loaded / detail.total) * 100 : 0;
+      setProgress(percent, `Downloading runtime · ${Math.round(percent)}%`);
+    },
+    onExit(output) {
+      terminal.writeln(`\r\n\x1b[38;2;137;146;129mProcess exited (${output?.exitCode ?? "unknown"}).\x1b[0m`);
+      setState("exited");
+    },
+    onError() {
+      terminal.writeln("\r\n\x1b[38;2;255;118;87mRuntime stream failed.\x1b[0m");
+      setState("failed");
+    },
+  });
+  const controller = new RuntimeController({
+    runtime,
+    terminal,
+    challenge,
+    requestSession: (token) => requestCapability(token),
+    onState: setState,
+  });
 
-function contentText(value) {
-  if (typeof value === 'string') return value;
-  if (Array.isArray(value)) return value.map(contentText).filter(Boolean).join('\n');
-  if (!value || typeof value !== 'object') return '';
-  return contentText(value.text ?? value.content ?? value.output_text ?? '');
-}
-
-function extractResponseText(data) {
-  const text = contentText(data?.content)
-    || contentText(data?.message?.content)
-    || contentText(data?.choices?.[0]?.message?.content)
-    || contentText(data?.output)
-    || contentText(data?.reply)
-    || contentText(data?.result);
-  if (text) return text;
-  const shape = data && typeof data === 'object' ? Object.keys(data).join(', ') : typeof data;
-  throw new Error(`The relay returned no text (response fields: ${shape || 'none'}).`);
-}
-
-function extractEventStreamText(body) {
-  const chunks = [];
-  for (const line of body.split('\n')) {
-    if (!line.startsWith('data:')) continue;
-    const payload = line.slice(5).trim();
-    if (!payload || payload === '[DONE]') continue;
+  startButton.addEventListener("click", async () => {
+    setProgress(0, "Authorizing session");
     try {
-      const event = JSON.parse(payload);
-      const text = contentText(event?.delta?.text)
-        || contentText(event?.content_block?.text)
-        || contentText(event?.content)
-        || contentText(event?.choices?.[0]?.delta?.content);
-      if (text) chunks.push(text);
-    } catch {
-      // Ignore heartbeat and non-JSON SSE lines.
+      await controller.start();
+      setProgress(100, "Runtime verified and running");
+      terminal.focus();
+    } catch (error) {
+      if (error?.name !== "AbortError") terminal.writeln(`\r\n\x1b[38;2;255;118;87m${safeMessage(error)}\x1b[0m`);
+      setProgress(0, safeMessage(error));
     }
-  }
-  if (chunks.length) return chunks.join('');
-  throw new Error('The relay stream completed without text.');
+  });
+  stopButton.addEventListener("click", async () => {
+    await controller.stop();
+    setProgress(0, "Runtime stopped");
+  });
+  $("#clear-terminal").addEventListener("click", () => terminal.clear());
+  $("#focus-keyboard").addEventListener("click", () => terminal.focus());
+
+  let resizeTimer;
+  const resize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      fit.fit();
+      $("#terminal-size").textContent = `${terminal.cols} × ${terminal.rows}`;
+    }, 80);
+  };
+  new ResizeObserver(resize).observe($("#terminal"));
+  terminal.onResize(({ cols, rows }) => {
+    $("#terminal-size").textContent = `${cols} × ${rows}`;
+  });
+  addEventListener("beforeunload", () => void controller.stop(), { once: true });
+  setState("idle");
 }
 
-editor.addEventListener('input', () => {
-  state.files[state.active] = editor.value;
-  $('#dirty-indicator').classList.add('dirty');
-  saveFiles();
-  updateCursor();
+boot().catch((error) => {
+  setState("failed");
+  setProgress(0, safeMessage(error));
 });
-editor.addEventListener('click', updateCursor);
-editor.addEventListener('keyup', updateCursor);
-
-$('#new-file').onclick = () => {
-  const rawName = window.prompt('New file name');
-  const name = rawName?.trim().replace(/^\/+/, '');
-  if (!name || state.files[name] !== undefined) return;
-  state.files[name] = '';
-  saveFiles();
-  openFile(name);
-};
-
-$('#settings-button').onclick = showSettings;
-$('#settings-form').addEventListener('submit', (event) => {
-  if (event.submitter?.value === 'cancel') return;
-  event.preventDefault();
-  sessionStorage.setItem('vickie-claude-endpoint', $('#endpoint').value.trim());
-  sessionStorage.setItem('vickie-claude-key', $('#api-key').value);
-  sessionStorage.setItem('vickie-claude-model', $('#model').value.trim());
-  $('#status-text').textContent = $('#endpoint').value ? 'relay configured' : 'local workspace';
-  dialog.close();
-});
-
-$('#clear-chat').onclick = () => {
-  state.messages = [];
-  messages.replaceChildren();
-  addMessage('assistant', 'Session cleared. What should we build next?');
-};
-
-$('#prompt-form').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  if (state.busy) return;
-  const text = prompt.value.trim();
-  if (!text) return;
-  addMessage('user', text);
-  prompt.value = '';
-  state.busy = true;
-  $('#send').disabled = true;
-  $('#status-text').textContent = 'Claude is working';
-  try {
-    addMessage('assistant', await requestClaude(text));
-    $('#status-text').textContent = 'relay connected';
-  } catch (error) {
-    addMessage('error', error.message);
-    $('#status-text').textContent = 'connection needed';
-  } finally {
-    state.busy = false;
-    $('#send').disabled = false;
-    prompt.focus();
-  }
-});
-
-prompt.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-    event.preventDefault();
-    $('#prompt-form').requestSubmit();
-  }
-});
-
-openFile(state.active);
-addMessage('assistant', 'Browser workspace ready. Open Connection to attach an Anthropic-compatible relay, then ask me about the files on the left.');
