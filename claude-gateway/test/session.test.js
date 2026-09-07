@@ -1,25 +1,57 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
+import fsPromises from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import { SessionManager } from '../src/session.js';
 
 class FakeSocket extends EventEmitter {
-  constructor() {
+  constructor({ readyState = 1, autoClose = true } = {}) {
     super();
     this.sent = [];
+    this.readyState = readyState;
+    this.bufferedAmount = 0;
+    this.autoClose = autoClose;
+    this.closeCalls = [];
+    this.terminateCount = 0;
+    this.sendBehavior = null;
   }
 
-  send(frame) {
+  send(frame, callback) {
+    if (this.sendBehavior !== null) return this.sendBehavior(frame, callback);
     this.sent.push(JSON.parse(frame));
+    callback?.();
+    return undefined;
+  }
+
+  close(code, reason) {
+    this.closeCalls.push({ code, reason });
+    this.readyState = 2;
+    if (this.autoClose) {
+      queueMicrotask(() => {
+        this.readyState = 3;
+        this.emit('close');
+      });
+    }
+  }
+
+  terminate() {
+    this.terminateCount += 1;
+    this.readyState = 3;
+    this.emit('close');
   }
 }
 
-class FakePty {
-  constructor() {
+class FakePty extends EventEmitter {
+  constructor({ autoExit = true } = {}) {
+    super();
     this.writes = [];
     this.resizes = [];
     this.killCount = 0;
+    this.killSignals = [];
+    this.autoExit = autoExit;
     this.dataListeners = new Set();
     this.exitListeners = new Set();
   }
@@ -32,8 +64,12 @@ class FakePty {
     this.resizes.push([cols, rows]);
   }
 
-  kill() {
+  kill(signal) {
     this.killCount += 1;
+    this.killSignals.push(signal);
+    if (this.autoExit) {
+      queueMicrotask(() => this.emitExit({ exitCode: null, signal: signal ?? null }));
+    }
   }
 
   onData(listener) {
@@ -52,6 +88,7 @@ class FakePty {
 
   emitExit(event) {
     for (const listener of [...this.exitListeners]) listener(event);
+    this.emit('exit', event);
   }
 }
 
@@ -101,15 +138,42 @@ function createHarness(overrides = {}) {
   const removed = [];
   const timers = new FakeTimers();
   let workspaceNumber = 0;
+  let nextInode = 100;
+  const nodes = new Map([
+    ['/srv/claude-workspaces', { dev: 1, ino: 1, directory: true, symlink: false }],
+  ]);
+  const fsOverrides = overrides.fs ?? {};
   const fs = {
     async mkdtemp(prefix) {
-      workspaceNumber += 1;
-      return `${prefix}${workspaceNumber}`;
+      const workspace = fsOverrides.mkdtemp === undefined
+        ? `${prefix}${++workspaceNumber}`
+        : await fsOverrides.mkdtemp(prefix);
+      if (!nodes.has(workspace)) {
+        nodes.set(workspace, { dev: 1, ino: nextInode++, directory: true, symlink: false });
+      }
+      return workspace;
+    },
+    async realpath(target) {
+      if (fsOverrides.realpath !== undefined) return fsOverrides.realpath(target);
+      if (!nodes.has(target)) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+      return target;
+    },
+    async lstat(target) {
+      if (fsOverrides.lstat !== undefined) return fsOverrides.lstat(target);
+      const node = nodes.get(target);
+      if (node === undefined) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+      return {
+        dev: node.dev,
+        ino: node.ino,
+        isDirectory: () => node.directory,
+        isSymbolicLink: () => node.symlink,
+      };
     },
     async rm(workspace, options) {
       removed.push({ workspace, options });
+      if (fsOverrides.rm !== undefined) await fsOverrides.rm(workspace, options);
+      nodes.delete(workspace);
     },
-    ...overrides.fs,
   };
   const pty = {
     spawn(executable, argv, options) {
@@ -126,6 +190,10 @@ function createHarness(overrides = {}) {
     childEnv: { HOME: '/non-host-home', LANG: 'C.UTF-8' },
     maxSessions: 2,
     idleTimeoutMs: 30_000,
+    terminationGraceMs: 20,
+    killGraceMs: 20,
+    socketCloseTimeoutMs: 20,
+    maxBufferedBytes: 1024 * 1024,
     ...overrides.config,
   };
   const manager = new SessionManager(config, {
@@ -474,5 +542,311 @@ test('requires positive integer session and idle timeout limits', () => {
       () => createHarness({ config: { [key]: value } }),
       /positive integer/,
     );
+  }
+});
+
+test('waits for asynchronous PTY exit before removing the workspace', async () => {
+  const pty = new FakePty({ autoExit: false });
+  const harness = createHarness({ pty: { spawn: () => pty } });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  const closing = session.close();
+  await Promise.resolve();
+  assert.equal(pty.killSignals[0], 'SIGTERM');
+  assert.equal(harness.removed.length, 0);
+
+  pty.emitExit({ exitCode: 0, signal: null });
+  await closing;
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('escalates from SIGTERM to SIGKILL when the PTY misses its grace period', async () => {
+  const pty = new FakePty({ autoExit: false });
+  pty.kill = (signal) => {
+    pty.killCount += 1;
+    pty.killSignals.push(signal);
+    if (signal === 'SIGKILL') queueMicrotask(() => pty.emitExit({ exitCode: null, signal: 9 }));
+  };
+  const harness = createHarness({
+    config: { terminationGraceMs: 1 },
+    pty: { spawn: () => pty },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await session.close();
+
+  assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('rejects cleanup and retains capacity when PTY exit cannot be confirmed', async () => {
+  const pty = new FakePty({ autoExit: false });
+  const harness = createHarness({
+    config: { maxSessions: 1, terminationGraceMs: 1, killGraceMs: 1 },
+    pty: { spawn: () => pty },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+
+  assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(harness.removed.length, 0);
+  assert.equal(harness.manager.activeCount, 1);
+});
+
+test('propagates kill failures without deleting the workspace or releasing capacity', async () => {
+  const pty = new FakePty({ autoExit: false });
+  pty.kill = (signal) => {
+    pty.killCount += 1;
+    pty.killSignals.push(signal);
+    throw new Error('kill failed');
+  };
+  const harness = createHarness({
+    config: { maxSessions: 1, terminationGraceMs: 1, killGraceMs: 1 },
+    pty: { spawn: () => pty },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+
+  assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(harness.removed.length, 0);
+  assert.equal(harness.manager.activeCount, 1);
+});
+
+test('propagates workspace removal failure and retains capacity', async () => {
+  const harness = createHarness({
+    config: { maxSessions: 1 },
+    fs: { rm: async () => { throw new Error('rm failed'); } },
+  });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 1);
+});
+
+test('shutdown aggregates cleanup failures and keeps failed sessions reserved', async () => {
+  const pty = new FakePty({ autoExit: false });
+  const harness = createHarness({
+    config: { maxSessions: 1, terminationGraceMs: 1, killGraceMs: 1 },
+    pty: { spawn: () => pty },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await assert.rejects(harness.manager.shutdown(), AggregateError);
+  assert.equal(harness.manager.activeCount, 1);
+  await assert.rejects(
+    harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 }),
+    /Unable to create session/,
+  );
+});
+
+test('does not send on an already-closed socket', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket({ readyState: 3 });
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  harness.ptys[0].emitData('must not be sent');
+  harness.ptys[0].emitExit({ exitCode: 0, signal: null });
+  await session.close();
+
+  assert.deepEqual(socket.sent, []);
+  assert.deepEqual(socket.closeCalls, []);
+});
+
+test('backpressure closes one noisy session without sending more output', async () => {
+  const harness = createHarness({ config: { maxBufferedBytes: 8 } });
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+  socket.sent.length = 0;
+  socket.bufferedAmount = 9;
+
+  for (let index = 0; index < 100; index += 1) harness.ptys[0].emitData('noise');
+  await session.close();
+
+  assert.equal(socket.sent.filter((frame) => frame.type === 'output').length, 0);
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+});
+
+test('synchronous socket send failure triggers one cleanup cascade', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+  socket.sendBehavior = () => { throw new Error('/host/private/socket failed'); };
+
+  harness.ptys[0].emitData('output');
+  await session.close();
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(JSON.stringify(socket.closeCalls).includes('/host/private'), false);
+});
+
+test('synchronous final-state send failure cannot re-enter cleanup', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+  socket.sendBehavior = () => { throw new Error('final state failed'); };
+
+  await session.close();
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('socket send callback error triggers cleanup without duplication', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+  socket.sendBehavior = (_frame, callback) => callback(new Error('callback failed'));
+
+  harness.ptys[0].emitData('output');
+  await session.close();
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('rejected thenable from socket send triggers cleanup without unhandled rejection', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+  socket.sendBehavior = () => Promise.reject(new Error('async send failed'));
+
+  harness.ptys[0].emitData('output');
+  await Promise.resolve();
+  await session.close();
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('terminates a socket that does not complete the close handshake', async () => {
+  const harness = createHarness({
+    config: { socketCloseTimeoutMs: 2 },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const socket = new FakeSocket({ autoClose: false });
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  await session.close();
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(socket.terminateCount, 1);
+});
+
+test('supports an injected socket OPEN constant', async () => {
+  const harness = createHarness({ adapters: { socketOpenState: 7 } });
+  const socket = new FakeSocket({ readyState: 7 });
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  harness.ptys[0].emitData('visible');
+  await session.close();
+
+  assert.equal(socket.sent.some((frame) => frame.type === 'output' && frame.data === 'visible'), true);
+});
+
+test('rejects a workspace root that is not a directory before spawning', async () => {
+  const harness = createHarness({
+    fs: {
+      lstat: async () => ({
+        dev: 1,
+        ino: 1,
+        isDirectory: () => false,
+        isSymbolicLink: () => false,
+      }),
+    },
+  });
+
+  await assert.rejects(
+    harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 }),
+    /Unable to create session/,
+  );
+
+  assert.equal(harness.spawnCalls.length, 0);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('refuses to remove a replacement directory at the original workspace path', async () => {
+  const root = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'claude-session-test-'));
+  const pty = new FakePty();
+  let workspace;
+  const manager = new SessionManager({
+    workspaceRoot: root,
+    launcher: '/opt/claude/bin/claude',
+    childEnv: {},
+    maxSessions: 1,
+    idleTimeoutMs: 30_000,
+    terminationGraceMs: 20,
+    killGraceMs: 20,
+    socketCloseTimeoutMs: 20,
+    maxBufferedBytes: 1024,
+  }, {
+    pty: { spawn: (_executable, _argv, options) => { workspace = options.cwd; return pty; } },
+  });
+
+  try {
+    const session = await manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+    await fsPromises.rename(workspace, `${workspace}.original`);
+    await fsPromises.mkdir(workspace);
+    await fsPromises.writeFile(path.join(workspace, 'replacement.txt'), 'preserve me');
+
+    await assert.rejects(session.close(), /cleanup failed/i);
+
+    assert.equal(await fsPromises.readFile(path.join(workspace, 'replacement.txt'), 'utf8'), 'preserve me');
+    assert.equal(manager.activeCount, 1);
+  } finally {
+    await fsPromises.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('refuses to follow a symlink substituted for the workspace', async () => {
+  const root = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'claude-session-test-'));
+  const pty = new FakePty();
+  let workspace;
+  const manager = new SessionManager({
+    workspaceRoot: root,
+    launcher: '/opt/claude/bin/claude',
+    childEnv: {},
+    maxSessions: 1,
+    idleTimeoutMs: 30_000,
+    terminationGraceMs: 20,
+    killGraceMs: 20,
+    socketCloseTimeoutMs: 20,
+    maxBufferedBytes: 1024,
+  }, {
+    pty: { spawn: (_executable, _argv, options) => { workspace = options.cwd; return pty; } },
+  });
+
+  try {
+    const session = await manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+    const original = `${workspace}.original`;
+    const target = path.join(root, 'replacement-target');
+    await fsPromises.rename(workspace, original);
+    await fsPromises.mkdir(target);
+    await fsPromises.writeFile(path.join(target, 'target.txt'), 'preserve target');
+    await fsPromises.symlink(target, workspace, 'dir');
+
+    await assert.rejects(session.close(), /cleanup failed/i);
+
+    assert.equal(await fsPromises.readFile(path.join(target, 'target.txt'), 'utf8'), 'preserve target');
+    assert.equal(manager.activeCount, 1);
+  } finally {
+    await fsPromises.rm(root, { recursive: true, force: true });
   }
 });
