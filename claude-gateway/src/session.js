@@ -74,6 +74,11 @@ function consume(promise) {
   Promise.resolve(promise).catch(() => {});
 }
 
+function thenFunction(value) {
+  if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return null;
+  return typeof value.then === 'function' ? value.then : null;
+}
+
 function sameIdentity(stat, identity) {
   return stat.dev === identity.dev && stat.ino === identity.ino;
 }
@@ -96,6 +101,7 @@ class Session {
     this.dataDisposable = null;
     this.exitDisposable = null;
     this.quarantineError = null;
+    this.workspaceRemoved = false;
 
     this.startDone = new Promise((resolve) => {
       this.resolveStartDone = resolve;
@@ -113,7 +119,10 @@ class Session {
     this.socketCloseListener = () => {
       this.socketClosed = true;
       this.resolveSocketClose();
-      if (this.cleanupPromise === null) this.requestStop('socket-close');
+      if (this.cleanupPromise === null) {
+        if (this.quarantineError !== null) this.maybeResumeQuarantine('late-socket-close');
+        else this.requestStop('socket-close');
+      }
     };
     if (typeof this.socket?.on === 'function') {
       this.socket.on('error', this.socketErrorListener);
@@ -151,36 +160,29 @@ class Session {
         TERM: 'xterm-256color',
         COLORTERM: 'truecolor',
       };
-      this.pty = await this.manager.pty.spawn(this.manager.launcher, [], {
+      const spawned = this.manager.pty.spawn(this.manager.launcher, [], {
         name: 'xterm-256color',
         cols: this.terminalSize.cols,
         rows: this.terminalSize.rows,
         cwd: this.workspace.path,
         env,
       });
-
-      let exitSubscriptionError = null;
-      try {
-        this.exitDisposable = subscribe(
-          this.pty,
-          'onExit',
-          'exit',
-          (event) => this.handleExit(event),
-        );
-      } catch (error) {
-        exitSubscriptionError = error;
-        try {
-          this.exitDisposable = subscribeEvent(
-            this.pty,
-            'exit',
-            (event) => this.handleExit(event),
-          );
-        } catch {
-          // Cleanup will fail closed if PTY exit cannot be observed.
-        }
+      if (thenFunction(spawned) !== null) {
+        Promise.resolve(spawned).catch(() => {});
+        throw new Error(CREATE_ERROR);
       }
+      this.pty = spawned;
 
-      if (this.closeRequested || this.manager.closed) throw new Error(CREATE_ERROR);
+      const exitSubscriptionError = this.installExitListener();
+
+      if (
+        this.closeRequested
+        || this.manager.closed
+        || this.ptyExited
+        || this.cleanupPromise !== null
+      ) {
+        throw new Error(CREATE_ERROR);
+      }
 
       this.dataDisposable = subscribe(
         this.pty,
@@ -255,7 +257,39 @@ class Session {
         signal: event.signal ?? null,
       });
     }
-    consume(this.cleanup('pty-exit'));
+    if (this.quarantineError !== null) this.maybeResumeQuarantine('late-pty-exit');
+    else consume(this.cleanup('pty-exit'));
+  }
+
+  installExitListener() {
+    let initializing = true;
+    let replayed = false;
+    let replayEvent;
+    const listener = (event) => {
+      if (initializing) {
+        if (!replayed) {
+          replayed = true;
+          replayEvent = event;
+        }
+        return;
+      }
+      this.handleExit(event);
+    };
+
+    let subscriptionError = null;
+    try {
+      this.exitDisposable = subscribe(this.pty, 'onExit', 'exit', listener);
+    } catch (error) {
+      subscriptionError = error;
+      try {
+        this.exitDisposable = subscribeEvent(this.pty, 'exit', listener);
+      } catch {
+        // Cleanup will fail closed if PTY exit cannot be observed.
+      }
+    }
+    initializing = false;
+    if (replayed) this.handleExit(replayEvent);
+    return subscriptionError;
   }
 
   resetIdleTimer() {
@@ -317,7 +351,7 @@ class Session {
 
   cleanup(reason) {
     if (this.cleanupPromise !== null) return this.cleanupPromise;
-    if (this.quarantineError !== null && !this.ptyExited) {
+    if (this.quarantineError !== null && !this.canResumeQuarantine()) {
       return Promise.reject(this.quarantineError);
     }
     let resolveCleanup;
@@ -332,17 +366,34 @@ class Session {
         resolveCleanup(value);
       },
       (error) => {
-        if (error.exitUnconfirmed === true) {
+        if (error.exitUnconfirmed === true || error.socketUnconfirmed === true) {
           this.quarantineError = error;
           this.cleanupPromise = null;
         }
         rejectCleanup(error);
-        if (error.exitUnconfirmed === true && this.ptyExited) {
-          consume(this.cleanup('late-pty-exit'));
-        }
+        this.maybeResumeQuarantine('quarantine-resume');
       },
     );
     return this.cleanupPromise;
+  }
+
+  canResumeQuarantine() {
+    if (this.quarantineError === null) return true;
+    const exitReady = this.quarantineError.exitUnconfirmed !== true || this.ptyExited;
+    const socketReady = this.quarantineError.socketUnconfirmed !== true
+      || this.socketClosed
+      || this.socket?.readyState === 3;
+    return exitReady && socketReady;
+  }
+
+  maybeResumeQuarantine(reason) {
+    if (
+      this.quarantineError !== null
+      && this.cleanupPromise === null
+      && this.canResumeQuarantine()
+    ) {
+      consume(this.cleanup(reason));
+    }
   }
 
   async performCleanup(reason) {
@@ -373,29 +424,35 @@ class Session {
     }
     if (!exitConfirmed) errors.push(new Error('PTY exit was not confirmed'));
 
-    if (exitConfirmed && this.workspace !== null) {
+    if (exitConfirmed && this.workspace !== null && !this.workspaceRemoved) {
       try {
         await this.removeVerifiedWorkspace();
+        this.workspaceRemoved = true;
       } catch (error) {
         errors.push(error);
       }
     }
 
+    let socketConfirmed = reason === 'socket-close'
+      || this.socketClosed
+      || this.socket?.readyState === 3;
     if (reason !== 'socket-close') {
       try {
         await this.closeSocket(reason);
       } catch (error) {
         errors.push(error);
       }
+      socketConfirmed = this.socketClosed || this.socket?.readyState === 3;
     }
 
     if (exitConfirmed) this.disposeExitListener(errors);
-    this.disposeSocketListener(errors);
+    if (socketConfirmed) this.disposeSocketListener(errors);
 
     if (errors.length > 0) {
       this.send('error', { message: CLEANUP_ERROR });
       const failure = new AggregateError(errors, CLEANUP_ERROR);
       failure.exitUnconfirmed = !exitConfirmed;
+      failure.socketUnconfirmed = !socketConfirmed;
       throw failure;
     }
 
@@ -415,7 +472,7 @@ class Session {
   disposeExitListener(errors) {
     if (this.exitDisposable === null) return;
     try {
-      this.exitDisposable.dispose?.();
+      this.exitDisposable?.dispose?.();
     } catch (error) {
       errors.push(error);
     }
@@ -455,6 +512,7 @@ class Session {
   async closeSocket(reason) {
     if (this.socketClosed || this.socket?.readyState === 3) return;
     const errors = [];
+    let closeOutcome = null;
     if (this.isSocketOpen()) {
       const closeDetails = reason === 'idle-timeout'
         ? [1001, 'Session timed out']
@@ -465,22 +523,50 @@ class Session {
             : [1011, 'Session closed'];
       try {
         if (typeof this.socket.close !== 'function') throw new Error('Socket cannot close');
-        this.socket.close(...closeDetails);
+        const result = this.socket.close(...closeDetails);
+        if (thenFunction(result) !== null) {
+          closeOutcome = Promise.resolve(result).then(
+            () => ({ error: null }),
+            (error) => ({ error }),
+          );
+        }
       } catch (error) {
         errors.push(error);
       }
     }
 
-    const closed = await this.waitFor(this.socketClosePromise, this.manager.socketCloseTimeoutMs);
-    if (!closed && !this.socketClosed && this.socket?.readyState !== 3) {
+    let closed = this.socketClosed || this.socket?.readyState === 3;
+    if (!closed) {
+      closed = await this.waitFor(this.socketClosePromise, this.manager.socketCloseTimeoutMs);
+    }
+    if (closeOutcome !== null) {
+      const settled = await this.waitFor(closeOutcome, this.manager.socketCloseTimeoutMs);
+      if (settled) {
+        const outcome = await closeOutcome;
+        if (outcome.error !== null) errors.push(outcome.error);
+      } else {
+        errors.push(new Error('Socket close result did not settle'));
+      }
+    }
+
+    if (!closed) {
       try {
         if (typeof this.socket.terminate !== 'function') throw new Error('Socket cannot terminate');
         this.socket.terminate();
       } catch (error) {
         errors.push(error);
       }
+      closed = this.socketClosed || this.socket?.readyState === 3;
+      if (!closed) {
+        closed = await this.waitFor(this.socketClosePromise, this.manager.socketCloseTimeoutMs);
+      }
     }
-    if (errors.length > 0) throw new AggregateError(errors, 'Socket close failed');
+    if (!closed) errors.push(new Error('Socket termination was not confirmed'));
+    if (errors.length > 0) {
+      const failure = new AggregateError(errors, 'Socket close failed');
+      failure.socketUnconfirmed = !closed;
+      throw failure;
+    }
   }
 
   async removeVerifiedWorkspace() {

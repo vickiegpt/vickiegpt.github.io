@@ -902,7 +902,7 @@ test('synchronous PTY resize failure initiates cleanup without escaping', async 
   assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
 });
 
-test('close during asynchronous spawn installs exit observation before cleanup', async () => {
+test('rejects thenable PTY spawn adapters without awaiting their resolution', async () => {
   const spawned = deferred();
   const spawnStarted = deferred();
   const pty = new FakePty();
@@ -918,12 +918,22 @@ test('close during asynchronous spawn installs exit observation before cleanup',
   const creating = harness.manager.create(socket, { cols: 80, rows: 24 });
   await spawnStarted.promise;
 
-  socket.emit('close');
+  const outcomePromise = creating.then(
+    (session) => ({ status: 'resolved', session }),
+    () => ({ status: 'rejected' }),
+  );
+  const outcome = await Promise.race([
+    outcomePromise,
+    new Promise((resolve) => setTimeout(() => resolve({ status: 'pending' }), 5)),
+  ]);
   spawned.resolve(pty);
-  await assert.rejects(creating, /Unable to create session/);
+  if (outcome.status === 'pending') {
+    const eventual = await outcomePromise;
+    if (eventual.status === 'resolved') await eventual.session.close();
+  }
 
-  assert.deepEqual(pty.killSignals, ['SIGTERM']);
-  assert.equal(pty.exitListeners.size, 0);
+  assert.equal(outcome.status, 'rejected');
+  assert.deepEqual(pty.killSignals, []);
   assert.equal(harness.removed.length, 1);
   assert.equal(harness.manager.activeCount, 0);
 });
@@ -966,6 +976,72 @@ test('late PTY exit resumes quarantined cleanup and releases capacity', async ()
 
   assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
   assert.equal(pty.exitListeners.size, 0);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('synchronous exit replay during subscription aborts startup without ready or listener leak', async () => {
+  const pty = new FakePty({ autoExit: false });
+  let exitDisposableDisposed = false;
+  pty.onExit = (listener) => {
+    listener({ exitCode: 0, signal: null });
+    return { dispose: () => { exitDisposableDisposed = true; } };
+  };
+  const harness = createHarness({ pty: { spawn: () => pty } });
+  const socket = new FakeSocket();
+
+  await assert.rejects(
+    harness.manager.create(socket, { cols: 80, rows: 24 }),
+    /Unable to create session/,
+  );
+
+  assert.equal(socket.sent.some((frame) => frame.type === 'state' && frame.state === 'ready'), false);
+  assert.equal(pty.dataListeners.size, 0);
+  assert.equal(exitDisposableDisposed, true);
+  assert.equal(pty.killCount, 0);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('socket close thenable rejection is handled before terminate fallback', async () => {
+  const harness = createHarness({
+    config: { socketCloseTimeoutMs: 2 },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const socket = new FakeSocket({ autoClose: false });
+  socket.close = () => Promise.reject(new Error('/host/private/async close failed'));
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+
+  assert.equal(socket.terminateCount, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('unconfirmed socket terminate quarantines cleanup until a late close event', async () => {
+  const harness = createHarness({
+    config: { maxSessions: 1, socketCloseTimeoutMs: 1 },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const socket = new FakeSocket({ autoClose: false });
+  socket.terminate = () => { socket.terminateCount += 1; };
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+  assert.equal(socket.terminateCount, 1);
+  assert.equal(socket.listenerCount('close'), 1);
+  assert.equal(socket.listenerCount('error'), 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 1);
+
+  socket.readyState = 3;
+  socket.emit('close');
+  await session.close();
+
+  assert.equal(socket.listenerCount('close'), 0);
+  assert.equal(socket.listenerCount('error'), 0);
   assert.equal(harness.removed.length, 1);
   assert.equal(harness.manager.activeCount, 0);
 });
