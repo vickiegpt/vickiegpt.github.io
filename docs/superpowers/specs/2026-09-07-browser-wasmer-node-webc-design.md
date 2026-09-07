@@ -22,6 +22,8 @@ Wasmer process or host workspace is required for browser execution.
   and stops the runtime.
 - A narrowly scoped Cloudflare Worker route that serves large artifacts from
   R2 at the existing `/about/` URLs.
+- A same-origin Anthropic-compatible relay that keeps the Zhipu credential in
+  a Cloudflare Worker Secret and issues only short-lived browser capabilities.
 
 ## Package Construction
 
@@ -98,7 +100,7 @@ SDK's origin-scoped cache, but workspace files and API credentials are not
 persisted automatically. Import/export or user-approved IndexedDB persistence
 can be added later without changing the runtime boundary.
 
-## Networking and Credentials
+## Networking, Relay, and Credentials
 
 Browser WASIX cannot open TCP sockets directly. The sandbox therefore uses a
 configured, access-controlled WISP WebSocket endpoint. Production readiness
@@ -106,12 +108,35 @@ requires that endpoint to resolve DNS and permit TLS connections to the chosen
 Anthropic-compatible API while rejecting unrelated destinations where
 possible.
 
-The user enters the API base URL and token in the browser. They are injected
-only into the sandbox environment and retained in memory for the active tab;
-they are not placed in URLs, logs, localStorage, the runtime manifest, R2, or
-Git. Client-side execution cannot hide a token from the user who owns the
-browser, so this mode is intended for personal credentials, not a shared
-server-side secret.
+The Zhipu API credential is stored only as the Cloudflare Worker Secret
+`ZHIPU_API_KEY`. It is never returned to the browser, injected into WEBC,
+stored in `.env`, committed to Git, uploaded to R2, or written to logs. The
+browser-side Claude process uses the same-origin base URL
+`https://asplos.dev/api/anthropic` and receives a short-lived relay capability
+as `ANTHROPIC_AUTH_TOKEN`; it never receives the upstream credential.
+
+No account login is required. Before starting the runtime, the page completes
+a Cloudflare Turnstile challenge and sends its one-time response to
+`/api/claude/session`. The Worker validates the response with the Turnstile
+siteverify API, then signs a capability that expires within five minutes. The
+capability is bound to a random session identifier, the relay audience, and a
+coarse client-network fingerprint. It grants access only to the allowlisted
+Anthropic Messages endpoint and cannot be exchanged for the Zhipu key.
+
+The relay validates the capability before reading or forwarding a request. It
+accepts only `POST` requests with bounded JSON bodies, an allowlisted model,
+and a configured maximum output-token count. It rewrites the upstream origin
+and authorization header, strips hop-by-hop and client-supplied forwarding
+headers, enforces response-size and duration limits, and streams the allowed
+response content types back to the guest.
+
+Abuse controls are fail-closed and use Cloudflare state rather than browser
+claims: per-IP issuance limits, per-capability request limits, concurrent
+request limits, and a daily global request/token budget. When any threshold is
+reached, the Worker stops forwarding and returns a generic rate-limit error.
+Turnstile and rate limits reduce anonymous abuse but cannot guarantee that a
+public free endpoint will never consume unwanted quota; the daily global
+budget is the final cost-containment boundary.
 
 ## User Interface
 
@@ -120,7 +145,8 @@ server-side secret.
 - runtime status and download/verification progress;
 - Start, Stop, and Clear controls;
 - a full-size xterm terminal with mobile keyboard support;
-- a compact settings dialog for WISP URL, API base URL, and session token;
+- a compact settings dialog for the WISP URL and public relay status;
+- a Turnstile challenge completed before runtime startup;
 - explicit diagnostics for isolation, download, hash, package, network, and
   process failures.
 
@@ -134,6 +160,10 @@ editor and direct Messages API relay. No unrelated debug traces are shown.
 - Startup cancellation aborts the fetch and destroys partial runtime state.
 - Stream errors terminate the process and show one sanitized terminal message.
 - WISP failures remain distinguishable from Node or package failures.
+- Turnstile, capability, rate-limit, and upstream failures expose no secret or
+  internal Worker details.
+- Expired relay capabilities trigger one fresh Turnstile/session flow rather
+  than silently retrying an upstream request.
 - A non-zero guest exit is displayed and does not trigger an automatic restart.
 - Memory pressure is reported as an unsupported-device/runtime-capacity error;
   the page never loops retries.
@@ -142,9 +172,12 @@ editor and direct Messages API relay. No unrelated debug traces are shown.
 
 Automated tests cover manifest validation, same-origin URL enforcement, hash
 verification, lifecycle generation races, input/resize routing, cleanup, and
-secret non-persistence. Package tests inspect the WEBC command and filesystem
-and run a finite `node /app/claude-debug.mjs --version` smoke test when the
-browser-compatible runtime is available.
+secret non-persistence. Relay tests cover Turnstile verification, capability
+expiry and tampering, endpoint/model/body constraints, header rewriting,
+streaming, per-IP and per-session limits, concurrency, and the daily global
+budget. Package tests inspect the WEBC command and filesystem and run a finite
+`node /app/claude-debug.mjs --version` smoke test when the browser-compatible
+runtime is available.
 
 Browser verification uses a cross-origin-isolated Chromium context and checks:
 
@@ -153,7 +186,8 @@ Browser verification uses a cross-origin-isolated Chromium context and checks:
 - terminal echo and resize behavior;
 - clean stop and restart;
 - WISP DNS/TLS connectivity;
-- one real Claude request with a disposable credential.
+- one real Claude request through a short-lived relay capability while the
+  Zhipu Worker Secret remains absent from all browser-visible state.
 
 Publication verification downloads the public R2-backed object, checks that it
 is not an LFS pointer, validates byte length and SHA-256 against the manifest,
@@ -163,6 +197,7 @@ and confirms range requests.
 
 The feature is complete only when the public page starts the WEBC package in a
 browser, displays Node output in xterm, and cleans up reliably. Claude is not
-reported as working until WISP networking and a real API request pass. A built
-WEBC file, an LFS pointer, a successful R2 upload, or an SDK initialization
-message alone is insufficient evidence.
+reported as working until WISP networking, Turnstile capability issuance,
+relay abuse controls, and a real API request pass. A built WEBC file, an LFS
+pointer, a successful R2 upload, or an SDK initialization message alone is
+insufficient evidence.
