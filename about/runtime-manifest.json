@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "url": "/about/node-claude.webc",
+  "size": 121744300,
+  "sha256": "3cd76b7b4c565e82759a72bc632cc8c4427604527d65edad2b080fabfed86fb6",
+  "nodeSha256": "fd3af31c48e8259496d8d69465714a4ef86bda5e3e6067556854f3e181772e92",
+  "sdkVersion": "0.11.0",
+  "nodeVersion": "25.0.0-pre",
+  "claudeVersion": "2.0.0",
+  "command": "node",
+  "args": [
+    "/app/claude-debug.mjs"
+  ]
+}
