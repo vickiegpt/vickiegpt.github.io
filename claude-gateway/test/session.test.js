@@ -295,7 +295,7 @@ test('relays PTY output and emits one normalized exit frame before releasing cap
     { type: 'output', data: 'hello' },
   ]);
   assert.deepEqual(socket.sent.filter((frame) => frame.type === 'exit'), [
-    { type: 'exit', exitCode: 7, signal: 15 },
+    { type: 'exit', code: 7, signal: 15 },
   ]);
   assert.equal(harness.ptys[0].killCount, 0);
   assert.equal(harness.manager.activeCount, 0);
@@ -311,7 +311,7 @@ test('normalizes absent PTY exit details to null', async () => {
 
   assert.deepEqual(socket.sent.find((frame) => frame.type === 'exit'), {
     type: 'exit',
-    exitCode: null,
+    code: null,
     signal: null,
   });
 });

@@ -183,7 +183,7 @@ class Session {
     this.ptyExited = true;
     this.exitSent = true;
     this.send('exit', {
-      exitCode: typeof event.exitCode === 'number' ? event.exitCode : null,
+      code: typeof event.exitCode === 'number' ? event.exitCode : null,
       signal: event.signal ?? null,
     });
     void this.cleanup(false);
