@@ -850,3 +850,122 @@ test('refuses to follow a symlink substituted for the workspace', async () => {
     await fsPromises.rm(root, { recursive: true, force: true });
   }
 });
+
+test('socket error is handled and triggers idempotent session cleanup', async () => {
+  const harness = createHarness();
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  assert.doesNotThrow(() => socket.emit('error', new Error('/host/private/transport failed')));
+  socket.emit('error', new Error('duplicate transport failure'));
+  await session.close();
+
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(socket.listenerCount('error'), 0);
+  assert.equal(harness.manager.activeCount, 0);
+  assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('synchronous PTY write failure initiates cleanup without escaping', async () => {
+  const pty = new FakePty();
+  pty.write = () => { throw new Error('/host/private/write failed'); };
+  const harness = createHarness({ pty: { spawn: () => pty } });
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  assert.equal(session.write('input'), false);
+  await session.close();
+
+  assert.equal(pty.killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+  assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('synchronous PTY resize failure initiates cleanup without escaping', async () => {
+  const pty = new FakePty();
+  pty.resize = () => { throw new Error('/host/private/resize failed'); };
+  const harness = createHarness({ pty: { spawn: () => pty } });
+  const socket = new FakeSocket();
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  assert.equal(session.resize(100, 40), false);
+  await session.close();
+
+  assert.equal(pty.killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+  assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('close during asynchronous spawn installs exit observation before cleanup', async () => {
+  const spawned = deferred();
+  const spawnStarted = deferred();
+  const pty = new FakePty();
+  const harness = createHarness({
+    pty: {
+      spawn() {
+        spawnStarted.resolve();
+        return spawned.promise;
+      },
+    },
+  });
+  const socket = new FakeSocket();
+  const creating = harness.manager.create(socket, { cols: 80, rows: 24 });
+  await spawnStarted.promise;
+
+  socket.emit('close');
+  spawned.resolve(pty);
+  await assert.rejects(creating, /Unable to create session/);
+
+  assert.deepEqual(pty.killSignals, ['SIGTERM']);
+  assert.equal(pty.exitListeners.size, 0);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
+test('throwing socket close still waits, terminates, and completes PTY cleanup', async () => {
+  const harness = createHarness({
+    config: { socketCloseTimeoutMs: 2 },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const socket = new FakeSocket({ autoClose: false });
+  socket.close = () => { throw new Error('/host/private/close failed'); };
+  const session = await harness.manager.create(socket, { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+
+  assert.equal(socket.terminateCount, 1);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 1);
+  assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('late PTY exit resumes quarantined cleanup and releases capacity', async () => {
+  const pty = new FakePty({ autoExit: false });
+  const harness = createHarness({
+    config: { maxSessions: 1, terminationGraceMs: 1, killGraceMs: 1 },
+    pty: { spawn: () => pty },
+    adapters: { timers: { setTimeout, clearTimeout } },
+  });
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+
+  await assert.rejects(session.close(), /cleanup failed/i);
+  assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(pty.exitListeners.size, 1);
+  assert.equal(harness.removed.length, 0);
+  assert.equal(harness.manager.activeCount, 1);
+
+  pty.emitExit({ exitCode: null, signal: 9 });
+  await session.close();
+
+  assert.deepEqual(pty.killSignals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(pty.exitListeners.size, 0);
+  assert.equal(harness.removed.length, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});

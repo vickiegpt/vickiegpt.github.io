@@ -95,6 +95,7 @@ class Session {
     this.idleTimer = null;
     this.dataDisposable = null;
     this.exitDisposable = null;
+    this.quarantineError = null;
 
     this.startDone = new Promise((resolve) => {
       this.resolveStartDone = resolve;
@@ -108,12 +109,14 @@ class Session {
     });
     if (this.socketClosed) this.resolveSocketClose();
 
+    this.socketErrorListener = () => this.requestStop('socket-error');
     this.socketCloseListener = () => {
       this.socketClosed = true;
       this.resolveSocketClose();
       if (this.cleanupPromise === null) this.requestStop('socket-close');
     };
     if (typeof this.socket?.on === 'function') {
+      this.socket.on('error', this.socketErrorListener);
       this.socket.on('close', this.socketCloseListener);
     }
   }
@@ -156,14 +159,7 @@ class Session {
         env,
       });
 
-      if (this.closeRequested || this.manager.closed) throw new Error(CREATE_ERROR);
-
-      this.dataDisposable = subscribe(
-        this.pty,
-        'onData',
-        'data',
-        (data) => this.handleOutput(data),
-      );
+      let exitSubscriptionError = null;
       try {
         this.exitDisposable = subscribe(
           this.pty,
@@ -172,6 +168,7 @@ class Session {
           (event) => this.handleExit(event),
         );
       } catch (error) {
+        exitSubscriptionError = error;
         try {
           this.exitDisposable = subscribeEvent(
             this.pty,
@@ -181,8 +178,17 @@ class Session {
         } catch {
           // Cleanup will fail closed if PTY exit cannot be observed.
         }
-        throw error;
       }
+
+      if (this.closeRequested || this.manager.closed) throw new Error(CREATE_ERROR);
+
+      this.dataDisposable = subscribe(
+        this.pty,
+        'onData',
+        'data',
+        (data) => this.handleOutput(data),
+      );
+      if (exitSubscriptionError !== null) throw exitSubscriptionError;
 
       this.ready = true;
       this.resetIdleTimer();
@@ -197,7 +203,12 @@ class Session {
   write(data) {
     if (typeof data !== 'string') throw new TypeError('Terminal input must be a string');
     if (!this.canUsePty()) return false;
-    this.pty.write(data);
+    try {
+      this.pty.write(data);
+    } catch {
+      this.requestStop('pty-io-failure');
+      return false;
+    }
     this.resetIdleTimer();
     return true;
   }
@@ -208,7 +219,12 @@ class Session {
     }
     if (!this.canUsePty()) return false;
     const size = clampTerminalSize(cols, rows);
-    this.pty.resize(size.cols, size.rows);
+    try {
+      this.pty.resize(size.cols, size.rows);
+    } catch {
+      this.requestStop('pty-io-failure');
+      return false;
+    }
     this.resetIdleTimer();
     return true;
   }
@@ -301,13 +317,31 @@ class Session {
 
   cleanup(reason) {
     if (this.cleanupPromise !== null) return this.cleanupPromise;
+    if (this.quarantineError !== null && !this.ptyExited) {
+      return Promise.reject(this.quarantineError);
+    }
     let resolveCleanup;
     let rejectCleanup;
     this.cleanupPromise = new Promise((resolve, reject) => {
       resolveCleanup = resolve;
       rejectCleanup = reject;
     });
-    this.performCleanup(reason).then(resolveCleanup, rejectCleanup);
+    this.performCleanup(reason).then(
+      (value) => {
+        this.quarantineError = null;
+        resolveCleanup(value);
+      },
+      (error) => {
+        if (error.exitUnconfirmed === true) {
+          this.quarantineError = error;
+          this.cleanupPromise = null;
+        }
+        rejectCleanup(error);
+        if (error.exitUnconfirmed === true && this.ptyExited) {
+          consume(this.cleanup('late-pty-exit'));
+        }
+      },
+    );
     return this.cleanupPromise;
   }
 
@@ -360,7 +394,9 @@ class Session {
 
     if (errors.length > 0) {
       this.send('error', { message: CLEANUP_ERROR });
-      throw new AggregateError(errors, CLEANUP_ERROR);
+      const failure = new AggregateError(errors, CLEANUP_ERROR);
+      failure.exitUnconfirmed = !exitConfirmed;
+      throw failure;
     }
 
     this.manager.release(this);
@@ -390,8 +426,10 @@ class Session {
     try {
       if (typeof this.socket?.off === 'function') {
         this.socket.off('close', this.socketCloseListener);
+        this.socket.off('error', this.socketErrorListener);
       } else if (typeof this.socket?.removeListener === 'function') {
         this.socket.removeListener('close', this.socketCloseListener);
+        this.socket.removeListener('error', this.socketErrorListener);
       }
     } catch (error) {
       errors.push(error);
@@ -416,6 +454,7 @@ class Session {
 
   async closeSocket(reason) {
     if (this.socketClosed || this.socket?.readyState === 3) return;
+    const errors = [];
     if (this.isSocketOpen()) {
       const closeDetails = reason === 'idle-timeout'
         ? [1001, 'Session timed out']
@@ -424,13 +463,24 @@ class Session {
           : reason === 'backpressure'
             ? [1013, 'Client too slow']
             : [1011, 'Session closed'];
-      this.socket.close?.(...closeDetails);
+      try {
+        if (typeof this.socket.close !== 'function') throw new Error('Socket cannot close');
+        this.socket.close(...closeDetails);
+      } catch (error) {
+        errors.push(error);
+      }
     }
 
     const closed = await this.waitFor(this.socketClosePromise, this.manager.socketCloseTimeoutMs);
     if (!closed && !this.socketClosed && this.socket?.readyState !== 3) {
-      this.socket.terminate?.();
+      try {
+        if (typeof this.socket.terminate !== 'function') throw new Error('Socket cannot terminate');
+        this.socket.terminate();
+      } catch (error) {
+        errors.push(error);
+      }
     }
+    if (errors.length > 0) throw new AggregateError(errors, 'Socket close failed');
   }
 
   async removeVerifiedWorkspace() {
