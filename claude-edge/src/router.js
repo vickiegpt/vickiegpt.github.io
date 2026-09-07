@@ -1,4 +1,5 @@
 import { handleArtifact } from "./artifacts.js";
+import { handleConfig } from "./config.js";
 import { handleRelay } from "./relay.js";
 import { handleSession } from "./session.js";
 
@@ -14,6 +15,9 @@ export default {
     if (artifactResponse) return artifactResponse;
 
     const pathname = new URL(request.url).pathname;
+    if (pathname === "/api/claude/config") {
+      return handleConfig(request, env);
+    }
     if (pathname === "/api/claude/session") {
       return handleSession(request, env);
     }
