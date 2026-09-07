@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 export const MAX_MESSAGE_BYTES = 64 * 1024;
 
@@ -10,49 +10,59 @@ export class ProtocolError extends Error {
 }
 
 export function safeTokenEqual(actual, expected) {
-  if (typeof actual !== 'string' || typeof expected !== 'string') {
-    return false;
-  }
+  const validTypes = typeof actual === 'string' && typeof expected === 'string';
+  const actualBuffer = Buffer.from(typeof actual === 'string' ? actual : '');
+  const expectedBuffer = Buffer.from(typeof expected === 'string' ? expected : '');
+  const actualDigest = createHash('sha256').update(actualBuffer).digest();
+  const expectedDigest = createHash('sha256').update(expectedBuffer).digest();
+  const digestsEqual = timingSafeEqual(actualDigest, expectedDigest);
 
-  const actualBuffer = Buffer.from(actual);
-  const expectedBuffer = Buffer.from(expected);
-
-  if (actualBuffer.length !== expectedBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(actualBuffer, expectedBuffer);
+  return validTypes
+    && actualBuffer.length === expectedBuffer.length
+    && digestsEqual;
 }
 
 export function isAllowedOrigin(origin, allowedOrigins) {
-  if (typeof origin !== 'string') {
-    return false;
-  }
-
   const entries = Array.isArray(allowedOrigins)
     ? allowedOrigins
     : typeof allowedOrigins === 'string'
       ? allowedOrigins.split(',')
       : [];
 
-  let candidate;
-  try {
-    candidate = new URL(origin).origin;
-  } catch {
+  const candidate = parseHttpOrigin(origin);
+  if (candidate === null) {
     return false;
   }
 
   return entries.some((entry) => {
-    if (typeof entry !== 'string' || entry.trim() === '') {
-      return false;
-    }
-
-    try {
-      return new URL(entry.trim()).origin === candidate;
-    } catch {
-      return false;
-    }
+    const allowed = typeof entry === 'string'
+      ? parseHttpOrigin(entry.trim())
+      : null;
+    return allowed !== null && allowed === candidate;
   });
+}
+
+function parseHttpOrigin(value) {
+  if (typeof value !== 'string' || value === '') {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    if (
+      (url.protocol !== 'http:' && url.protocol !== 'https:')
+      || url.username !== ''
+      || url.password !== ''
+      || url.pathname !== '/'
+      || url.search !== ''
+      || url.hash !== ''
+    ) {
+      return null;
+    }
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 export function clampTerminalSize(cols, rows) {
@@ -110,8 +120,8 @@ export function parseClientMessage(raw, isBinary = false) {
       if (
         typeof message.cols !== 'number'
         || typeof message.rows !== 'number'
-        || !Number.isFinite(message.cols)
-        || !Number.isFinite(message.rows)
+        || !Number.isInteger(message.cols)
+        || !Number.isInteger(message.rows)
       ) {
         throw new ProtocolError();
       }
@@ -123,5 +133,44 @@ export function parseClientMessage(raw, isBinary = false) {
 }
 
 export function serverMessage(type, fields = {}) {
-  return JSON.stringify({ type, ...fields });
+  if (typeof type !== 'string' || type.length === 0) {
+    throw new ProtocolError();
+  }
+
+  if (fields === null || typeof fields !== 'object') {
+    throw new ProtocolError();
+  }
+
+  const prototype = Object.getPrototypeOf(fields);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new ProtocolError();
+  }
+
+  const reservedKeys = new Set([
+    'type',
+    'toJSON',
+    '__proto__',
+    'constructor',
+    'prototype',
+  ]);
+  const descriptors = Object.getOwnPropertyDescriptors(fields);
+  const payload = Object.create(null);
+  payload.type = type;
+
+  for (const key of Reflect.ownKeys(descriptors)) {
+    if (typeof key !== 'string' || reservedKeys.has(key)) {
+      throw new ProtocolError();
+    }
+
+    const descriptor = descriptors[key];
+    if ('get' in descriptor || 'set' in descriptor) {
+      throw new ProtocolError();
+    }
+
+    if (descriptor.enumerable) {
+      payload[key] = descriptor.value;
+    }
+  }
+
+  return JSON.stringify(payload);
 }
