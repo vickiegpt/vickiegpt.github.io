@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { SessionManager } from '../src/session.js';
+import { SessionCreateError, SessionManager } from '../src/session.js';
 
 class FakeSocket extends EventEmitter {
   constructor({ readyState = 1, autoClose = true } = {}) {
@@ -452,6 +452,29 @@ test('spawn failure releases capacity and removes the verified workspace', async
     '/srv/claude-workspaces/claude-session-1',
   ]);
   assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('startup cleanup failure uses a sanitized typed error and retains capacity', async () => {
+  const socket = new FakeSocket();
+  const harness = createHarness({
+    config: { maxSessions: 1 },
+    pty: { spawn: () => { throw new Error('/host/private/launcher failed'); } },
+    fs: { rm: async () => { throw new Error('/host/private/removal failed'); } },
+  });
+
+  let failure;
+  try {
+    await harness.manager.create(socket, { cols: 80, rows: 24 });
+  } catch (error) {
+    failure = error;
+  }
+
+  assert.ok(failure instanceof SessionCreateError);
+  assert.equal(failure.message, 'Unable to create session');
+  assert.equal(failure.cleanupFailed, true);
+  assert.equal(failure.message.includes('/host/private'), false);
+  assert.equal(harness.manager.activeCount, 1);
+  await assert.rejects(harness.manager.shutdown(), /shutdown failed/i);
 });
 
 test('partial PTY subscription failure disposes listeners and cleans startup resources', async () => {

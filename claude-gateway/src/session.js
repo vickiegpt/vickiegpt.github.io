@@ -9,6 +9,14 @@ const WORKSPACE_PREFIX = 'claude-session-';
 const CREATE_ERROR = 'Unable to create session';
 const CLEANUP_ERROR = 'Session cleanup failed';
 
+export class SessionCreateError extends Error {
+  constructor({ cleanupFailed = false } = {}) {
+    super(CREATE_ERROR);
+    this.name = 'SessionCreateError';
+    this.cleanupFailed = cleanupFailed === true;
+  }
+}
+
 const defaultPtyAdapter = {
   spawn(...args) {
     return require('node-pty').spawn(...args);
@@ -666,8 +674,8 @@ export class SessionManager {
     } catch {
       try {
         await session.close('startup-failure');
-      } catch (cleanupError) {
-        throw new AggregateError([cleanupError], CREATE_ERROR);
+      } catch {
+        throw new SessionCreateError({ cleanupFailed: true });
       }
       throw new Error(CREATE_ERROR);
     }

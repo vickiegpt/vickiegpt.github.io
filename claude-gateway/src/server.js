@@ -10,7 +10,7 @@ import {
   safeTokenEqual,
   serverMessage,
 } from './protocol.js';
-import { SessionManager } from './session.js';
+import { SessionCreateError, SessionManager } from './session.js';
 
 const WEBSOCKET_PATH = '/ws/claude';
 const DEFAULT_AUTH_TIMEOUT_MS = 5_000;
@@ -178,6 +178,8 @@ export function createGatewayServer(config, adapters = {}) {
   let fatal = false;
   let listenPromise = null;
   let shutdownPromise = null;
+  let resolveFatal;
+  const fatalPromise = new Promise((resolve) => { resolveFatal = resolve; });
 
   const server = HttpServer.createServer((request, response) => {
     try {
@@ -379,9 +381,14 @@ export function createGatewayServer(config, adapters = {}) {
       && sessionManager.activeCount >= config.maxSessions;
   }
 
-  function creationFailed(context) {
+  function creationFailed(context, error) {
+    const startupCleanupFailed = error instanceof SessionCreateError && error.cleanupFailed;
+    if (startupCleanupFailed) degraded = true;
     if (context.phase === 'closing' || context.socketEnded) return;
-    if (isAtCapacity()) {
+    if (startupCleanupFailed) {
+      sendState(context, 'unavailable');
+      failConnection(context, 1011, 'Unavailable');
+    } else if (isAtCapacity()) {
       sendState(context, 'busy');
       failConnection(context, 1013, 'Busy');
     } else {
@@ -426,13 +433,13 @@ export function createGatewayServer(config, adapters = {}) {
     let creation;
     try {
       creation = sessionManager.create(context.socket, DEFAULT_TERMINAL_SIZE);
-    } catch {
-      creationFailed(context);
+    } catch (error) {
+      creationFailed(context, error);
       return;
     }
     context.creationPromise = Promise.resolve(creation).then(
       (session) => sessionCreated(context, session),
-      () => creationFailed(context),
+      (error) => creationFailed(context, error),
     );
   }
 
@@ -526,10 +533,14 @@ export function createGatewayServer(config, adapters = {}) {
     }, config.authTimeoutMs);
   });
   function runtimeFailure() {
+    if (fatal) return;
     fatal = true;
     degraded = true;
     const closing = shutdown();
-    closing.catch(() => {});
+    closing.then(
+      () => resolveFatal(),
+      () => resolveFatal(),
+    );
   }
 
   webSocketServer.on('error', runtimeFailure);
@@ -640,36 +651,57 @@ export function createGatewayServer(config, adapters = {}) {
     httpServer: server,
     webSocketServer,
     sessionManager,
+    fatalPromise,
   };
 }
 
-async function main() {
+export async function runMain({
+  env = process.env,
+  processAdapter = process,
+  consoleAdapter = console,
+  createServer = createGatewayServer,
+} = {}) {
   let gateway;
   try {
-    gateway = createGatewayServer(loadConfig());
+    gateway = createServer(loadConfig(env));
     await gateway.listen();
   } catch {
-    console.error('Failed to start Claude gateway');
-    process.exitCode = 1;
-    return;
+    try {
+      consoleAdapter.error('Failed to start Claude gateway');
+    } finally {
+      processAdapter.exitCode = 1;
+    }
+    return { gateway: null, fatalHandled: Promise.resolve() };
   }
+
+  const fatalHandled = gateway.fatalPromise.then(() => {
+    try {
+      consoleAdapter.error('Claude gateway stopped after runtime failure');
+    } finally {
+      processAdapter.exitCode = 1;
+    }
+  });
 
   let stopping = false;
   const stop = () => {
     if (stopping) return;
     stopping = true;
     gateway.shutdown().catch(() => {
-      console.error('Failed to shut down Claude gateway');
-      process.exitCode = 1;
+      try {
+        consoleAdapter.error('Failed to shut down Claude gateway');
+      } finally {
+        processAdapter.exitCode = 1;
+      }
     });
   };
-  process.once('SIGTERM', stop);
-  process.once('SIGINT', stop);
+  processAdapter.once('SIGTERM', stop);
+  processAdapter.once('SIGINT', stop);
+  return { gateway, fatalHandled };
 }
 
 const entrypoint = process.argv[1] === undefined ? null : path.resolve(process.argv[1]);
 if (entrypoint === fileURLToPath(import.meta.url)) {
-  main().catch(() => {
+  runMain().catch(() => {
     console.error('Failed to start Claude gateway');
     process.exitCode = 1;
   });

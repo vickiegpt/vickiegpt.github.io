@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import http from 'node:http';
 import net from 'node:net';
 import test from 'node:test';
@@ -628,6 +629,104 @@ test('real SessionManager cleans a starting workspace during gateway shutdown', 
   assert.equal(removed[0].target, workspace);
   assert.deepEqual(removed[0].options, { recursive: true, force: true });
   assert.equal(ptys.length, 0);
+});
+
+test('real SessionManager startup cleanup quarantine degrades the gateway and retains capacity', async (t) => {
+  const root = '/srv/claude-workspaces';
+  const workspace = `${root}/claude-session-failed`;
+  const fakeFs = {
+    async realpath(target) {
+      return target;
+    },
+    async lstat(target) {
+      return {
+        dev: 1,
+        ino: target === root ? 1 : 2,
+        isDirectory: () => true,
+        isSymbolicLink: () => false,
+      };
+    },
+    async mkdtemp() {
+      return workspace;
+    },
+    async rm() {
+      throw new Error(`/host/private removal failed with ${TOKEN}`);
+    },
+  };
+  const fakePty = {
+    spawn() {
+      throw new Error(`/host/private spawn failed with ${TOKEN}`);
+    },
+  };
+  const gateway = createGatewayServer(gatewayConfig({ workspaceRoot: root }), {
+    sessionAdapters: { fs: fakeFs, pty: fakePty },
+  });
+  t.after(() => gateway.shutdown().catch(() => {}));
+  await gateway.listen();
+  const { port } = gateway.address();
+  const socket = await openWebSocket(port);
+  const messages = [];
+  socket.on('message', (data) => messages.push(JSON.parse(data.toString())));
+  const closed = nextClose(socket);
+
+  socket.send(JSON.stringify({ type: 'auth', token: TOKEN }));
+  assert.equal((await closed).code, 1011);
+  assert.deepEqual(messages, [
+    { type: 'state', state: 'authenticated' },
+    { type: 'error', message: 'Unable to create session' },
+  ]);
+  assert.equal(gateway.sessionManager.activeCount, 1);
+  const health = await request(port, '/healthz');
+  assert.equal(health.statusCode, 503);
+  assert.deepEqual(JSON.parse(health.body), { status: 'degraded' });
+  assert.equal(JSON.stringify(messages).includes('/host/private'), false);
+  assert.equal(health.body.includes(TOKEN), false);
+  await assert.rejects(gateway.shutdown(), (error) => {
+    assert.equal(error.message, 'Gateway shutdown failed');
+    assert.equal(error.message.includes('/host/private'), false);
+    assert.equal(error.message.includes(TOKEN), false);
+    return true;
+  });
+  assert.equal(gateway.sessionManager.activeCount, 1);
+});
+
+test('injectable production main sets nonzero exit status after sanitized runtime fatal shutdown', async () => {
+  const { runMain } = await import('../src/server.js');
+  const processAdapter = new EventEmitter();
+  processAdapter.exitCode = 0;
+  const logs = [];
+  const consoleAdapter = { error: (message) => logs.push(message) };
+  const manager = new FakeSessionManager();
+  const env = {
+    CLAUDE_WEB_ACCESS_TOKEN: TOKEN,
+    CLAUDE_WEB_ALLOWED_ORIGINS: ORIGIN,
+    CLAUDE_WEB_LAUNCHER: '/opt/claude-web/run-claude-session.sh',
+    CLAUDE_WEB_WORKSPACE_ROOT: '/var/lib/claude-web/sessions',
+    CLAUDE_WEB_MAX_SESSIONS: '1',
+    CLAUDE_WEB_IDLE_TIMEOUT_MS: '900000',
+    PORT: '8787',
+    HOST: '127.0.0.1',
+  };
+  const runtime = await runMain({
+    env,
+    processAdapter,
+    consoleAdapter,
+    createServer: (config) => createGatewayServer(
+      { ...config, port: 0 },
+      { sessionManager: manager },
+    ),
+  });
+
+  runtime.gateway.webSocketServer.emit(
+    'error',
+    new Error(`/host/private runtime failed with ${TOKEN}`),
+  );
+  await runtime.fatalHandled;
+
+  assert.equal(processAdapter.exitCode, 1);
+  assert.deepEqual(logs, ['Claude gateway stopped after runtime failure']);
+  assert.equal(JSON.stringify(logs).includes('/host/private'), false);
+  assert.equal(JSON.stringify(logs).includes(TOKEN), false);
 });
 
 test('shutdown refuses upgrades, clears auth timers, closes unauthenticated sockets, and awaits cleanup', async () => {
