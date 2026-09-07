@@ -11,6 +11,7 @@ import {
   serverMessage,
 } from './protocol.js';
 import { SessionCreateError, SessionManager } from './session.js';
+import { createRestrictedWispRouter } from './wisp.js';
 
 const WEBSOCKET_PATH = '/ws/claude';
 const DEFAULT_AUTH_TIMEOUT_MS = 5_000;
@@ -169,6 +170,7 @@ export function createGatewayServer(config, adapters = {}) {
   }, adapters.sessionAdapters);
   const HttpServer = adapters.http ?? http;
   const WebSocketServerClass = adapters.WebSocketServer ?? WebSocketServer;
+  const wispRouter = adapters.wispRouter ?? createRestrictedWispRouter();
   const connections = new Set();
   const rawSockets = new Map();
   const webSocketClosePromises = new Set();
@@ -550,6 +552,18 @@ export function createGatewayServer(config, adapters = {}) {
     trackRawSocket(socket);
     if (shuttingDown) {
       rejectUpgrade(socket, 503, 'Service Unavailable');
+      return;
+    }
+    if (request.url === wispRouter.path) {
+      if (!isAllowedOrigin(request.headers.origin, config.allowedOrigins)) {
+        rejectUpgrade(socket, 403, 'Forbidden');
+        return;
+      }
+      try {
+        wispRouter.route(request, socket, head);
+      } catch {
+        rejectUpgrade(socket, 400, 'Bad Request');
+      }
       return;
     }
     if (request.url !== WEBSOCKET_PATH) {

@@ -2,12 +2,15 @@
   "name": "claude-pty-gateway",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test"
   },
   "dependencies": {
+    "@mercuryworkshop/wisp-js": "0.4.1",
     "node-pty": "^1.1.0",
     "ws": "^8.18.3"
   }
