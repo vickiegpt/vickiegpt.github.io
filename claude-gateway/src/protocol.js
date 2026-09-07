@@ -47,6 +47,19 @@ function parseHttpOrigin(value) {
     return null;
   }
 
+  const match = /^(https?):\/\/(\[[0-9a-fA-F:.]+\]|[^/?#@:\\\s%]+)(?::([0-9]+))?\/?$/.exec(value);
+  if (match === null) {
+    return null;
+  }
+
+  const [, protocol, rawHost, rawPort] = match;
+  if (rawPort !== undefined) {
+    const port = Number(rawPort);
+    if (!Number.isSafeInteger(port) || String(port) !== rawPort) {
+      return null;
+    }
+  }
+
   try {
     const url = new URL(value);
     if (
@@ -59,6 +72,16 @@ function parseHttpOrigin(value) {
     ) {
       return null;
     }
+
+    const defaultPort = protocol === 'https' ? '443' : '80';
+    const normalizedPort = rawPort === undefined || rawPort === defaultPort
+      ? ''
+      : `:${rawPort}`;
+    const safelyNormalizedOrigin = `${protocol}://${rawHost.toLowerCase()}${normalizedPort}`;
+    if (url.origin !== safelyNormalizedOrigin) {
+      return null;
+    }
+
     return url.origin;
   } catch {
     return null;

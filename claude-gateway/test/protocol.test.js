@@ -63,9 +63,38 @@ test('isAllowedOrigin rejects a prefix-confusion origin', () => {
   assert.equal(isAllowedOrigin('https://asplos.dev.attacker.example', 'https://asplos.dev'), false);
 });
 
-test('isAllowedOrigin preserves host case and default-port normalization', () => {
-  assert.equal(isAllowedOrigin('HTTPS://ASPLOS.DEV:443', 'https://asplos.dev'), true);
+test('isAllowedOrigin accepts canonical forms with host case and default-port normalization', () => {
+  assert.equal(isAllowedOrigin('https://ASPLOS.DEV:443', 'https://asplos.dev/'), true);
   assert.equal(isAllowedOrigin('http://ASPlOS.dev:80', ['http://asplos.dev']), true);
+});
+
+test('isAllowedOrigin rejects an empty username marker', () => {
+  assert.equal(isAllowedOrigin('https://@asplos.dev', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects empty username and password markers', () => {
+  assert.equal(isAllowedOrigin('https://:@asplos.dev', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects an empty query marker', () => {
+  assert.equal(isAllowedOrigin('https://asplos.dev?', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects an empty fragment marker', () => {
+  assert.equal(isAllowedOrigin('https://asplos.dev#', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects a normalized dot path', () => {
+  assert.equal(isAllowedOrigin('https://asplos.dev/.', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects a normalized parent path', () => {
+  assert.equal(isAllowedOrigin('https://asplos.dev/foo/..', 'https://asplos.dev'), false);
+});
+
+test('isAllowedOrigin rejects surrounding whitespace', () => {
+  assert.equal(isAllowedOrigin(' https://asplos.dev', 'https://asplos.dev'), false);
+  assert.equal(isAllowedOrigin('https://asplos.dev ', 'https://asplos.dev'), false);
 });
 
 test('isAllowedOrigin rejects credentials', () => {
