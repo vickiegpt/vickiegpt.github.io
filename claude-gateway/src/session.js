@@ -130,6 +130,8 @@ class Session {
 
       this.listenerDisposables.push(
         subscribe(this.pty, 'onData', 'data', (data) => this.handleOutput(data)),
+      );
+      this.listenerDisposables.push(
         subscribe(this.pty, 'onExit', 'exit', (event) => this.handleExit(event)),
       );
       this.resetIdleTimer();

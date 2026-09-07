@@ -230,6 +230,41 @@ test('terminal activity resets the idle timeout and the current timeout kills th
   assert.equal(harness.manager.activeCount, 0);
 });
 
+test('PTY output resets the idle timeout', async () => {
+  const harness = createHarness();
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+  const initialTimer = harness.timers.latestId();
+
+  harness.ptys[0].emitData('output activity');
+  const resetTimer = harness.timers.latestId();
+  assert.notEqual(resetTimer, initialTimer);
+  assert.equal(harness.timers.cleared.includes(initialTimer), true);
+
+  await harness.timers.fire(initialTimer);
+  assert.equal(harness.ptys[0].killCount, 0);
+  await harness.timers.fire(resetTimer);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.manager.activeCount, 0);
+  await session.close();
+});
+
+test('terminal resize resets the idle timeout', async () => {
+  const harness = createHarness();
+  const session = await harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 });
+  const initialTimer = harness.timers.latestId();
+
+  session.resize(100, 40);
+  const resetTimer = harness.timers.latestId();
+  assert.notEqual(resetTimer, initialTimer);
+  assert.equal(harness.timers.cleared.includes(initialTimer), true);
+
+  await harness.timers.fire(initialTimer);
+  assert.equal(harness.ptys[0].killCount, 0);
+  await harness.timers.fire(resetTimer);
+  assert.equal(harness.ptys[0].killCount, 1);
+  assert.equal(harness.manager.activeCount, 0);
+});
+
 test('socket close kills the PTY and recursively removes its workspace', async () => {
   const harness = createHarness();
   const socket = new FakeSocket();
@@ -349,6 +384,40 @@ test('spawn failure releases capacity and removes the verified workspace', async
     '/srv/claude-workspaces/claude-session-1',
   ]);
   assert.equal(JSON.stringify(socket.sent).includes('/host/private'), false);
+});
+
+test('partial PTY subscription failure disposes listeners and cleans startup resources', async () => {
+  const partialPty = new FakePty();
+  let dataListenerDisposed = false;
+  partialPty.onData = (listener) => {
+    partialPty.dataListeners.add(listener);
+    return {
+      dispose() {
+        dataListenerDisposed = true;
+        partialPty.dataListeners.delete(listener);
+      },
+    };
+  };
+  partialPty.onExit = () => {
+    throw new Error('exit subscription failed');
+  };
+  const harness = createHarness({
+    config: { maxSessions: 1 },
+    pty: { spawn: () => partialPty },
+  });
+
+  await assert.rejects(
+    harness.manager.create(new FakeSocket(), { cols: 80, rows: 24 }),
+    /Unable to create session/,
+  );
+
+  assert.equal(dataListenerDisposed, true);
+  assert.equal(partialPty.dataListeners.size, 0);
+  assert.equal(partialPty.killCount, 1);
+  assert.deepEqual(harness.removed.map((entry) => entry.workspace), [
+    '/srv/claude-workspaces/claude-session-1',
+  ]);
+  assert.equal(harness.manager.activeCount, 0);
 });
 
 test('never removes an unverified workspace returned outside workspaceRoot', async () => {
