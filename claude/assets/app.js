@@ -8020,7 +8020,7 @@ class Bh {
     }), await or(i, s, r), t === this.generation && (this.state = "idle");
   }
 }
-const Dh = "/api/claude/session", Rh = "/api/claude/config", pi = "claude-coi-reload";
+const Dh = "/api/claude/session", Rh = "/api/claude/config", pi = "claude-coi-reload", Mh = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 function gi() {
   return new DOMException("Runtime startup was cancelled", "AbortError");
 }
@@ -8030,7 +8030,7 @@ function en(e) {
     throw new Error("Claude runtime requires https://asplos.dev");
   return t;
 }
-async function Mh({
+async function Lh({
   fetchImpl: e = globalThis.fetch,
   pageOrigin: t = globalThis.location?.origin
 } = {}) {
@@ -8044,7 +8044,7 @@ async function Mh({
     throw new Error("Runtime configuration is invalid");
   return Object.freeze({ turnstileSiteKey: r.turnstileSiteKey });
 }
-async function Lh(e, {
+async function Ph(e, {
   fetchImpl: t = globalThis.fetch,
   pageOrigin: i = globalThis.location?.origin
 } = {}) {
@@ -8063,7 +8063,7 @@ async function Lh(e, {
     throw new Error("Session authorization returned invalid data");
   return { capability: n.capability, expiresIn: n.expiresIn };
 }
-async function Ph({
+async function Th({
   isolated: e = globalThis.crossOriginIsolated,
   navigatorImpl: t = globalThis.navigator,
   locationImpl: i = globalThis.location,
@@ -8077,7 +8077,19 @@ async function Ph({
     throw new Error("Cross-origin isolation could not be enabled");
   return await t.serviceWorker.register("./coi-serviceworker.js", { scope: "./" }), await t.serviceWorker.ready, s?.setItem(pi, "1"), i.reload(), !1;
 }
-class Th {
+function Ah({
+  globalImpl: e = globalThis,
+  documentImpl: t = globalThis.document,
+  src: i = Mh
+} = {}) {
+  return e.turnstile ? Promise.resolve(e.turnstile) : t ? new Promise((s, r) => {
+    const n = t.querySelector(
+      'script[src^="https://challenges.cloudflare.com/turnstile/"]'
+    ), o = n || t.createElement("script"), h = () => e.turnstile ? s(e.turnstile) : r(new Error("Security challenge failed to load")), l = () => r(new Error("Security challenge failed to load"));
+    o.addEventListener("load", h, { once: !0 }), o.addEventListener("error", l, { once: !0 }), n || (o.src = i, o.async = !0, o.defer = !0, t.head.append(o));
+  }) : Promise.reject(new Error("Security challenge failed to load"));
+}
+class Oh {
   constructor({ runtime: t, terminal: i, challenge: s, requestSession: r, onState: n = () => {
   }, setTimer: o = globalThis.setTimeout, clearTimer: h = globalThis.clearTimeout }) {
     this.runtime = t, this.terminal = i, this.challenge = s, this.requestSession = r, this.onState = n, this.setTimer = o, this.clearTimer = h, this.state = "idle", this.generation = 0, this.expiryTimer = null;
@@ -8114,13 +8126,13 @@ class Th {
     }
   }
 }
-const Ah = "wss://asplos.dev/wisp/", Oh = "https://asplos.dev/about/runtime-manifest.json", Ih = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit", Se = (e) => document.querySelector(e), Nh = Se("#status-text"), Hh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), Wh = Se("#progress-fill");
+const Ih = "wss://asplos.dev/wisp/", Nh = "https://asplos.dev/about/runtime-manifest.json", Se = (e) => document.querySelector(e), Hh = Se("#status-text"), Wh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), zh = Se("#progress-fill");
 function st(e, t) {
   const i = Math.max(0, Math.min(100, Math.round(e || 0)));
-  ar.setAttribute("aria-valuenow", String(i)), ar.textContent = t, Wh.style.width = `${i}%`;
+  ar.setAttribute("aria-valuenow", String(i)), ar.textContent = t, zh.style.width = `${i}%`;
 }
 function wt(e) {
-  document.body.dataset.state = e, Hh.className = e;
+  document.body.dataset.state = e, Wh.className = e;
   const t = ["challenge", "starting", "running", "stopping"].includes(e);
   tn.disabled = t, sn.disabled = !t;
   const i = {
@@ -8132,45 +8144,37 @@ function wt(e) {
     exited: "process exited",
     failed: "runtime failed"
   };
-  Nh.textContent = i[e] || e;
-}
-function zh(e) {
-  return new Promise((t, i) => {
-    const s = document.querySelector(`script[src="${e}"]`);
-    if (s && globalThis.turnstile) return t();
-    const r = s || document.createElement("script");
-    r.src = e, r.async = !0, r.defer = !0, r.onload = t, r.onerror = () => i(new Error("Security challenge failed to load")), s || document.head.append(r);
-  });
+  Hh.textContent = i[e] || e;
 }
 async function Fh(e) {
-  await zh(Ih);
-  let t = null, i = null;
-  const s = globalThis.turnstile.render("#turnstile", {
+  const t = await Ah();
+  let i = null, s = null;
+  const r = t.render("#turnstile", {
     sitekey: e,
     action: "claude-session",
     execution: "execute",
     appearance: "interaction-only",
     size: "flexible",
-    callback(r) {
-      t?.(r), t = null, i = null;
+    callback(n) {
+      i?.(n), i = null, s = null;
     },
     "error-callback"() {
-      i?.(new Error("Security challenge was not completed")), t = null, i = null;
+      s?.(new Error("Security challenge was not completed")), i = null, s = null;
     },
     "expired-callback"() {
-      i?.(new Error("Security challenge expired")), t = null, i = null;
+      s?.(new Error("Security challenge expired")), i = null, s = null;
     }
   });
   return {
     execute() {
-      if (t) throw new Error("Security challenge is already active");
-      const r = new Promise((n, o) => {
-        t = n, i = o;
+      if (i) throw new Error("Security challenge is already active");
+      const n = new Promise((o, h) => {
+        i = o, s = h;
       });
-      return globalThis.turnstile.execute(s), r;
+      return t.execute(r), n;
     },
     reset() {
-      t = null, i = null, globalThis.turnstile.reset(s);
+      i = null, s = null, t.reset(r);
     }
   };
 }
@@ -8187,7 +8191,7 @@ function es(e) {
   ].includes(e?.message) ? `${e.message}.` : "The browser runtime could not start. Check memory and network access.";
 }
 async function $h() {
-  if (!await Ph()) return;
+  if (!await Th()) return;
   const e = new gh({
     convertEol: !0,
     cursorBlink: !0,
@@ -8214,49 +8218,65 @@ async function $h() {
   }), t = new on();
   e.loadAddon(t), e.open(Se("#terminal")), t.fit(), e.writeln("\x1B[38;2;199;255;74mNode WASIX runtime ready to download.\x1B[0m"), e.writeln(`Press Start runtime to launch Claude Code.\r
 `);
-  const i = await Mh(), s = await Fh(i.turnstileSiteKey), r = new Bh({
-    manifestUrl: Oh,
-    wispUrl: Ah,
-    onProgress(l, a) {
-      const d = typeof l == "object" ? l : { loaded: l, total: a }, c = d.total ? d.loaded / d.total * 100 : 0;
-      st(c, `Downloading runtime · ${Math.round(c)}%`);
+  let i = null, s = null;
+  const r = {
+    async execute() {
+      if (!i) {
+        s ||= Lh().then((a) => Fh(a.turnstileSiteKey));
+        try {
+          i = await s;
+        } catch (a) {
+          throw s = null, a;
+        }
+      }
+      return i.execute();
     },
-    onExit(l) {
+    reset() {
+      i?.reset();
+    }
+  }, n = new Bh({
+    manifestUrl: Nh,
+    wispUrl: Ih,
+    onProgress(a, d) {
+      const c = typeof a == "object" ? a : { loaded: a, total: d }, _ = c.total ? c.loaded / c.total * 100 : 0;
+      st(_, `Downloading runtime · ${Math.round(_)}%`);
+    },
+    onExit(a) {
       e.writeln(`\r
-\x1B[38;2;137;146;129mProcess exited (${l?.exitCode ?? "unknown"}).\x1B[0m`), wt("exited");
+\x1B[38;2;137;146;129mProcess exited (${a?.exitCode ?? "unknown"}).\x1B[0m`), wt("exited");
     },
     onError() {
       e.writeln(`\r
 \x1B[38;2;255;118;87mRuntime stream failed.\x1B[0m`), wt("failed");
     }
-  }), n = new Th({
-    runtime: r,
+  }), o = new Oh({
+    runtime: n,
     terminal: e,
-    challenge: s,
-    requestSession: (l) => Lh(l),
+    challenge: r,
+    requestSession: (a) => Ph(a),
     onState: wt
   });
   tn.addEventListener("click", async () => {
     st(0, "Authorizing session");
     try {
-      await n.start(), st(100, "Runtime verified and running"), e.focus();
-    } catch (l) {
-      l?.name !== "AbortError" && e.writeln(`\r
-\x1B[38;2;255;118;87m${es(l)}\x1B[0m`), st(0, es(l));
+      await o.start(), st(100, "Runtime verified and running"), e.focus();
+    } catch (a) {
+      a?.name !== "AbortError" && e.writeln(`\r
+\x1B[38;2;255;118;87m${es(a)}\x1B[0m`), st(0, es(a));
     }
   }), sn.addEventListener("click", async () => {
-    await n.stop(), st(0, "Runtime stopped");
+    await o.stop(), st(0, "Runtime stopped");
   }), Se("#clear-terminal").addEventListener("click", () => e.clear()), Se("#focus-keyboard").addEventListener("click", () => e.focus());
-  let o;
-  const h = () => {
-    clearTimeout(o), o = setTimeout(() => {
+  let h;
+  const l = () => {
+    clearTimeout(h), h = setTimeout(() => {
       t.fit(), Se("#terminal-size").textContent = `${e.cols} × ${e.rows}`;
     }, 80);
   };
-  new ResizeObserver(h).observe(Se("#terminal")), e.onResize(({ cols: l, rows: a }) => {
-    Se("#terminal-size").textContent = `${l} × ${a}`;
+  new ResizeObserver(l).observe(Se("#terminal")), e.onResize(({ cols: a, rows: d }) => {
+    Se("#terminal-size").textContent = `${a} × ${d}`;
   }), addEventListener("beforeunload", () => {
-    n.stop();
+    o.stop();
   }, { once: !0 }), wt("idle");
 }
 $h().catch((e) => {

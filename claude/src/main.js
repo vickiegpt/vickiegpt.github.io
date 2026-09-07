@@ -1,6 +1,7 @@
 const SESSION_PATH = "/api/claude/session";
 const CONFIG_PATH = "/api/claude/config";
 const ISOLATION_RELOAD_KEY = "claude-coi-reload";
+const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 function abortError() {
   return new DOMException("Runtime startup was cancelled", "AbortError");
@@ -86,6 +87,34 @@ export async function ensureCrossOriginIsolation({
   storage?.setItem(ISOLATION_RELOAD_KEY, "1");
   locationImpl.reload();
   return false;
+}
+
+export function loadTurnstileApi({
+  globalImpl = globalThis,
+  documentImpl = globalThis.document,
+  src = TURNSTILE_SCRIPT,
+} = {}) {
+  if (globalImpl.turnstile) return Promise.resolve(globalImpl.turnstile);
+  if (!documentImpl) return Promise.reject(new Error("Security challenge failed to load"));
+
+  return new Promise((resolve, reject) => {
+    const existing = documentImpl.querySelector(
+      'script[src^="https://challenges.cloudflare.com/turnstile/"]',
+    );
+    const script = existing || documentImpl.createElement("script");
+    const loaded = () => globalImpl.turnstile
+      ? resolve(globalImpl.turnstile)
+      : reject(new Error("Security challenge failed to load"));
+    const failed = () => reject(new Error("Security challenge failed to load"));
+    script.addEventListener("load", loaded, { once: true });
+    script.addEventListener("error", failed, { once: true });
+    if (!existing) {
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      documentImpl.head.append(script);
+    }
+  });
 }
 
 export class RuntimeController {

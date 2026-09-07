@@ -4,10 +4,26 @@ import { describe, it } from "node:test";
 
 import {
   RuntimeController,
+  loadTurnstileApi,
   requestCapability,
 } from "../src/main.js";
 
 describe("browser Claude terminal UI", () => {
+  it("reuses an existing Turnstile API without appending another script", async () => {
+    const turnstile = { render() {} };
+    let appended = 0;
+    const result = await loadTurnstileApi({
+      globalImpl: { turnstile },
+      documentImpl: {
+        querySelector() { return null; },
+        createElement() { throw new Error("must not create a script"); },
+        head: { append() { appended += 1; } },
+      },
+    });
+    assert.equal(result, turnstile);
+    assert.equal(appended, 0);
+  });
+
   it("contains terminal controls and removes the direct API editor", async () => {
     const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
     for (const id of [

@@ -8,12 +8,12 @@ import {
   RuntimeController,
   ensureCrossOriginIsolation,
   loadPublicConfig,
+  loadTurnstileApi,
   requestCapability,
 } from "./src/main.js";
 
 const FIXED_WISP_URL = "wss://asplos.dev/wisp/";
 const MANIFEST_URL = "https://asplos.dev/about/runtime-manifest.json";
-const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 const $ = (selector) => document.querySelector(selector);
 const statusText = $("#status-text");
@@ -48,25 +48,11 @@ function setState(state) {
   statusText.textContent = labels[state] || state;
 }
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${src}"]`);
-    if (existing && globalThis.turnstile) return resolve();
-    const script = existing || document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.defer = true;
-    script.onload = resolve;
-    script.onerror = () => reject(new Error("Security challenge failed to load"));
-    if (!existing) document.head.append(script);
-  });
-}
-
 async function createChallenge(siteKey) {
-  await loadScript(TURNSTILE_SCRIPT);
+  const turnstile = await loadTurnstileApi();
   let resolveToken = null;
   let rejectToken = null;
-  const widget = globalThis.turnstile.render("#turnstile", {
+  const widget = turnstile.render("#turnstile", {
     sitekey: siteKey,
     action: "claude-session",
     execution: "execute",
@@ -95,13 +81,13 @@ async function createChallenge(siteKey) {
         resolveToken = resolve;
         rejectToken = reject;
       });
-      globalThis.turnstile.execute(widget);
+      turnstile.execute(widget);
       return token;
     },
     reset() {
       resolveToken = null;
       rejectToken = null;
-      globalThis.turnstile.reset(widget);
+      turnstile.reset(widget);
     },
   };
 }
@@ -157,8 +143,26 @@ async function boot() {
   terminal.writeln("\x1b[38;2;199;255;74mNode WASIX runtime ready to download.\x1b[0m");
   terminal.writeln("Press Start runtime to launch Claude Code.\r\n");
 
-  const publicConfig = await loadPublicConfig();
-  const challenge = await createChallenge(publicConfig.turnstileSiteKey);
+  let challengeInstance = null;
+  let challengePromise = null;
+  const challenge = {
+    async execute() {
+      if (!challengeInstance) {
+        challengePromise ||= loadPublicConfig()
+          .then((config) => createChallenge(config.turnstileSiteKey));
+        try {
+          challengeInstance = await challengePromise;
+        } catch (error) {
+          challengePromise = null;
+          throw error;
+        }
+      }
+      return challengeInstance.execute();
+    },
+    reset() {
+      challengeInstance?.reset();
+    },
+  };
   const runtime = new BrowserNodeRuntime({
     manifestUrl: MANIFEST_URL,
     wispUrl: FIXED_WISP_URL,

@@ -12,7 +12,11 @@ function exactUrl(origin, pathname) {
 }
 
 async function fetchExact(fetchImpl, url, init = {}) {
-  const response = await fetchImpl(url, { ...init, redirect: "manual" });
+  const response = await fetchImpl(url, {
+    ...init,
+    redirect: "manual",
+    headers: { ...init.headers, "Accept-Encoding": "identity" },
+  });
   if (response.status >= 300 && response.status < 400) throw new Error(`Redirect rejected for ${url}`);
   if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
   if (response.url && new URL(response.url).origin !== new URL(url).origin) {

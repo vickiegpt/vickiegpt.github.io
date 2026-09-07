@@ -23,6 +23,7 @@ function runtimeFetch(webc = Buffer.from("webc-runtime")) {
   };
   return async (input, init = {}) => {
     const url = String(input);
+    assert.equal(init.headers?.["Accept-Encoding"], "identity");
     if (url.endsWith("runtime-manifest.json")) {
       return response(url, JSON.stringify(manifest), {
         status: 200,
