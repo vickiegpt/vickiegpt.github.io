@@ -14,6 +14,20 @@
       "bucket_name": "asplos-claude-artifacts"
     }
   ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RELAY_QUOTA",
+        "class_name": "RelayQuota"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RelayQuota"]
+    }
+  ],
   "routes": [
     {
       "pattern": "asplos.dev/about/node.wasm",

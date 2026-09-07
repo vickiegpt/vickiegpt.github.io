@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import worker from "../src/index.js";
+import worker from "../src/router.js";
 
 function bodyStream(bytes) {
   return new ReadableStream({
