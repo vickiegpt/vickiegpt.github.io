@@ -18,6 +18,7 @@ const DEFAULT_MAX_BUFFERED_BYTES = 1024 * 1024;
 const DEFAULT_TERMINATION_GRACE_MS = 1_000;
 const DEFAULT_KILL_GRACE_MS = 1_000;
 const DEFAULT_SOCKET_CLOSE_TIMEOUT_MS = 1_000;
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
 const DEFAULT_TERMINAL_SIZE = Object.freeze({ cols: 80, rows: 24 });
 const MAX_PENDING_MESSAGES = 256;
 const CHILD_ENV_KEYS = Object.freeze([
@@ -76,21 +77,27 @@ export function loadConfig(env = process.env) {
     launcher: requiredString(env, 'CLAUDE_WEB_LAUNCHER'),
     workspaceRoot: requiredString(env, 'CLAUDE_WEB_WORKSPACE_ROOT'),
     maxSessions: parseInteger(env, 'CLAUDE_WEB_MAX_SESSIONS'),
-    idleTimeoutMs: parseInteger(env, 'CLAUDE_WEB_IDLE_TIMEOUT_MS'),
+    idleTimeoutMs: parseInteger(env, 'CLAUDE_WEB_IDLE_TIMEOUT_MS', {
+      maximum: MAX_TIMER_DELAY_MS,
+    }),
     authTimeoutMs: parseInteger(env, 'CLAUDE_WEB_AUTH_TIMEOUT_MS', {
       defaultValue: DEFAULT_AUTH_TIMEOUT_MS,
+      maximum: MAX_TIMER_DELAY_MS,
     }),
     maxBufferedBytes: parseInteger(env, 'CLAUDE_WEB_MAX_BUFFERED_BYTES', {
       defaultValue: DEFAULT_MAX_BUFFERED_BYTES,
     }),
     terminationGraceMs: parseInteger(env, 'CLAUDE_WEB_TERMINATION_GRACE_MS', {
       defaultValue: DEFAULT_TERMINATION_GRACE_MS,
+      maximum: MAX_TIMER_DELAY_MS,
     }),
     killGraceMs: parseInteger(env, 'CLAUDE_WEB_KILL_GRACE_MS', {
       defaultValue: DEFAULT_KILL_GRACE_MS,
+      maximum: MAX_TIMER_DELAY_MS,
     }),
     socketCloseTimeoutMs: parseInteger(env, 'CLAUDE_WEB_SOCKET_CLOSE_TIMEOUT_MS', {
       defaultValue: DEFAULT_SOCKET_CLOSE_TIMEOUT_MS,
+      maximum: MAX_TIMER_DELAY_MS,
     }),
     port: parseInteger(env, 'PORT', { maximum: 65_535 }),
     host: requiredString(env, 'HOST'),
@@ -111,37 +118,26 @@ function validateConfig(config) {
   if (config.allowedOrigins.some((origin) => !isAllowedOrigin(origin, [origin]))) {
     throw configurationError('allowedOrigins');
   }
+  for (const key of ['maxSessions', 'maxBufferedBytes']) {
+    if (!Number.isSafeInteger(config[key]) || config[key] < 1) throw configurationError(key);
+  }
   for (const key of [
-    'maxSessions',
     'idleTimeoutMs',
     'authTimeoutMs',
-    'maxBufferedBytes',
     'terminationGraceMs',
     'killGraceMs',
     'socketCloseTimeoutMs',
   ]) {
-    if (!Number.isSafeInteger(config[key]) || config[key] < 1) throw configurationError(key);
+    if (
+      !Number.isSafeInteger(config[key])
+      || config[key] < 1
+      || config[key] > MAX_TIMER_DELAY_MS
+    ) {
+      throw configurationError(key);
+    }
   }
   if (!Number.isSafeInteger(config.port) || config.port < 0 || config.port > 65_535) {
     throw configurationError('port');
-  }
-}
-
-function rejectUpgrade(socket, statusCode, statusText) {
-  if (socket.destroyed) return;
-  try {
-    socket.end(
-      `HTTP/1.1 ${statusCode} ${statusText}\r\n`
-      + 'Connection: close\r\n'
-      + 'Content-Length: 0\r\n'
-      + '\r\n',
-    );
-  } catch {
-    try {
-      socket.destroy();
-    } catch {
-      // The transport is already unusable.
-    }
   }
 }
 
@@ -174,15 +170,20 @@ export function createGatewayServer(config, adapters = {}) {
   const HttpServer = adapters.http ?? http;
   const WebSocketServerClass = adapters.WebSocketServer ?? WebSocketServer;
   const connections = new Set();
+  const rawSockets = new Map();
+  const webSocketClosePromises = new Set();
+  const cleanupPromises = new Set();
   let shuttingDown = false;
+  let degraded = false;
+  let fatal = false;
   let listenPromise = null;
   let shutdownPromise = null;
 
   const server = HttpServer.createServer((request, response) => {
     try {
       if (request.url === '/healthz' && request.method === 'GET') {
-        const body = '{"status":"ok"}';
-        response.writeHead(200, {
+        const body = degraded ? '{"status":"degraded"}' : '{"status":"ok"}';
+        response.writeHead(degraded ? 503 : 200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Content-Length': Buffer.byteLength(body),
           'Cache-Control': 'no-store',
@@ -208,6 +209,70 @@ export function createGatewayServer(config, adapters = {}) {
 
   const webSocketServer = new WebSocketServerClass({ noServer: true, maxPayload: 65_536 });
 
+  function finishRawSocket(record) {
+    if (record.finished) return;
+    record.finished = true;
+    if (record.timer !== null) timers.clearTimeout(record.timer);
+    record.socket.off?.('close', record.onClose);
+    rawSockets.delete(record.socket);
+    record.resolve();
+  }
+
+  function trackRawSocket(socket) {
+    const existing = rawSockets.get(socket);
+    if (existing !== undefined) return existing;
+    let resolve;
+    const promise = new Promise((resolvePromise) => { resolve = resolvePromise; });
+    const record = {
+      socket,
+      promise,
+      resolve,
+      timer: null,
+      finished: false,
+      onClose: null,
+    };
+    record.onClose = () => finishRawSocket(record);
+    rawSockets.set(socket, record);
+    socket.once('close', record.onClose);
+    return record;
+  }
+
+  function forceDestroyRawSocket(record) {
+    try {
+      record.socket.destroy();
+    } catch {
+      degraded = true;
+    }
+    finishRawSocket(record);
+  }
+
+  function releaseRawSocket(socket) {
+    const record = rawSockets.get(socket);
+    if (record !== undefined) finishRawSocket(record);
+  }
+
+  function rejectUpgrade(socket, statusCode, statusText) {
+    const record = trackRawSocket(socket);
+    if (socket.destroyed) {
+      finishRawSocket(record);
+      return;
+    }
+    record.timer = timers.setTimeout(
+      () => forceDestroyRawSocket(record),
+      config.socketCloseTimeoutMs,
+    );
+    try {
+      socket.end(
+        `HTTP/1.1 ${statusCode} ${statusText}\r\n`
+        + 'Connection: close\r\n'
+        + 'Content-Length: 0\r\n'
+        + '\r\n',
+      );
+    } catch {
+      forceDestroyRawSocket(record);
+    }
+  }
+
   function clearAuthTimer(context) {
     if (context.authTimer === null) return;
     timers.clearTimeout(context.authTimer);
@@ -217,10 +282,15 @@ export function createGatewayServer(config, adapters = {}) {
   function closeSession(context, reason) {
     if (context.session === null || context.sessionClosePromise !== null) return;
     try {
-      context.sessionClosePromise = Promise.resolve(context.session.close(reason)).catch(() => {});
+      context.sessionClosePromise = Promise.resolve(context.session.close(reason)).catch(() => {
+        degraded = true;
+      });
     } catch {
+      degraded = true;
       context.sessionClosePromise = Promise.resolve();
     }
+    cleanupPromises.add(context.sessionClosePromise);
+    context.sessionClosePromise.then(() => cleanupPromises.delete(context.sessionClosePromise));
   }
 
   function socketIsOpen(socket) {
@@ -237,18 +307,49 @@ export function createGatewayServer(config, adapters = {}) {
     closeSession(context, reason);
   }
 
-  function closeSocket(context, code, reason) {
-    if (!socketIsOpen(context.socket)) return;
+  function finishWebSocketClose(context) {
+    if (context.resolveSocketClose === null) return;
+    if (context.socketCloseTimer !== null) timers.clearTimeout(context.socketCloseTimer);
+    context.socketCloseTimer = null;
+    const resolve = context.resolveSocketClose;
+    context.resolveSocketClose = null;
+    resolve();
+  }
+
+  function terminateWebSocket(context) {
     try {
-      const result = context.socket.close(code, reason);
-      if (result && typeof result.then === 'function') result.catch(() => {});
+      context.socket.terminate();
     } catch {
+      degraded = true;
+    }
+    finishWebSocketClose(context);
+  }
+
+  function closeSocket(context, code, reason) {
+    if (context.socketClosePromise !== null) return context.socketClosePromise;
+    if (context.transportClosed || context.socket.readyState === 3) return Promise.resolve();
+
+    context.socketClosePromise = new Promise((resolve) => {
+      context.resolveSocketClose = resolve;
+    });
+    webSocketClosePromises.add(context.socketClosePromise);
+    context.socketClosePromise.then(() => webSocketClosePromises.delete(context.socketClosePromise));
+    context.socketCloseTimer = timers.setTimeout(
+      () => terminateWebSocket(context),
+      config.socketCloseTimeoutMs,
+    );
+
+    if (socketIsOpen(context.socket)) {
       try {
-        context.socket.terminate();
+        const result = context.socket.close(code, reason);
+        if (result && typeof result.then === 'function') {
+          result.catch(() => terminateWebSocket(context));
+        }
       } catch {
-        // Socket cleanup is best effort; session cleanup remains authoritative.
+        terminateWebSocket(context);
       }
     }
+    return context.socketClosePromise;
   }
 
   function failConnection(context, code, reason) {
@@ -396,6 +497,10 @@ export function createGatewayServer(config, adapters = {}) {
       session: null,
       sessionClosePromise: null,
       socketEnded: false,
+      transportClosed: false,
+      socketClosePromise: null,
+      socketCloseTimer: null,
+      resolveSocketClose: null,
       pending: [],
     };
     connections.add(context);
@@ -407,16 +512,31 @@ export function createGatewayServer(config, adapters = {}) {
     };
 
     socket.on('message', (raw, isBinary) => onMessage(context, raw, isBinary));
-    socket.on('error', () => endConnection(context, 'socket-error'));
-    socket.on('close', () => endConnection(context, 'socket-close'));
+    socket.on('error', () => {
+      endConnection(context, 'socket-error');
+      closeSocket(context, 1008, 'Policy violation');
+    });
+    socket.on('close', () => {
+      context.transportClosed = true;
+      finishWebSocketClose(context);
+      endConnection(context, 'socket-close');
+    });
     context.authTimer = timers.setTimeout(() => {
       failConnection(context, 1008, 'Authentication timeout');
     }, config.authTimeoutMs);
   });
-  webSocketServer.on('error', () => {});
+  function runtimeFailure() {
+    fatal = true;
+    degraded = true;
+    const closing = shutdown();
+    closing.catch(() => {});
+  }
+
+  webSocketServer.on('error', runtimeFailure);
 
   server.on('upgrade', (request, socket, head) => {
     socket.on('error', () => {});
+    trackRawSocket(socket);
     if (shuttingDown) {
       rejectUpgrade(socket, 503, 'Service Unavailable');
       return;
@@ -432,6 +552,7 @@ export function createGatewayServer(config, adapters = {}) {
 
     try {
       webSocketServer.handleUpgrade(request, socket, head, (webSocket) => {
+        releaseRawSocket(socket);
         if (shuttingDown) {
           try {
             webSocket.close(1012, 'Service restarting');
@@ -448,7 +569,7 @@ export function createGatewayServer(config, adapters = {}) {
   });
 
   server.on('clientError', (_error, socket) => rejectUpgrade(socket, 400, 'Bad Request'));
-  server.on('error', () => {});
+  server.on('error', runtimeFailure);
 
   function listen() {
     if (shuttingDown) return Promise.reject(new Error('Gateway is shutting down'));
@@ -478,22 +599,33 @@ export function createGatewayServer(config, adapters = {}) {
 
     for (const context of [...connections]) {
       clearAuthTimer(context);
-      if (context.phase === 'awaiting-auth' || context.phase === 'creating') {
-        context.phase = 'closing';
-        closeSocket(context, 1001, 'Server shutting down');
-      }
+      context.phase = 'closing';
+      closeSocket(context, 1001, 'Server shutting down');
+      closeSession(context, 'shutdown');
     }
+
+    const rawSocketPromises = [...rawSockets.values()].map((record) => {
+      forceDestroyRawSocket(record);
+      return record.promise;
+    });
 
     shutdownPromise = (async () => {
       const outcomes = await Promise.allSettled([
         closeHttpServer(server),
         Promise.resolve().then(() => sessionManager.shutdown()),
+        ...rawSocketPromises,
+        ...webSocketClosePromises,
       ]);
       const creationPromises = [...connections]
         .map((context) => context.creationPromise)
         .filter((promise) => promise !== null);
       await Promise.allSettled(creationPromises);
-      if (outcomes.some((outcome) => outcome.status === 'rejected')) {
+      await Promise.allSettled([...cleanupPromises]);
+      if (
+        fatal
+        || degraded
+        || outcomes.some((outcome) => outcome.status === 'rejected')
+      ) {
         throw new Error('Gateway shutdown failed');
       }
     })();

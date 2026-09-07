@@ -108,6 +108,42 @@ function request(port, path, method = 'GET') {
   });
 }
 
+function rawUpgrade(port, path = '/ws/claude', origin = ORIGIN) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({
+      host: '127.0.0.1',
+      port,
+      allowHalfOpen: true,
+    });
+    let response = '';
+    socket.setEncoding('latin1');
+    socket.on('connect', () => {
+      socket.write(
+        `GET ${path} HTTP/1.1\r\n`
+        + `Host: 127.0.0.1:${port}\r\n`
+        + 'Connection: Upgrade\r\n'
+        + 'Upgrade: websocket\r\n'
+        + 'Sec-WebSocket-Version: 13\r\n'
+        + 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n'
+        + (origin === null ? '' : `Origin: ${origin}\r\n`)
+        + '\r\n',
+      );
+    });
+    socket.on('data', (chunk) => {
+      response += chunk;
+      if (response.includes('\r\n\r\n')) resolve({ socket, response });
+    });
+    socket.once('error', reject);
+  });
+}
+
+async function completesWithin(promise, timeoutMs = 500) {
+  return Promise.race([
+    promise.then(() => true, () => true),
+    new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+  ]);
+}
+
 function openWebSocket(port, path = '/ws/claude', origin = ORIGIN) {
   return new Promise((resolve, reject) => {
     const options = origin === undefined ? {} : { origin };
@@ -161,7 +197,7 @@ async function authenticate(socket) {
 
 async function eventually(predicate, timeoutMs = 500) {
   const deadline = Date.now() + timeoutMs;
-  while (!predicate()) {
+  while (!(await predicate())) {
     if (Date.now() >= deadline) throw new Error('condition was not reached');
     await new Promise((resolve) => setTimeout(resolve, 5));
   }
@@ -237,6 +273,35 @@ test('loadConfig fails safely for missing values and invalid integer ranges', ()
     );
   }
   assert.throws(() => loadConfig({}), /configuration/i);
+});
+
+test('timer configuration accepts 2147483647 and rejects larger values', () => {
+  const base = {
+    CLAUDE_WEB_ACCESS_TOKEN: 'secret',
+    CLAUDE_WEB_ALLOWED_ORIGINS: 'https://asplos.dev',
+    CLAUDE_WEB_LAUNCHER: '/opt/claude-web/run-claude-session.sh',
+    CLAUDE_WEB_WORKSPACE_ROOT: '/var/lib/claude-web/sessions',
+    CLAUDE_WEB_MAX_SESSIONS: '1',
+    CLAUDE_WEB_IDLE_TIMEOUT_MS: '900000',
+    PORT: '8787',
+    HOST: '127.0.0.1',
+  };
+  const timerKeys = [
+    'CLAUDE_WEB_IDLE_TIMEOUT_MS',
+    'CLAUDE_WEB_AUTH_TIMEOUT_MS',
+    'CLAUDE_WEB_TERMINATION_GRACE_MS',
+    'CLAUDE_WEB_KILL_GRACE_MS',
+    'CLAUDE_WEB_SOCKET_CLOSE_TIMEOUT_MS',
+  ];
+
+  for (const key of timerKeys) {
+    assert.doesNotThrow(() => loadConfig({ ...base, [key]: '2147483647' }));
+    assert.throws(() => loadConfig({ ...base, [key]: '2147483648' }), /configuration/i);
+  }
+  assert.throws(
+    () => createGatewayServer(gatewayConfig({ authTimeoutMs: 2_147_483_648 })),
+    /configuration/i,
+  );
 });
 
 test('GET /healthz is minimal JSON and other HTTP routes fail safely', async (t) => {
@@ -425,6 +490,146 @@ test('session creation failures send only a generic unavailable state', async (t
   assert.equal(JSON.stringify(messages).includes(TOKEN), false);
 });
 
+test('hostile half-open rejected upgrades cannot hold shutdown indefinitely', async () => {
+  const { gateway, port } = await startGateway({ config: { socketCloseTimeoutMs: 10 } });
+  const { socket, response } = await rawUpgrade(port, '/rejected');
+  assert.match(response, /^HTTP\/1\.1 404 /);
+
+  const shutdown = gateway.shutdown();
+  const completed = await completesWithin(shutdown, 250);
+  socket.destroy();
+  await shutdown;
+  assert.equal(completed, true);
+});
+
+test('shutdown terminates a non-cooperating unauthenticated WebSocket and awaits closure', async () => {
+  const { gateway, port } = await startGateway({ config: { socketCloseTimeoutMs: 10 } });
+  const { socket, response } = await rawUpgrade(port);
+  assert.match(response, /^HTTP\/1\.1 101 /);
+  const remoteEnded = new Promise((resolve) => socket.once('end', resolve));
+
+  const completed = await completesWithin(Promise.all([gateway.shutdown(), remoteEnded]), 250);
+  socket.destroy();
+  assert.equal(completed, true);
+});
+
+test('session cleanup failure degrades health and makes shutdown fail closed without leakage', async () => {
+  const session = {
+    write() {},
+    resize() {},
+    async close() {
+      throw new Error(`/host/private cleanup failed with ${TOKEN}`);
+    },
+  };
+  const manager = new FakeSessionManager({ create: async () => session });
+  const { gateway, port } = await startGateway({ manager });
+  const socket = await openWebSocket(port);
+  await authenticate(socket);
+  await eventually(() => manager.createCalls.length === 1);
+  const closed = nextClose(socket);
+  socket.close();
+  await closed;
+  await eventually(async () => (await request(port, '/healthz')).statusCode === 503);
+
+  const health = await request(port, '/healthz');
+  assert.equal(health.statusCode, 503);
+  assert.deepEqual(JSON.parse(health.body), { status: 'degraded' });
+  assert.equal(health.body.includes(TOKEN), false);
+  await assert.rejects(gateway.shutdown(), (error) => {
+    assert.match(error.message, /Gateway shutdown failed/);
+    assert.equal(error.message.includes('/host/private'), false);
+    assert.equal(error.message.includes(TOKEN), false);
+    return true;
+  });
+});
+
+test('runtime HTTP and WebSocket server errors trigger bounded sanitized fatal shutdown', async (t) => {
+  for (const emitterName of ['httpServer', 'webSocketServer']) {
+    await t.test(emitterName, async () => {
+      const { gateway, port } = await startGateway({ config: { socketCloseTimeoutMs: 10 } });
+      const socket = await openWebSocket(port);
+      const closed = nextClose(socket);
+      gateway[emitterName].emit('error', new Error(`/host/private ${TOKEN}`));
+
+      await assert.rejects(gateway.shutdown(), (error) => {
+        assert.equal(error.message, 'Gateway shutdown failed');
+        assert.equal(error.message.includes('/host/private'), false);
+        assert.equal(error.message.includes(TOKEN), false);
+        return true;
+      });
+      await closed;
+    });
+  }
+});
+
+test('real SessionManager cleans a starting workspace during gateway shutdown', async () => {
+  const workspaceCreation = deferred();
+  const workspaceStarted = deferred();
+  const removed = [];
+  const ptys = [];
+  const root = '/srv/claude-workspaces';
+  const workspace = `${root}/claude-session-race`;
+  const fakeFs = {
+    async realpath(target) {
+      return target;
+    },
+    async lstat(target) {
+      return {
+        dev: 1,
+        ino: target === root ? 1 : 2,
+        isDirectory: () => true,
+        isSymbolicLink: () => false,
+      };
+    },
+    async mkdtemp() {
+      workspaceStarted.resolve();
+      await workspaceCreation.promise;
+      return workspace;
+    },
+    async rm(target, options) {
+      removed.push({ target, options });
+    },
+  };
+  const fakePty = {
+    spawn() {
+      const exitListeners = new Set();
+      const pty = {
+        onData: () => ({ dispose() {} }),
+        onExit(listener) {
+          exitListeners.add(listener);
+          return { dispose: () => exitListeners.delete(listener) };
+        },
+        kill(signal) {
+          queueMicrotask(() => {
+            for (const listener of [...exitListeners]) listener({ exitCode: null, signal });
+          });
+        },
+        write() {},
+        resize() {},
+      };
+      ptys.push(pty);
+      return pty;
+    },
+  };
+  const gateway = createGatewayServer(gatewayConfig({ workspaceRoot: root }), {
+    sessionAdapters: { fs: fakeFs, pty: fakePty },
+  });
+  await gateway.listen();
+  const { port } = gateway.address();
+  const socket = await openWebSocket(port);
+  await authenticate(socket);
+  await workspaceStarted.promise;
+
+  const shutdown = gateway.shutdown();
+  workspaceCreation.resolve();
+  await shutdown;
+
+  assert.equal(removed.length, 1);
+  assert.equal(removed[0].target, workspace);
+  assert.deepEqual(removed[0].options, { recursive: true, force: true });
+  assert.equal(ptys.length, 0);
+});
+
 test('shutdown refuses upgrades, clears auth timers, closes unauthenticated sockets, and awaits cleanup', async () => {
   const managerShutdown = deferred();
   const manager = new FakeSessionManager({ shutdown: () => managerShutdown.promise });
@@ -448,6 +653,7 @@ test('shutdown refuses upgrades, clears auth timers, closes unauthenticated sock
   let shutdownFinished = false;
   const shutdown = gateway.shutdown().then(() => { shutdownFinished = true; });
   assert.equal((await socketClosed).code, 1001);
+  await eventually(() => timerHandles.size === 0);
   assert.equal(timerHandles.size, 0);
   assert.equal(manager.shutdownCalls, 1);
   assert.equal(shutdownFinished, false);
