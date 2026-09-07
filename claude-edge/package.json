@@ -1,0 +1,13 @@
+{
+  "name": "claude-edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "deploy": "wrangler deploy",
+    "deploy:dry": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "4.129.1"
+  }
+}

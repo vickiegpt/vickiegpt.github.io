@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "claude-edge",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "r2_buckets": [
+    {
+      "binding": "ARTIFACTS",
+      "bucket_name": "asplos-claude-artifacts"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "asplos.dev/about/node.wasm",
+      "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/about/node-claude.webc",
+      "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/api/claude/*",
+      "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/api/anthropic/*",
+      "zone_name": "asplos.dev"
+    }
+  ]
+}
