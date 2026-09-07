@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CXLMemSim Shared Pool</title>
+<style>
+:root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121a22;
+    --line: #263440;
+    --text: #e7edf3;
+    --muted: #9fb0bd;
+    --green: #4fd17b;
+    --cyan: #5fc8e8;
+    --warn: #f5c86a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+main {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+.topbar {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--line);
+    background: #0d1319;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 650;
+    margin-right: auto;
+}
+
+button {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #18232d;
+    color: var(--text);
+    min-height: 44px;
+    padding: 0 18px;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    border-color: var(--cyan);
+}
+
+.content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    min-height: 0;
+}
+
+.stats {
+    padding: 22px;
+    border-right: 1px solid var(--line);
+}
+
+.side {
+    padding: 22px;
+    background: var(--panel);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.metric {
+    border: 1px solid var(--line);
+    padding: 14px;
+    min-height: 92px;
+    background: #0a1016;
+}
+
+.metric dt,
+.kv dt {
+    color: var(--muted);
+}
+
+.metric dd {
+    margin: 6px 0 0;
+    font: 24px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+.kv {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 8px 12px;
+    margin: 0 0 20px;
+}
+
+.kv dd {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+pre {
+    margin: 0;
+    min-height: 280px;
+    overflow: auto;
+    padding: 12px;
+    background: #05080b;
+    border: 1px solid var(--line);
+    color: #d9e8f3;
+    font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.status {
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.status.ready {
+    color: var(--green);
+}
+
+@media (max-width: 900px) {
+    .content,
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        border-right: 0;
+    }
+}
+</style>
+</head>
+<body>
+<main>
+    <div class="topbar">
+        <div class="title">CXLMemSim Shared Pool</div>
+        <div id="status" class="status">connecting</div>
+        <button id="self-test" type="button">Self Test</button>
+        <button id="reset" type="button">Reset Pool</button>
+    </div>
+    <div class="content">
+        <section class="stats">
+            <dl class="grid">
+                <div class="metric"><dt>Reads</dt><dd id="reads">0</dd></div>
+                <div class="metric"><dt>Writes</dt><dd id="writes">0</dd></div>
+                <div class="metric"><dt>Atomics</dt><dd id="atomics">0</dd></div>
+                <div class="metric"><dt>QEMU Clients</dt><dd id="clients-count">0</dd></div>
+                <div class="metric"><dt>Read Bytes</dt><dd id="bytes-read">0</dd></div>
+                <div class="metric"><dt>Write Bytes</dt><dd id="bytes-written">0</dd></div>
+                <div class="metric"><dt>Messages</dt><dd id="messages">0</dd></div>
+                <div class="metric"><dt>Invalidations</dt><dd id="invalidations">0</dd></div>
+                <div class="metric"><dt>Sim Reads</dt><dd id="sim-reads">0</dd></div>
+                <div class="metric"><dt>Sim Writes</dt><dd id="sim-writes">0</dd></div>
+                <div class="metric"><dt>Sim Atomics</dt><dd id="sim-atomics">0</dd></div>
+                <div class="metric"><dt>Sim Inval</dt><dd id="sim-invalidations">0</dd></div>
+                <div class="metric"><dt>Avg Latency</dt><dd id="sim-latency">0 ns</dd></div>
+                <div class="metric"><dt>Pool Used</dt><dd id="sim-capacity">0</dd></div>
+                <div class="metric"><dt>Sim Errors</dt><dd id="sim-errors">0</dd></div>
+                <div class="metric"><dt>Mode</dt><dd id="bridge-mode">…</dd></div>
+            </dl>
+        </section>
+        <aside class="side">
+            <dl class="kv">
+                <dt>Pool</dt><dd id="pool">CXLMemSim</dd>
+                <dt>Size</dt><dd id="size">256 MiB</dd>
+                <dt>Errors</dt><dd id="errors">0</dd>
+            </dl>
+            <pre id="clients"></pre>
+        </aside>
+    </div>
+</main>
+<script>
+window.coi = {
+    coepCredentialless: () => false,
+    quiet: true
+};
+</script>
+<script src="./coi-serviceworker.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const pool = params.get("pool") || "CXLMemSim";
+const size = Number(params.get("size") || "") || 256 * 1024 * 1024;
+const statusEl = document.getElementById("status");
+const fields = {
+    pool: document.getElementById("pool"),
+    size: document.getElementById("size"),
+    reads: document.getElementById("reads"),
+    writes: document.getElementById("writes"),
+    atomics: document.getElementById("atomics"),
+    clientsCount: document.getElementById("clients-count"),
+    bytesRead: document.getElementById("bytes-read"),
+    bytesWritten: document.getElementById("bytes-written"),
+    messages: document.getElementById("messages"),
+    invalidations: document.getElementById("invalidations"),
+    errors: document.getElementById("errors"),
+    clients: document.getElementById("clients")
+};
+
+function formatBytes(value) {
+    const units = ["B", "KiB", "MiB", "GiB"];
+    let amount = Number(value) || 0;
+    let unit = 0;
+    while (amount >= 1024 && unit < units.length - 1) {
+        amount /= 1024;
+        unit++;
+    }
+    return `${amount.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function setStatus(text, ready) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle("ready", Boolean(ready));
+}
+
+const simFields = {
+    reads: document.getElementById("sim-reads"),
+    writes: document.getElementById("sim-writes"),
+    atomics: document.getElementById("sim-atomics"),
+    invalidations: document.getElementById("sim-invalidations"),
+    latency: document.getElementById("sim-latency"),
+    capacity: document.getElementById("sim-capacity"),
+    errors: document.getElementById("sim-errors"),
+    mode: document.getElementById("bridge-mode")
+};
+simFields.mode.textContent = "connecting";
+
+const events = new BroadcastChannel("cxlmemsim-events");
+events.onmessage = (event) => {
+    const msg = event.data || {};
+    console.log("[cxlmemsim] event", msg.type, msg);
+    if (msg.type === "error") {
+        simFields.mode.textContent = `error: ${msg.reason || "unknown"}`;
+        return;
+    }
+    if (msg.type === "bridge-ready") {
+        simFields.mode.textContent = "wasm";
+        return;
+    }
+    if (msg.type !== "stats") return;
+    const sim = msg.sim || {};
+    const hasSim = Object.keys(sim).length > 0;
+    if (!hasSim) {
+        return;
+    }
+    if (!simFields.mode.textContent.startsWith("degraded")) {
+        simFields.mode.textContent = "wasm";
+    }
+    simFields.reads.textContent = sim.total_reads || 0;
+    simFields.writes.textContent = sim.total_writes || 0;
+    simFields.atomics.textContent = sim.total_atomics || 0;
+    simFields.invalidations.textContent = sim.total_invalidations || 0;
+    const totalOps = (sim.total_reads || 0) + (sim.total_writes || 0) +
+                     (sim.total_atomics || 0);
+    const avgNs = totalOps > 0 ? Math.round((sim.total_latency_ns || 0) / totalOps) : 0;
+    simFields.latency.textContent = `${avgNs} ns`;
+    simFields.capacity.textContent = formatBytes(sim.pool_capacity_bytes || 0);
+    simFields.errors.textContent = sim.total_errors || 0;
+    simFields.mode.textContent = "wasm";
+};
+
+if (typeof SharedWorker === "undefined") {
+    setStatus("unsupported", false);
+    simFields.mode.textContent = "unsupported";
+} else {
+    const worker = new SharedWorker(
+        "./cxlmemsim-pool-worker.js?v=20260520-type3-sharedworker1",
+        "hetgpu-cxlmemsim-20260520-type3-sharedworker1"
+    );
+    const port = worker.port;
+    const clientId = `ui-${Math.random().toString(16).slice(2)}`;
+    let disconnected = false;
+
+    fields.pool.textContent = pool;
+    fields.size.textContent = formatBytes(size);
+    simFields.mode.textContent =
+        (!window.crossOriginIsolated || typeof SharedArrayBuffer === "undefined")
+            ? "dashboard-only"
+            : "flat";
+
+    console.log("[cxlmemsim] SharedWorker constructed", worker);
+    worker.addEventListener("error", (event) => {
+        console.error("[cxlmemsim] SharedWorker error", event);
+        simFields.mode.textContent = "worker error (see console)";
+    });
+    port.onmessage = (event) => {
+        const msg = event.data || {};
+        console.log("[cxlmemsim] port", msg.type, msg);
+        if (msg.type === "connected") {
+            setStatus("ready", true);
+            return;
+        }
+        if (msg.type === "self-test-done") {
+            setStatus(`self test ok @0x${Number(msg.addr || 0).toString(16)}`, true);
+            return;
+        }
+        if (msg.type === "degraded") {
+            simFields.mode.textContent = `degraded: ${msg.reason || "unknown"}`;
+            return;
+        }
+        if (msg.type !== "status") {
+            return;
+        }
+        const stats = msg.stats || {};
+        fields.pool.textContent = msg.pool || pool;
+        fields.size.textContent = formatBytes(msg.size || size);
+        fields.reads.textContent = stats.reads || 0;
+        fields.writes.textContent = stats.writes || 0;
+        fields.atomics.textContent = stats.atomics || 0;
+        const clients = msg.clients || [];
+        const qemuClients = clients.filter((c) => c.role !== "ui");
+        fields.clientsCount.textContent = qemuClients.length;
+        fields.bytesRead.textContent = formatBytes(stats.bytesRead || 0);
+        fields.bytesWritten.textContent = formatBytes(stats.bytesWritten || 0);
+        fields.messages.textContent = stats.messages || 0;
+        fields.invalidations.textContent = stats.invalidations || 0;
+        fields.errors.textContent = stats.errors || 0;
+        fields.clients.textContent = clients.map((c) =>
+            `${(c.role || "").padEnd(6)} ${c.id}${c.device ? ` (${c.device})` : ""}`
+        ).join("\n") || "(no clients)";
+        setStatus("ready", true);
+    };
+
+    port.start();
+    port.postMessage({ type: "connect", role: "ui", clientId, pool, size });
+    port.postMessage({ type: "get-status", pool, size });
+
+    const heartbeat = setInterval(() => {
+        port.postMessage({ type: "heartbeat", clientId, pool, size });
+    }, 5000);
+
+    const disconnect = () => {
+        if (disconnected) return;
+        disconnected = true;
+        clearInterval(heartbeat);
+        port.postMessage({ type: "disconnect", clientId, pool, size });
+    };
+    window.addEventListener("pagehide", disconnect, { once: true });
+    window.addEventListener("beforeunload", disconnect, { once: true });
+
+    function runSelfTest() {
+        const span = Math.max(64, Math.min(size, 256 * 1024 * 1024) - 64);
+        const addr = Math.floor((Date.now() % span) / 64) * 64;
+        const payload = new Uint8Array(16);
+        for (let i = 0; i < payload.length; i++) payload[i] = (addr + i) & 0xff;
+
+        port.postMessage({
+            type: "self-test", clientId, pool, size,
+            addr, data: Array.from(payload)
+        });
+
+        setStatus("self test sent", true);
+        setTimeout(() => port.postMessage({ type: "get-status", pool, size }), 100);
+    }
+
+    document.getElementById("self-test").addEventListener("click", runSelfTest);
+
+    if (params.get("selftest") === "1") {
+        setTimeout(runSelfTest, 500);
+    }
+
+    document.getElementById("reset").addEventListener("click", () => {
+        port.postMessage({ type: "reset", pool, size, keepClientId: clientId });
+    });
+}
+</script>
+</body>
+</html>

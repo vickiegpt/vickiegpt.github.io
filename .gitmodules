@@ -1,0 +1,3 @@
+[submodule "trips"]
+	path = trips
+	url = https://github.com/victoryang00/victortrip

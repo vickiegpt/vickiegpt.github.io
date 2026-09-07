@@ -1,0 +1,21 @@
+#!/bin/sh
+set -u
+
+mkdir -p /usr/lib64 /usr/lib/x86_64-linux-gnu
+
+if [ ! -e /lib ] && [ -d /usr/lib ]; then
+    ln -s usr/lib /lib 2>/dev/null || true
+fi
+if [ ! -e /lib64 ] && [ -d /usr/lib64 ]; then
+    ln -s usr/lib64 /lib64 2>/dev/null || true
+fi
+if [ ! -e /usr/lib64/ld-linux-x86-64.so.2 ] && [ -e /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 ]; then
+    ln -s ../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /usr/lib64/ld-linux-x86-64.so.2 2>/dev/null || true
+fi
+
+export PATH=/opt/tigon/bin:/opt/gromacs-cxl/bin:/opt/llama.cpp:/opt/cxlcuda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}
+export LD_LIBRARY_PATH=/opt/cxlmpi/lib:/opt/cxlcuda/lib:/opt/cxlcuda/bin:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/pmix2/lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-}
+
+echo "PATH=$PATH"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+ls -l /lib /lib64 /usr/lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 2>/dev/null || true

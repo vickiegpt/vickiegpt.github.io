@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10130f">
+  <meta name="description" content="A browser workspace for Claude-compatible coding sessions.">
+  <title>Claude Code // Browser Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Back to VickieGPT home">
+      <span class="brand-mark">VC</span>
+      <span>VickieGPT Lab</span>
+    </a>
+    <div class="status"><i id="status-dot"></i><span id="status-text">local workspace</span></div>
+    <button class="text-button" id="settings-button" type="button">Connection</button>
+  </header>
+
+  <main class="shell">
+    <aside class="rail">
+      <div class="rail-heading"><span>Workspace</span><button id="new-file" title="New file" type="button">+</button></div>
+      <div id="file-list" class="file-list"></div>
+      <div class="rail-note">Files stay in this browser. No repository content is uploaded until you send a prompt.</div>
+    </aside>
+
+    <section class="editor-panel">
+      <div class="tab"><span class="tab-dot"></span><span id="active-file-name">README.md</span><span class="dirty" id="dirty-indicator"></span></div>
+      <textarea id="editor" spellcheck="false" aria-label="Workspace file editor"></textarea>
+      <div class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span>UTF-8 · browser sandbox</span></div>
+    </section>
+
+    <section class="agent-panel">
+      <div class="agent-heading">
+        <div><span class="eyebrow">CLAUDE-COMPATIBLE AGENT</span><h1>Build in the browser.</h1></div>
+        <button class="icon-button" id="clear-chat" type="button" title="Clear chat">Clear</button>
+      </div>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <form id="prompt-form" class="prompt-box">
+        <textarea id="prompt" rows="3" placeholder="Ask about the active file... (Ctrl/⌘ + Enter to send)" required></textarea>
+        <div class="prompt-actions"><span id="context-label">1 file in context</span><button id="send" type="submit">Run prompt <kbd>↵</kbd></button></div>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="settings-dialog">
+    <form method="dialog" id="settings-form">
+      <div class="dialog-head"><div><span class="eyebrow">SESSION SETTINGS</span><h2>Connect a secure relay</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <p>GitHub Pages cannot keep secrets. Use an Anthropic-compatible relay with CORS enabled. Credentials remain in this browser session and are never committed.</p>
+      <label>Messages endpoint<input id="endpoint" type="url" placeholder="https://your-relay.example/v1/messages"></label>
+      <label>Session API key<input id="api-key" type="password" autocomplete="off" placeholder="Optional when the relay handles auth"></label>
+      <label>Model<input id="model" type="text" value="glm-4.7"></label>
+      <div class="dialog-actions"><button class="secondary" value="cancel">Cancel</button><button id="save-settings" value="default">Save session</button></div>
+    </form>
+  </dialog>
+
+  <template id="message-template"><article class="message"><div class="message-meta"></div><div class="message-body"></div></article></template>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

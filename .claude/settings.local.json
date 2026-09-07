@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(rm:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx webpack:*)",
+      "Bash(npm install)",
+      "Bash(cp:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": []
+  }
+}

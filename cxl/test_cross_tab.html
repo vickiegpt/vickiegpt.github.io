@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>cxlmemsim cross-tab test</title>
+<style>
+body { font: 14px ui-monospace, monospace; background:#0b0f14; color:#e7edf3;
+       padding: 16px; }
+pre { background:#05080b; border:1px solid #263440; padding: 12px;
+      max-height: 480px; overflow:auto; }
+</style></head>
+<body>
+<h1>cxlmemsim cross-tab smoke test</h1>
+<button id="run" type="button">Run</button>
+<pre id="out"></pre>
+<script>
+window.coi = { coepCredentialless: () => false, quiet: true };
+</script>
+<script src="./coi-serviceworker.js"></script>
+<script>
+const out = document.getElementById("out");
+function log(text) { out.textContent += text + "\n"; }
+
+const REQUEST_DATA_OFFSET = 64;
+const RESPONSE_OFFSET = 128;
+const REQUEST_SAB_SIZE = 256;
+
+function postSync(port, sab, op, addr, size, payload) {
+    const control = new Int32Array(sab, 0, 1);
+    Atomics.store(control, 0, 0);
+    if (payload) {
+        new Uint8Array(sab).set(payload, REQUEST_DATA_OFFSET);
+    }
+    const addrLo = addr & 0xFFFFFFFF;
+    const addrHi = Math.floor(addr / 4294967296);
+    port.postMessage({ type:"sync-request", pool:"CXLMemSim",
+                       size: 64 * 1024 * 1024, sab, op,
+                       addrLo, addrHi, size,
+                       valueLo:0, valueHi:0,
+                       expectedLo:0, expectedHi:0,
+                       clientId: "cross-tab" });
+    Atomics.wait(control, 0, 0);
+    const status = new DataView(sab).getUint8(RESPONSE_OFFSET);
+    const payloadOut = new Uint8Array(sab, RESPONSE_OFFSET + 17, 64);
+    return { status, payload: payloadOut.slice() };
+}
+
+document.getElementById("run").onclick = async () => {
+    out.textContent = "";
+    if (!window.crossOriginIsolated) {
+        log("FAIL: page is not cross-origin isolated"); return;
+    }
+    const worker = new SharedWorker(
+        "/cxl/cxlmemsim-pool-worker.js?v=20260514-mjsfix",
+        "hetgpu-cxlmemsim");
+    worker.port.start();
+    worker.port.postMessage({ type:"connect", role:"qemu",
+        clientId:"cross-tab", pool:"CXLMemSim",
+        size: 64 * 1024 * 1024 });
+
+    const sab = new SharedArrayBuffer(REQUEST_SAB_SIZE);
+    const pattern = new Uint8Array(64);
+    for (let i = 0; i < 64; i++) pattern[i] = (i ^ 0xA5) & 0xff;
+
+    log("WRITE 0x1000 (op=1)");
+    let r = postSync(worker.port, sab, 1, 0x1000, 64, pattern);
+    log("  status=" + r.status);
+    log("READ 0x1000 (op=0)");
+    r = postSync(worker.port, sab, 0, 0x1000, 64);
+    log("  status=" + r.status);
+    let ok = true;
+    for (let i = 0; i < 64; i++) {
+        if (r.payload[i] !== ((i ^ 0xA5) & 0xff)) { ok = false; break; }
+    }
+    log(ok ? "PASS: payload matches" : "FAIL: payload mismatch");
+
+    log("");
+    log("Open this page in a second tab and click Run there.");
+    log("That tab should observe the same byte pattern at 0x1000.");
+};
+</script>
+<p style="margin-top:24px;color:#9fb0bd">
+Open <code>/cxl/index.html?cxl=type2&amp;cxlmemsim=browser&amp;fast_login=1</code>
+in another tab and Start VM. Both this tab and that tab share the
+same SharedWorker-hosted CXLMemSim; writes from <code>dd</code>
+inside the guest will move the dashboard's Sim Reads / Sim Writes
+counters in real time.
+</p>
+</body></html>

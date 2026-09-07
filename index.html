@@ -1,0 +1,2512 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Yiwei Yang (VickieGPT) - Resume</title>
+    <meta name="theme-color" content="rgb(138, 43, 226)">
+    <!--- <meta name="viewport" content="width=device-width, initial-scale=1"> --->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+    <script src="https://code.iconify.design/2/2.1.0/iconify.min.js"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <link rel="stylesheet" href="/live2d/css/live2d.css">
+    <link rel="stylesheet" href="/live2d/font/iconfont.css">
+    <script src="/live2d/js/live2dcubismcore.js"></script>
+    <script src="/live2d/js/bundle.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css"
+        integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css"
+        integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    <script async="" src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js"
+        integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g=="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" media="screen and (max-device-width: 500px)" href="about/style_tiny.css">
+    <link rel="stylesheet" type="text/css" media="screen and (min-device-width: 500px)" href="about/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:300,400,700|Source+Sans+Pro:400,400i"
+        rel="stylesheet">
+    <link rel=stylesheet href=https://use.fontawesome.com/releases/v5.6.0/css/all.css
+        integrity=sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h crossorigin=anonymous>
+    <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css
+        crossorigin=anonymous title=hl-light>
+    <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css
+        crossorigin=anonymous title=hl-dark disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <!-- and it's easy to individually load additional languages -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"
+        integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js"
+        integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js"
+        integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js"
+        integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js"
+        integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    <script src="/about/academic.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script>
+        function myFunction() {
+            const chk = document.getElementById('chk');
+
+            chk.addEventListener('change', () => {
+            });
+            var element = document.body;
+            element.classList.toggle("dark-mode");
+            var h1Elements = document.getElementsByTagName("h1")[0];
+            h1Elements.classList.toggle("dark-mode");
+            var h2Elements = document.getElementsByTagName("h2")[0];
+            h2Elements.classList.toggle("dark-mode");
+            var h3Elements = document.getElementsByTagName("h3")[0];
+            h3Elements.classList.toggle("dark-mode");
+            var aElements = document.getElementsByClassName("page")[0];
+            aElements.classList.toggle("dark-mode");
+        }
+    </script>
+    <script type="module">
+        window.chatWithClaude = async function (message) {
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const reply = data.reply;
+                showMessage('yyw: ' + reply, 5000);
+
+            } catch (error) {
+                console.error('Claude API error:', error);
+                showMessage('yyw 现在有点忙，稍后再试一下～', 3000);
+            }
+        };
+        // Page Loading and Animation Effects
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize loading screen
+            const loadingScreen = document.getElementById('loading-screen');
+
+            // Create particles
+            createParticles();
+
+            // Hide loading screen after everything loads
+            window.addEventListener('load', function () {
+                if (!loadingScreen) {
+                    initializeAnimations();
+                    return;
+                }
+
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        initializeAnimations();
+                    }, 500);
+                }, 1000);
+            });
+        });
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            const colors = [
+                'rgba(123, 56, 255, 0.26)',
+                'rgba(255, 122, 89, 0.24)',
+                'rgba(22, 198, 163, 0.24)',
+                'rgba(50, 72, 255, 0.2)'
+            ];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 8 + 3;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function initializeAnimations() {
+            // Add fade-in classes to sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach((section, index) => {
+                section.classList.add('fade-in');
+                setTimeout(() => {
+                    section.classList.add('visible');
+                }, index * 200);
+            });
+
+            typeHeroName();
+
+            // Initialize scroll reveal
+            initScrollReveal();
+            initSpotlightCards();
+            initHeroAnchorLinks();
+        }
+
+        function initScrollReveal() {
+            const revealElements = document.querySelectorAll('h2, h3, .btn-links, .desc');
+
+            revealElements.forEach(element => {
+                element.classList.add('reveal');
+            });
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        function initSpotlightCards() {
+            const spotlightCards = document.querySelectorAll('.fact-card, .play-card, .publication-item');
+
+            spotlightCards.forEach((card) => {
+                card.addEventListener('pointermove', (event) => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+                    card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+                });
+            });
+        }
+
+        function typeHeroName() {
+            const nameElement = document.querySelector('.hero-title .hero-name');
+            if (!nameElement || nameElement.dataset.typed === 'true') return;
+
+            const fullText = nameElement.dataset.fullText || nameElement.textContent.trim();
+            nameElement.dataset.fullText = fullText;
+            nameElement.dataset.typed = 'true';
+            nameElement.textContent = '';
+            nameElement.classList.add('typing-text');
+
+            let index = 0;
+            const typeNext = () => {
+                nameElement.textContent = fullText.slice(0, index + 1);
+                index += 1;
+
+                if (index < fullText.length) {
+                    const previous = fullText[index - 1];
+                    const delay = previous === ' ' ? 130 : 72 + Math.round(Math.random() * 38);
+                    window.setTimeout(typeNext, delay);
+                }
+            };
+
+            window.setTimeout(typeNext, 180);
+        }
+
+        function initHeroAnchorLinks() {
+            document.querySelectorAll('.hero-actions a[href^="#"]').forEach((link) => {
+                if (link.dataset.anchorBound === 'true') return;
+                link.dataset.anchorBound = 'true';
+
+                link.addEventListener('click', (event) => {
+                    const hash = link.getAttribute('href');
+                    const target = hash && document.querySelector(hash);
+                    if (!target) return;
+
+                    event.preventDefault();
+                    history.pushState(null, '', hash);
+                    requestAnimationFrame(() => {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initHeroAnchorLinks);
+
+        // 添加到现有的JavaScript文件末尾或新建<script>标签
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取元素
+            const inputButton = document.getElementById('live2d-input-button');
+            const inputContainer = document.getElementById('live2d-input-container');
+            const inputField = document.getElementById('live2d-input');
+            const submitButton = document.getElementById('live2d-submit');
+
+            // 确保元素存在并附加到controller区域
+            if (inputButton && document.getElementById('controller')) {
+                document.getElementById('controller').appendChild(inputButton);
+            }
+
+            // 如果元素不在DOM中，则添加到landlord
+            if (inputContainer && document.getElementById('landlord')) {
+                document.getElementById('landlord').appendChild(inputContainer);
+            }
+
+            // 只有当元素存在时才添加事件监听器
+            if (inputButton) {
+                inputButton.addEventListener('click', function () {
+                    if (inputContainer && inputContainer.style.display === 'block') {
+                        inputContainer.style.display = 'none';
+                    } else if (inputContainer) {
+                        inputContainer.style.display = 'block';
+                        if (inputField) inputField.focus();
+                    }
+                });
+            }
+
+            // 提交按钮点击事件
+            if (submitButton) {
+                submitButton.addEventListener('click', function () {
+                    // TODO: Implement sendMessage function
+                    console.log('Send message button clicked');
+                });
+            }
+
+            // Send on Enter.
+            if (inputField) {
+                inputField.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        // TODO: Implement sendMessage function
+                        console.log('Enter key pressed to send message');
+                    }
+                });
+            }
+
+            // Claude chat panel handlers.
+            const chatPanel = $('#claude-chat-panel');
+            const openChatBtn = $('#open-chat');
+            const closeChatBtn = $('#close-chat');
+            const sendChatBtn = $('#send-chat');
+            const chatInput = $('#chat-input');
+            const chatMessages = $('#chat-messages');
+
+            // Open chat panel.
+            openChatBtn.click(function () {
+                console.log('Chat button clicked');
+                chatPanel.show();
+                openChatBtn.hide();
+            });
+
+            // Close chat panel.
+            closeChatBtn.click(function () {
+                chatPanel.hide();
+                openChatBtn.show();
+            });
+
+            // Send Claude message.
+            function sendClaudeMessage() {
+                const message = chatInput.val().trim();
+                if (!message) return;
+
+                // Add the user message to the chat history.
+                chatMessages.append(`<div style="margin-bottom: 5px;"><strong>你:</strong> ${message}</div>`);
+                chatInput.val('');
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+
+                // Call the Claude API.
+                window.chatWithClaude(message);
+            }
+
+            sendChatBtn.click(sendClaudeMessage);
+            chatInput.keypress(function (e) {
+                if (e.which === 13) {
+                    sendClaudeMessage();
+                }
+            });
+
+
+            // Mirror showMessage responses into the chat history.
+            const originalShowMessage = window.showMessage;
+            if (originalShowMessage) {
+                window.showMessage = function (text, timeout) {
+                    originalShowMessage(text, timeout);
+                    // If the chat panel is open, show the response there too.
+                    if (chatPanel.is(':visible') && text.startsWith('yyw:')) {
+                        chatMessages.append(`<div style="margin-bottom: 5px; color: #8B2BE2;"><strong>${text}</strong></div>`);
+                        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+                    }
+                };
+            }
+        });
+    </script>
+    <!-- 在页面底部添加以下脚本引用 -->
+    <script>
+        // 获取hover元素
+        const hoverElement = document.getElementById('hover');
+        // 获取skillset元素
+        const skillsetElement = document.querySelector('.section-text.col-right.skillset');
+
+        if (hoverElement && skillsetElement) {
+            // 初始设置
+            hoverElement.style.transition = 'opacity 0.5s ease-in-out';
+
+            // 鼠标移入效果
+            hoverElement.addEventListener('mouseenter', function () {
+                hoverElement.style.opacity = '0.9'; // 轻微降低不透明度，暗示可交互
+            });
+
+            // 鼠标移出效果
+            hoverElement.addEventListener('mouseleave', function () {
+                setTimeout(function () {
+                    hoverElement.style.opacity = '0';
+                    // 动画完成后恢复
+                    setTimeout(function () {
+                        hoverElement.style.opacity = '1';
+                    }, 2000);
+                }, 300);
+            });
+        }
+    </script>
+    <style type="text/css">
+        /* Publication layout using Flexbox */
+        .publication-item {
+            margin-bottom: 30px;
+        }
+
+        .publication-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .publication-title {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .publication-date {
+            flex-shrink: 0;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .publication-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .publication-authors {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 为hover区域添加圆滑过渡效果 */
+        #hover {
+            width: 70%;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.8);
+            /* 添加过渡效果 */
+            transition: all 0.5s ease-in-out;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        #hover:hover {
+            background-color: rgba(100, 100, 100, 0);
+            opacity: 0;
+            /* 使用透明度代替visibility，实现平滑过渡 */
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* 确保hover区域内的图片也有过渡效果 */
+        #hover .section-text {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #hover:hover .section-text {
+            opacity: 0;
+        }
+
+        /* 下方的替代图片样式 */
+        .section-text.col-right.skillset {
+            /* 确保这个元素在hover元素下方 */
+            position: relative;
+            z-index: 5;
+        }
+
+        /* 添加一些额外的装饰效果 */
+        #hover::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            /* 确保不干扰鼠标事件 */
+        }
+
+        #hover:hover::before {
+            opacity: 1;
+        }
+    </style>
+    <style>
+        /* Purple Theme Button Styles */
+        .btn-outline-primary {
+            color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+            color: white !important;
+        }
+
+        .btn-primary {
+            background-color: #8B2BE2 !important;
+            border-color: #8B2BE2 !important;
+            color: white !important;
+        }
+
+        .btn-primary:hover {
+            background-color: #6A0DAD !important;
+            border-color: #6A0DAD !important;
+            color: white !important;
+        }
+
+        /* Update link colors */
+        a {
+            color: #8B2BE2;
+        }
+
+        a:hover {
+            color: #6A0DAD;
+        }
+
+        .demo {
+            width: 200px;
+            height: 200px;
+            border: 4px solid rgb(138, 43, 226);
+            background-color: rgb(186, 85, 211);
+            border-radius: 50%;
+            /*border-radius: 60%;*/
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #8B2BE2 0%, #6A0DAD 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 18px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(138, 43, 226, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0;
+            }
+
+            10%,
+            90% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-100px) rotate(180deg);
+            }
+        }
+
+        /* Fade-in animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Typing animation */
+        .typing-text {
+            display: inline-block;
+            min-width: 8.6ch;
+            border-right: 2px solid var(--typing-caret, #333);
+            white-space: nowrap;
+            vertical-align: bottom;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes blink-caret {
+
+            from,
+            to {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: var(--typing-caret, #333);
+            }
+        }
+
+        /* Scroll reveal animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Smooth hover effects */
+        .section {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced button hover effects */
+        .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        :root {
+            --brand-violet: #7b38ff;
+            --brand-indigo: #3248ff;
+            --brand-coral: #ff7a59;
+            --brand-mint: #16c6a3;
+            --ink-strong: #21183a;
+            --ink-soft: #5e5676;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-border: rgba(123, 56, 255, 0.12);
+            --shadow-soft: 0 24px 80px rgba(52, 41, 89, 0.16);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            color: var(--ink-strong);
+            background:
+                radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 28%),
+                radial-gradient(circle at top right, rgba(50, 72, 255, 0.16), transparent 24%),
+                linear-gradient(180deg, #f9f4ff 0%, #f7fbff 45%, #fffaf4 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: -2;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -120px;
+            left: -120px;
+            background: rgba(22, 198, 163, 0.25);
+        }
+
+        body::after {
+            right: -140px;
+            bottom: 10%;
+            background: rgba(123, 56, 255, 0.2);
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 32px 20px 72px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page>.section.row {
+            margin: 0 0 28px;
+            padding: 30px 32px;
+            border-radius: 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page>.section.row::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -90px;
+            top: -90px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(123, 56, 255, 0.16) 0%, rgba(123, 56, 255, 0) 72%);
+            pointer-events: none;
+        }
+
+        .section:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 80px rgba(33, 24, 58, 0.14);
+        }
+
+        .hero-section {
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.93), rgba(247, 251, 255, 0.78)),
+                radial-gradient(circle at right top, rgba(123, 56, 255, 0.14), transparent 30%);
+        }
+
+        .hero-section:hover {
+            transform: translateY(-4px);
+        }
+
+        .hero-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
+            gap: 34px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hero-copy,
+        .hero-aside {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(123, 56, 255, 0.08);
+            color: var(--brand-violet);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .hero-kicker::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-coral), var(--brand-violet));
+            box-shadow: 0 0 18px rgba(255, 122, 89, 0.5);
+        }
+
+        .hero-title {
+            margin: 18px 0 14px;
+            max-width: 100%;
+            font-size: 4.4rem;
+            line-height: 0.95;
+            letter-spacing: 0;
+            overflow-wrap: break-word;
+        }
+
+        .hero-title .hero-name {
+            display: inline-block;
+            font-size: 1em;
+            max-width: 100%;
+            white-space: nowrap;
+        }
+
+        .hero-alias {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 0.5em;
+            color: var(--ink-soft);
+            letter-spacing: 0;
+        }
+
+        .hero-summary {
+            max-width: 680px;
+            font-size: 1.08rem;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            margin-bottom: 20px;
+        }
+
+        .hero-badges,
+        .hero-actions,
+        .hero-facts,
+        .social-cloud,
+        .play-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(50, 72, 255, 0.12);
+            color: var(--ink-strong);
+            font-weight: 600;
+            box-shadow: 0 10px 24px rgba(50, 72, 255, 0.08);
+        }
+
+        .hero-actions {
+            margin: 22px 0 24px;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            box-shadow: 0 14px 28px rgba(123, 56, 255, 0.12);
+        }
+
+        .hero-facts {
+            margin-top: 10px;
+        }
+
+        .fact-card,
+        .play-card,
+        .publication-item {
+            --spot-x: 50%;
+            --spot-y: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fact-card::before,
+        .play-card::before,
+        .publication-item::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--spot-x) var(--spot-y), rgba(255, 255, 255, 0.4), transparent 42%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+
+        .fact-card:hover::before,
+        .play-card:hover::before,
+        .publication-item:hover::before {
+            opacity: 1;
+        }
+
+        .fact-card {
+            min-width: 160px;
+            flex: 1 1 0;
+            padding: 16px 18px;
+            border-radius: 22px;
+            text-decoration: none;
+            color: var(--ink-strong);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(249, 244, 255, 0.86));
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            box-shadow: 0 12px 30px rgba(123, 56, 255, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .fact-card:hover {
+            transform: translateY(-4px) rotate(-0.4deg);
+            border-color: rgba(255, 122, 89, 0.34);
+            box-shadow: 0 18px 34px rgba(255, 122, 89, 0.12);
+        }
+
+        .fact-label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--brand-violet);
+            margin-bottom: 8px;
+        }
+
+        .fact-card strong {
+            display: block;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .hero-aside {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .hero-portrait {
+            position: relative;
+            padding: 18px;
+            border-radius: 28px;
+            background: linear-gradient(140deg, rgba(123, 56, 255, 0.14), rgba(255, 122, 89, 0.12));
+            border: 1px solid rgba(123, 56, 255, 0.16);
+        }
+
+        .hero-portrait::after {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border-radius: 22px;
+            border: 1px dashed rgba(123, 56, 255, 0.2);
+            pointer-events: none;
+        }
+
+        .hero-avatar-link {
+            display: block;
+            text-align: center;
+        }
+
+        .demo.hero-avatar {
+            width: min(100%, 250px);
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-width: 6px;
+            background: linear-gradient(135deg, rgba(123, 56, 255, 0.14), rgba(255, 122, 89, 0.22));
+            box-shadow: 0 18px 40px rgba(123, 56, 255, 0.18);
+        }
+
+        .hero-mini-card,
+        .contact-card {
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            box-shadow: 0 12px 28px rgba(33, 24, 58, 0.08);
+        }
+
+        .hero-mini-card {
+            margin-top: 16px;
+            padding: 16px 18px;
+        }
+
+        .mini-label {
+            display: inline-block;
+            margin-bottom: 6px;
+            color: var(--brand-coral);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .contact-card {
+            padding: 20px 22px;
+        }
+
+        .contact-topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .contact-topline strong {
+            font-size: 1rem;
+        }
+
+        .contact-subtitle {
+            color: var(--ink-soft);
+            font-size: 0.95rem;
+        }
+
+        .contact-stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-soft);
+            line-height: 1.5;
+        }
+
+        .contact-link a {
+            color: var(--ink-strong);
+            font-weight: 600;
+        }
+
+        .social-cloud {
+            margin-top: 16px;
+            align-items: center;
+        }
+
+        .social-cloud a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(123, 56, 255, 0.08);
+            color: var(--brand-violet);
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .social-cloud a:hover {
+            transform: translateY(-2px);
+            background: var(--brand-violet);
+            color: white;
+        }
+
+        .scholar-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(123, 56, 255, 0.12);
+        }
+
+        .playground-section {
+            background:
+                linear-gradient(135deg, rgba(255, 252, 247, 0.95), rgba(246, 249, 255, 0.86)),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.12), transparent 26%);
+        }
+
+        .playground-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-end;
+            margin-bottom: 22px;
+        }
+
+        .playground-note {
+            max-width: 520px;
+            color: var(--ink-soft);
+            line-height: 1.7;
+            text-align: right;
+        }
+
+        .play-grid {
+            gap: 16px;
+        }
+
+        .play-card {
+            flex: 1 1 240px;
+            min-height: 180px;
+            padding: 22px;
+            border-radius: 24px;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(248, 245, 255, 0.88));
+            border: 1px solid rgba(123, 56, 255, 0.12);
+            text-decoration: none;
+            color: var(--ink-strong);
+            box-shadow: 0 12px 30px rgba(33, 24, 58, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .play-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 40px rgba(33, 24, 58, 0.12);
+            border-color: rgba(22, 198, 163, 0.28);
+        }
+
+        .play-label {
+            display: inline-block;
+            margin-bottom: 14px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(22, 198, 163, 0.1);
+            color: var(--brand-mint);
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .play-title {
+            font-size: 1.28rem;
+            margin-bottom: 10px;
+            line-height: 1.25;
+        }
+
+        .play-copy {
+            color: var(--ink-soft);
+            line-height: 1.75;
+            margin-bottom: 18px;
+        }
+
+        .play-meta {
+            color: var(--brand-violet);
+            font-weight: 700;
+        }
+
+        .publication-item {
+            margin-bottom: 18px;
+            padding: 22px 22px 18px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(249, 245, 255, 0.82));
+            border: 1px solid rgba(123, 56, 255, 0.1);
+            box-shadow: 0 14px 30px rgba(33, 24, 58, 0.05);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .publication-item:hover {
+            transform: translateY(-4px);
+            border-color: rgba(123, 56, 255, 0.2);
+            box-shadow: 0 18px 36px rgba(33, 24, 58, 0.09);
+        }
+
+        .publication-date,
+        .publication-authors {
+            color: var(--ink-soft);
+        }
+
+        .bio-code-block {
+            position: relative;
+            margin-top: 24px;
+            margin-bottom: 0;
+            padding-top: 18px;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(123, 56, 255, 0.18);
+            background: linear-gradient(180deg, #fffdf8, #f7fbff);
+            box-shadow: 0 20px 42px rgba(33, 24, 58, 0.12);
+        }
+
+        .bio-code-block::before {
+            content: "lab notebook / rust-ish";
+            position: absolute;
+            top: 12px;
+            left: 18px;
+            z-index: 1;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(123, 56, 255, 0.1);
+            color: #5b21d9;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .bio-code-block code,
+        .bio-code-block code.hljs {
+            display: block;
+            padding: 20px 22px 22px !important;
+            background: transparent !important;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: #172033 !important;
+            text-shadow: none !important;
+        }
+
+        .bio-code-block .hljs-keyword,
+        .bio-code-block .hljs-built_in {
+            color: #8b2be2 !important;
+            font-weight: 700;
+        }
+
+        .bio-code-block .hljs-title,
+        .bio-code-block .hljs-title.function_,
+        .bio-code-block .hljs-function {
+            color: #0f766e !important;
+        }
+
+        .bio-code-block .hljs-type,
+        .bio-code-block .hljs-class,
+        .bio-code-block .hljs-variable.language_ {
+            color: #b45309 !important;
+        }
+
+        .bio-code-block .hljs-string,
+        .bio-code-block .hljs-symbol {
+            color: #0b7a75 !important;
+        }
+
+        .bio-code-block .hljs-number,
+        .bio-code-block .hljs-literal {
+            color: #c2410c !important;
+        }
+
+        .bio-code-block .hljs-comment {
+            color: #64748b !important;
+            font-style: italic;
+        }
+
+        .bio-code-block .hljs-attr,
+        .bio-code-block .hljs-params,
+        .bio-code-block .hljs-punctuation,
+        .bio-code-block .hljs-operator {
+            color: #334155 !important;
+        }
+
+        .cxl-wasm-launcher {
+            margin-top: 14px;
+            padding: 16px;
+            border: 1px solid rgba(123, 56, 255, 0.14);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.76);
+            box-shadow: 0 12px 28px rgba(33, 24, 58, 0.08);
+        }
+
+        .cxl-wasm-topline,
+        .cxl-wasm-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cxl-wasm-topline {
+            justify-content: space-between;
+        }
+
+        .cxl-wasm-topline strong {
+            color: var(--ink-strong);
+        }
+
+        .cxl-wasm-status {
+            color: var(--ink-soft);
+            font-size: 0.88rem;
+        }
+
+        .cxl-wasm-actions {
+            margin: 14px 0;
+        }
+
+        .cxl-launch-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--brand-violet), var(--brand-indigo)) !important;
+            color: #fff !important;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none !important;
+            box-shadow: 0 12px 24px rgba(123, 56, 255, 0.18);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .cxl-launch-button.secondary {
+            background: rgba(123, 56, 255, 0.08) !important;
+            color: var(--brand-violet) !important;
+            border: 1px solid rgba(123, 56, 255, 0.16);
+            box-shadow: none;
+        }
+
+        .cxl-launch-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .cxl-runtime-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(86px, 1fr));
+            gap: 10px;
+            margin: 14px 0;
+        }
+
+        .cxl-runtime-item {
+            min-width: 0;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(123, 56, 255, 0.07);
+            border: 1px solid rgba(123, 56, 255, 0.1);
+        }
+
+        .cxl-runtime-item span {
+            display: block;
+            color: var(--ink-soft);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .cxl-runtime-item strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 4px;
+            color: var(--ink-strong);
+            font-size: 0.98rem;
+            white-space: nowrap;
+        }
+
+        .block-frame,
+        .mycode {
+            transition: filter 0.25s ease, opacity 0.25s ease;
+        }
+
+        .section>h2.col {
+            position: relative;
+            margin-bottom: 18px;
+            padding-left: 14px;
+        }
+
+        .section>h2.col::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 4px;
+            height: calc(100% - 16px);
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--brand-coral), var(--brand-violet));
+        }
+
+        body.dark-mode {
+            color: #f2efff;
+            --typing-caret: #f4f0ff;
+            background:
+                radial-gradient(circle at top left, rgba(255, 122, 89, 0.18), transparent 26%),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.16), transparent 24%),
+                linear-gradient(180deg, #0f1020 0%, #14172a 55%, #111321 100%);
+        }
+
+        body.dark-mode .page>.section.row,
+        body.dark .page>.section.row {
+            background: rgba(20, 23, 42, 0.8);
+            border-color: rgba(140, 127, 255, 0.18);
+            box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+        }
+
+        body.dark-mode .hero-section,
+        body.dark .hero-section {
+            background:
+                linear-gradient(135deg, rgba(26, 30, 52, 0.92), rgba(18, 20, 36, 0.82)),
+                radial-gradient(circle at right top, rgba(123, 56, 255, 0.18), transparent 30%);
+        }
+
+        body.dark-mode .playground-section,
+        body.dark .playground-section {
+            background:
+                linear-gradient(135deg, rgba(17, 22, 38, 0.94), rgba(25, 30, 50, 0.84)),
+                radial-gradient(circle at top right, rgba(22, 198, 163, 0.16), transparent 26%);
+        }
+
+        body.dark-mode .hero-summary,
+        body.dark-mode .contact-subtitle,
+        body.dark-mode .playground-note,
+        body.dark-mode .play-copy,
+        body.dark-mode .publication-date,
+        body.dark-mode .publication-authors,
+        body.dark-mode .contact-link,
+        body.dark .hero-summary,
+        body.dark .contact-subtitle,
+        body.dark .playground-note,
+        body.dark .play-copy,
+        body.dark .publication-date,
+        body.dark .publication-authors,
+        body.dark .contact-link {
+            color: rgba(233, 230, 255, 0.78);
+        }
+
+        body.dark-mode .hero-badge,
+        body.dark-mode .fact-card,
+        body.dark-mode .play-card,
+        body.dark-mode .publication-item,
+        body.dark-mode .hero-mini-card,
+        body.dark-mode .contact-card,
+        body.dark .hero-badge,
+        body.dark .fact-card,
+        body.dark .play-card,
+        body.dark .publication-item,
+        body.dark .hero-mini-card,
+        body.dark .contact-card {
+            background: rgba(29, 35, 58, 0.88);
+            border-color: rgba(140, 127, 255, 0.2);
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .contact-link a,
+        body.dark-mode .play-card,
+        body.dark-mode .fact-card,
+        body.dark-mode .social-cloud a,
+        body.dark .contact-link a,
+        body.dark .play-card,
+        body.dark .fact-card,
+        body.dark .social-cloud a {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .social-cloud a,
+        body.dark .social-cloud a {
+            background: rgba(123, 56, 255, 0.16);
+        }
+
+        body.dark-mode .bio-code-block,
+        body.dark .bio-code-block {
+            border-color: rgba(140, 127, 255, 0.28);
+            background: linear-gradient(180deg, rgba(13, 17, 29, 0.98), rgba(23, 27, 46, 0.98));
+            box-shadow: 0 22px 46px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .bio-code-block::before,
+        body.dark .bio-code-block::before {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(246, 243, 255, 0.86);
+        }
+
+        body.dark-mode .bio-code-block code,
+        body.dark-mode .bio-code-block code.hljs,
+        body.dark .bio-code-block code,
+        body.dark .bio-code-block code.hljs {
+            color: #f3f7ff !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-keyword,
+        body.dark-mode .bio-code-block .hljs-built_in,
+        body.dark .bio-code-block .hljs-keyword,
+        body.dark .bio-code-block .hljs-built_in {
+            color: #c084fc !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-title,
+        body.dark-mode .bio-code-block .hljs-title.function_,
+        body.dark-mode .bio-code-block .hljs-function,
+        body.dark .bio-code-block .hljs-title,
+        body.dark .bio-code-block .hljs-title.function_,
+        body.dark .bio-code-block .hljs-function {
+            color: #5eead4 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-type,
+        body.dark-mode .bio-code-block .hljs-class,
+        body.dark-mode .bio-code-block .hljs-variable.language_,
+        body.dark .bio-code-block .hljs-type,
+        body.dark .bio-code-block .hljs-class,
+        body.dark .bio-code-block .hljs-variable.language_ {
+            color: #fbbf24 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-string,
+        body.dark-mode .bio-code-block .hljs-symbol,
+        body.dark .bio-code-block .hljs-string,
+        body.dark .bio-code-block .hljs-symbol {
+            color: #7dd3fc !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-number,
+        body.dark-mode .bio-code-block .hljs-literal,
+        body.dark .bio-code-block .hljs-number,
+        body.dark .bio-code-block .hljs-literal {
+            color: #fb923c !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-comment,
+        body.dark .bio-code-block .hljs-comment {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .bio-code-block .hljs-attr,
+        body.dark-mode .bio-code-block .hljs-params,
+        body.dark-mode .bio-code-block .hljs-punctuation,
+        body.dark-mode .bio-code-block .hljs-operator,
+        body.dark .bio-code-block .hljs-attr,
+        body.dark .bio-code-block .hljs-params,
+        body.dark .bio-code-block .hljs-punctuation,
+        body.dark .bio-code-block .hljs-operator {
+            color: #dbeafe !important;
+        }
+
+        body.dark-mode .cxl-wasm-launcher,
+        body.dark .cxl-wasm-launcher {
+            border-color: rgba(140, 127, 255, 0.24);
+            background: rgba(20, 24, 38, 0.86);
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+        }
+
+        body.dark-mode .cxl-wasm-status,
+        body.dark-mode .cxl-runtime-item span,
+        body.dark .cxl-wasm-status,
+        body.dark .cxl-runtime-item span {
+            color: #a7b4ce;
+        }
+
+        body.dark-mode .cxl-wasm-topline strong,
+        body.dark .cxl-wasm-topline strong {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .cxl-runtime-item,
+        body.dark .cxl-runtime-item {
+            border-color: rgba(140, 127, 255, 0.18);
+            background: rgba(123, 56, 255, 0.12);
+        }
+
+        body.dark-mode .cxl-runtime-item strong,
+        body.dark .cxl-runtime-item strong {
+            color: #f4f0ff;
+        }
+
+        body.dark-mode .cxl-launch-button.secondary,
+        body.dark .cxl-launch-button.secondary {
+            background: rgba(140, 127, 255, 0.14);
+            color: #d8ccff;
+            border-color: rgba(140, 127, 255, 0.24);
+        }
+
+        body.dark-mode .block-frame,
+        body.dark-mode .mycode,
+        body.dark .block-frame,
+        body.dark .mycode {
+            filter: invert(1) hue-rotate(180deg) contrast(0.94) saturate(0.92);
+        }
+
+        @media (max-width: 991px) {
+            .hero-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 3.7rem;
+            }
+
+            .playground-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .playground-note {
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 18px 12px 48px;
+            }
+
+            .page>.section.row {
+                padding: 22px 18px;
+                border-radius: 24px;
+            }
+
+            .hero-kicker,
+            .hero-badge,
+            .hero-cta,
+            .play-label {
+                font-size: 0.78rem;
+            }
+
+            .hero-summary {
+                font-size: 0.98rem;
+            }
+
+            .hero-alias {
+                display: block;
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
+            .publication-header {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .publication-title {
+                padding-right: 0;
+            }
+
+            .fact-card,
+            .play-card {
+                flex-basis: 100%;
+            }
+
+            .cxl-runtime-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .hero-title {
+                font-size: 3rem;
+                line-height: 1;
+            }
+
+            .cxl-runtime-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cxl-launch-button {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel=alternate href=/index.xml type=application/rss+xml title="Yiwei Yang @UCSC CS">
+    <link rel=icon type=image/png href=/about/victoryang00.png>
+    <link rel=apple-touch-icon type=image/png href=/about/victoryang00.png>
+    <link rel=canonical href=https://asplos.dev />
+    <meta property=twitter:card content=summary>
+    <meta property=og:site_name content="Yiwei Yang @UCSC CS">
+    <meta property=og:url content=https://asplos.dev />
+    <meta property=og:title content="Yiwei Yang @UCSC CS">
+    <meta property=og:description content="Final Year Ph.D Student @BaskinEng">
+    <meta property=og:image content=/about/yiwei2.png>
+    <meta property=twitter:image content=/about/yiwei2.png>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+
+    <div id="landlord">
+        <div class="message"></div>
+        <canvas id="live2d" class="live2d"></canvas>
+        <div id="controller">
+            <!-- 控制按钮 -->
+        </div>
+
+        <!-- Claude chat panel -->
+        <div id="claude-chat-panel"
+            style="position: fixed; top: 10px; right: 10px; width: 300px; background: rgba(0,0,0,0.8); border-radius: 10px; padding: 15px; color: white; display: none; z-index: 9998; pointer-events: auto;">
+            <h3 id="chat-title" style="margin: 0 0 10px 0; color: #8B2BE2;">Chat with yyw</h3>
+            <div id="chat-messages"
+                style="height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="chat-input" placeholder="Type a message..."
+                    style="flex: 1; padding: 5px; border: none; border-radius: 3px;">
+                <button id="send-chat"
+                    style="padding: 5px 10px; background: #8B2BE2; border: none; border-radius: 3px; color: white; cursor: pointer;">Send</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <label style="font-size: 12px; color: #ccc;">Voice synthesis:</label>
+                <select id="voice-select"
+                    style="width: 100%; padding: 3px; margin-top: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #666; border-radius: 3px;">
+                    <option value="paimon">yyw</option>
+                </select>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: #ccc; text-align: center;">
+                GPT-SoVITS voice synthesis supported
+            </div>
+            <button id="close-chat"
+                style="position: absolute; top: 5px; right: 5px; background: #8B2BE2; border: none; border-radius: 50%; width: 20px; height: 20px; color: white; cursor: pointer;">×</button>
+        </div>
+
+        <!-- Chat button -->
+        <button id="open-chat"
+            style="position: fixed; top: 10px; right: 10px; background: linear-gradient(45deg, #8B2BE2, #6A0DAD); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; cursor: pointer; z-index: 9999; font-size: 20px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: all 0.3s ease; pointer-events: auto;">💬</button>
+
+    </div>
+
+
+    <script src="/live2d/js/main.js"></script>
+    <script src="/live2d/js/message.js"></script>
+    <div class="page">
+        <div class="section row hero-section">
+            <div class="hero-shell">
+                <div class="hero-copy">
+                    <div class="hero-kicker">Systems Research • Startup Builder • CXL Maximalist</div>
+                    <h1 class="hero-title">
+                        <span class="hero-name">Yiwei Yang</span>
+                        <span class="hero-alias">(VickieGPT)</span>
+                    </h1>
+                    <p class="hero-summary">
+                        Final-year systems Ph.D. at UCSC and founder at Zettai, building faster data paths for CXL,
+                        UCIe, eBPF, heterogeneous accelerators, and occasionally delightfully weird hardware-software
+                        combinations.
+                    </p>
+                    <div class="hero-badges">
+                        <span class="hero-badge">Final-year Ph.D. @ UCSC</span>
+                        <span class="hero-badge">Founder @ Zettai</span>
+                        <span class="hero-badge">Bay Area ↔ Shanghai</span>
+                    </div>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary hero-cta" href="#publication">Read Papers</a>
+                        <a class="btn btn-outline-primary hero-cta" href="#talks-section">See Talks</a>
+                        <a class="btn btn-outline-primary hero-cta" href="javascript:void(0)"
+                            onclick="document.getElementById('open-chat').click()">Chat with yyw</a>
+                    </div>
+                </div>
+                <div class="hero-aside">
+                    <div class="hero-portrait">
+                        <a class="hero-avatar-link" href="/about/yiwei2.png">
+                            <img class="demo hero-avatar" src="/about/yiwei2.png" alt="Yiwei Yang portrait">
+                        </a>
+                        <div class="hero-mini-card">
+                            <span class="mini-label">Current vibe</span>
+                            <strong>Turning infrastructure into something a little faster and a lot more fun.</strong>
+                        </div>
+                    </div>
+                    <div class="contact-card contact-info">
+                        <div class="contact-topline">
+                            <div>
+                                <strong>Open to research, systems, and startup conversations</strong>
+                            </div>
+                            <div>
+                                <input type="checkbox" class="checkbox" onclick="myFunction()" id="chk" />
+                                <label class="label" for="chk">
+                                    <i class="fas fa-moon"></i>
+                                    <i class="fas fa-sun"></i>
+                                    <div class="ball"></div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="social-cloud">
+                            <span class="scholar-pill">
+                                <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fasplos.dev%2Fabout%2Fgs_data_shieldsio.json&amp;logo=Google%20Scholar&amp;labelColor=f6f6f6&amp;color=134&amp;style=flat&amp;label=citations"
+                                    alt="Google Scholar citations" style="width:64px;height:12px;position:relative;top:1px;">
+                            </span>
+                            <a href="https://github.com/vickiegpt" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                            <a href="https://www.linkedin.com/in/yiwei-yang-56b920166/" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://scholar.google.com/citations?user=sDUT22MAAAAJ&hl=zh-TW" aria-label="Google Scholar"><i class="iconify" data-icon="academicons:google-scholar"></i></a>
+                            <a href="https://dblp.org/pid/233/9195-2.html" aria-label="DBLP"><i class="iconify" data-icon="academicons:dblp"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section row">
+            <h2 class="col" id="biography-section">Explore</h2>
+            <div class="section-text col-right row">
+                <pre class="bio-code-block"><code class="language-rust">fn research_no_failure() -> Result&lt;Paper, Error&gt; {
+    if !cfg!(target_os = "linux") {
+        return Err(Error::UnsupportedHost);
+    }
+
+    // Boot a playful CXL topology and wait for the paper to become real.
+    let qemu_args = [
+        "-smp", "6",
+        "-m", "16G,slots=4,maxmem=32G",
+        "-machine", "q35,cxl=on",
+        "-M", "cxl-fmw.0.targets.0=cxl.1,cxl-fmw.0.size=4G",
+        "-object", "memory-backend-ram,id=mem0,size=8G",
+        "-numa", "node,cpus=0-7,memdev=mem0,nodeid=0",
+        "-object", "memory-backend-ram,id=mem1,size=8G",
+        "-numa", "node,cpus=8-15,memdev=mem1,nodeid=1",
+        "-device", "pxb-cxl,bus_nr=12,bus=pcie.0,id=cxl3.1",
+        "-device", "cxl-rp,port=0,bus=cxl.1,id=root_port13,chassis=0,slot=2",
+        "-device", "cxl-type3,bus=root_port13,memdev=cxl-mem1,lsa=cxl-lsa1,id=cxl-mem0",
+        "-device", "cxl-type2,bus=root_port14,virtio-gpu-cxl,id=gpu0,gpudev=gpudev0",
+        "-device", "cxl-type1,bus=root_port15,virtio-crypto-cxl,id=crypto0,cryptodev=cryptodev0",
+    ];
+
+    let output = Command::new("qemu-system-x86_64")
+        .args(qemu_args)
+        .output()?;
+
+    let paper = Paper::new(output);
+
+    while !paper.is_valid() {
+        unsafe {
+            asm!(
+                "clflush [{ptr}]",
+                ptr = in(reg) paper.iter(),
+                options(nostack, preserves_flags)
+            );
+        }
+
+        core::sync::atomic::fence(core::sync::atomic::Ordering::SeqCst);
+    }
+
+    Ok(paper)
+}
+</code></pre>
+                <div class="cxl-wasm-launcher">
+                    <div class="cxl-wasm-topline">
+                        <strong>Real CXL WASM runtime</strong>
+                        <span class="cxl-wasm-status">QEMU wasm + CXLMemSim shared pool</span>
+                    </div>
+                    <div class="cxl-wasm-actions">
+                        <a class="cxl-launch-button"
+                            href="/cxl/type3-romfix17.html?cxl=type3&amp;hpc=0&amp;initrd_profile=shell&amp;initrd_url=%2Fcxl%2Fimages%2Falpine-x86_64%2Finitramfs-shell.cpio%3Fv%3D20260518-tools2&amp;fast_shell_machine=q35&amp;kernel_url=%2Fcxl%2Fimages%2Falpine-x86_64%2FbzImage-cxl-dax%3Fv%3D20260520-force-cxl-kernel1&amp;qemu_core=fast&amp;defaults=1"
+                            target="_blank" rel="noopener noreferrer">Launch CXL WASM</a>
+                        <a class="cxl-launch-button secondary"
+                            href="/cxl/cxlmemsim.html?pool=CXLMemSim&amp;size=268435456" target="_blank"
+                            rel="noopener noreferrer">Open CXLMemSim</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section row">
+            <h2 class="col" id="skills-section">Skills</h2>
+            <div class="section-text col-right skill" style="position: relative;left:30px;">
+                <iframe class="block-frame" src="/block" width="530" height="290" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen> </iframe>
+            </div>
+            <div id="hover">
+                <div class="section-text col-right skill" style="position:absolute; transform: translate(10%, 14%);">
+                    <img style="width: 700px;height:320px" class="mycode" src="/about/knowledge-graph.png">
+                </div>
+            </div>
+            <div class="section-text col-right skillset">
+                <img style="width: 100%" class="mycode" src="/about/knowledge-graph.png">
+            </div>
+        </div>
+        <div class="section row">
+            <h2 class="col">Reviewing Experience</h2>
+            <div class="section-text col-right">
+               	<div class="row subsection">
+                    <div class="row">
+                       	<div class="col">
+                            <h3> <a href="https://hoti.org/2026/">HotInterconnects 26</a></h3>
+                       	</div>
+                    </div>
+               	</div>
+           </div>
+            <div class="section-text col-right">
+               	<div class="row subsection">
+                    <div class="row">
+                       	<div class="col">
+                            <h3> <a href="https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=43">TCAD 26</a></h3>
+                       	</div>
+                    </div>
+                </div>
+           </div>
+        </div>
+        <div class="section row">
+            <h2 class="col">Advising Experience</h2>
+            <div class="section-text col-right">
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Slug-not-so-Slow HPC Team->2nd in
+                                Virtual ISC23
+                                </small></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Kiki Zhang
+                                <small>Microsoft->SCU Ph.D. in HCI</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Zheng Cao
+                                <small>NYU B.S.->UCM Ph.D. in System</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Aibo Hu
+                                <small>ShanghaiTech B.S.->Jump Trading</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Qi Zhou
+                                <small>Nervos->Rizin</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row subsection">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Shri Devanand
+                                <small>VJTI->ZettAI</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="section row">
+            <h2 class="col" id="publication">Publications</h2>
+            <div class="section-text col-right">
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Concordia: JIT-Compiled Persistent-Kernel Checkpointing for
+                            Fault-Tolerant LLM Inference</h3>
+                        <div class="publication-date">June 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2606.23521" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2606.23521" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_concordia.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/vickiegpt/Concordia">Code</a>
+                    </div>
+                    <div class="publication-authors">Yuhang Gan, <b>Yiwei Yang</b>, Yuyi Li, Xiangyu Gao, Yichen Wang,
+                        Rain Jiang, Xiaoning Ding, Andi Quinn, Chen Qian</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">GPUOS: A GPU Operating System Primitive for Transparent Operation
+                            Fusion</h3>
+                        <div class="publication-date">April 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2604.17861" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2604.17861" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_gpuos.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/Multi-V-VM/GPUOS">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Xiangyu Gao, Yuan Zhou, Yuhang Gan, Yusheng
+                        Zheng, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">DAXFS: A Lock-Free Shared Filesystem for CXL Disaggregated Memory
+                        </h3>
+                        <div class="publication-date">April 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2604.01620" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2604.01620" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/multikernel/daxfs">Code</a>
+                    </div>
+                    <div class="publication-authors">Cong Wang, <b>Yiwei Yang</b>, Yusheng Zheng</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">WIO: Upload-Enabled Computational Storage on CXL SSDs</h3>
+                        <div class="publication-date">April 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2604.02442" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2604.02442" target="_blank"
+                            rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint26_wio.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/CXLMemUring/AgileStore">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yanpeng Hu, Yusheng Zheng, Estabon Ramos,
+                        Jianchang Su, Andi Quinn, Wei Zhang</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">gpu_ext: Extensible OS Policies for GPUs via eBPF</h3>
+                        <div class="publication-date">December 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2512.12615" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://www.arxiv.org/pdf/2512.12615">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint25_2.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/eGPU">Code</a>
+                    </div>
+                    <div class="publication-authors">Yusheng Zheng, Tong Yu, <b>Yiwei Yang</b>, Minghui Jiang, Xiangyu
+                        Gao, Jianchang Su, Yanpeng Hu, Wenan Mao, Wei Zhang, Dan Williams, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">CXLAimPod: CXL Memory is all you need in AI era</h3>
+                        <div class="publication-date">August 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="/pdf/cxlaimpod.pdf" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="/pdf/cxlaimpod.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint25_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/cxl/">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yusheng Zheng, Yiqi Chen, Zheng Liang, Kexin
+                        Chu, Zhe Zhou, Andi Quinn, Wei Zhang</div>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">CXLMemUring: Revolutionizing Memory Access Through Compiler-Driven
+                            Heterogeneous Execution</h3>
+                        <div class="publication-date">September 2023</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="/pdf/cxlmemuring.pdf" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="/pdf/cxlmemuring.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint23.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/pdf/CXLMemUring.pdf">Slides</a>
+                        <a class="btn btn-outline-primary" href="/cxl/">Code</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://github.com/vickieGPT/ia780i_type2_vortex">Hardware</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yusheng Zheng, Yuyi Li, Jianchang Su, Wei Zhang,
+                        Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">MVVM: Deploy Your AI Agents-Securely, Efficiently, Everywhere</h3>
+                        <div class="publication-date">September 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2410.15894" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2410.15894">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint24.bib">Cite</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://docs.google.com/presentation/d/110wHr2cuvyYOofnO2pKRI1c3dmEAyV8zvrmX_IAsAmk/edit?usp=sharing">Slides</a>
+                        <a class="btn btn-outline-primary" href="/pdf/MVVM.pdf">Poster</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/Multi-V-VM/MVVM">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Aibo Hu, Yusheng Zheng, Brian Zhao, Xinqi Zhang,
+                        Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">OCEAN: Open-source CXL Emulation at Hyperscale Architecture and Networking.</h3>
+                        <div class="publication-date">November 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://sc26.supercomputing.org/">SC26</a>
+                        <a class="btn btn-outline-primary" href="/pdf/OCEAN.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_sc26.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/fam-emu/OCEAN">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>,  Mujahid Al Rafi, Kenza Bouasker, Zhen Peng, Xi Wang, Jesun Sahariar Firoz, Sayan Ghosh, Ajay Panyala, Jie Li, Daniel Wong, Dong Li, Hyeran Jeon, Kevin Barker, Nathan Tallent, Andres Marquez, Luanzheng Guo</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">CXLMemSim: Practical Performance Simulation and Characterization
+                            of CXL 3.0 Memory Systems</h3>
+                        <div class="publication-date">July 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://hpdc.sci.utah.edu/2026/">HPDC26</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2303.06153.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_yarch23.bib">Cite</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://docs.google.com/file/d/1bZi2rbB-u5xMw_YET726gb2s9QuxMZJE/edit?usp=docslist_api&filetype=mspresentation">Slides</a>
+                        <a class="btn btn-outline-primary" href="/pdf/yarch23_poster.pdf">Poster</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/SlugLab/SlugAllocator">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Pooneh Safayenikoo, Jiacheng Ma, Tanvir Ahmed
+                        Khan, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">hetGPU: Pushing pooling into heterogeneous GPU Domain</h3>
+                        <div class="publication-date">March 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary"
+                            href="https://hcds-workshop.github.io/edition/2026/">HCDS26</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/abs/2506.15993" target="_blank"
+                            rel="noopener">Preprint</a>
+                        <a class="btn btn-outline-primary" href="https://www.arxiv.org/pdf/2506.15993">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_preprint25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/pdf/hetgpu.pdf">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/Multi-V-VM/hetGPU">Code</a>
+                    </div>
+                    <div class="publication-authors"><b>Yiwei Yang</b>, Yusheng Zheng, Tong Yu, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">ChainIO: Bridging Disk and Network Domains with eBPF</h3>
+                        <div class="publication-date">September 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary"
+                            href="https://conferences.sigcomm.org/sigcomm/2025/workshop/ebpf/" target="_blank"
+                            rel="noopener">eBPF 25</a>
+                        <a class="btn btn-outline-primary" href="https://dl.acm.org/doi/pdf/10.1145/3748355.3748371"
+                            target="_blank" rel="noopener">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_ebpf25_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://drive.google.com/file/d/1Xh24x8qTNTVjMrelVHItCFUfFejFGToq/edit">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/Bur">Code</a>
+                    </div>
+                    <div class="publication-authors">Zheng Cao, He Xuhang, Yanpeng Hu, Yusheng Zheng, <b>Yiwei Yang</b>,
+                        Jianchang Su, Wei Zhang Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Extending Applications Safely and Efficiently</h3>
+                        <div class="publication-date">July 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://www.usenix.org/conference/osdi25/">OSDI 25</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://www.usenix.org/system/files/osdi25-zheng-yusheng.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_osdi25.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/pdf/osdi25.pdf">Slides</a>
+                        <a class="btn btn-outline-primary" href="/about/osdi25_posters.pdf">Poster</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/bpftime/">Code</a>
+                    </div>
+                    <div class="publication-authors">Yusheng Zheng, Tong Yu, <b>Yiwei Yang</b>, Yanpeng Hu, XiaoZheng
+                        Lai, Dan Williams, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">wBPF: Efficient Edge-Case Observability for CXL Pooling systems
+                            via eBPF</h3>
+                        <div class="publication-date">February 2025</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://hcds-workshop.github.io/edition/2025/">HCDS
+                            25</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://dl.acm.org/doi/pdf/10.1145/3723851.3726985">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_hcds25_1.bib">Cite</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://docs.google.com/presentation/d/1zd_GxT1ssy8Z5yWdYGKFEEejP27pXx36va_5rAUTpas">Slides</a>
+                        <a class="btn btn-outline-primary"
+                            href="https://github.com/eunomia-bpf/wasm-bpf-evaluation/tree/dev-atc25">Code</a>
+                    </div>
+                    <div class="publication-authors">Yusheng Zheng, Yu Tong, <b>Yiwei Yang</b>, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Kgent: Kernel Extensions Large Language Model Agent</h3>
+                        <div class="publication-date">Jun 2024</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary"
+                            href="https://conferences.sigcomm.org/sigcomm/2024/workshop/ebpf/" target="_blank"
+                            rel="noopener">eBPF 24</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2312.05531">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_ebpf24.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="/pdf/KEN.pdf" target="_blank" rel="noopener">Slides</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/eunomia-bpf/KEN/">Code</a>
+                    </div>
+                    <div class="publication-authors">Yusheng Zheng, <b>Yiwei Yang</b>, Maolin Chen, Andi Quinn</div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Attack as Defense: Characterizing Adversarial Examples using
+                            Robustness</h3>
+                        <div class="publication-date">July 2021</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://conf.researchr.org/home/issta-2021">ISSTA21</a>
+                        <a class="btn btn-outline-primary" href="https://arxiv.org/pdf/2103.07633.pdf">PDF</a>
+                        <a class="btn btn-outline-primary js-cite-modal" href="javascript:void(0)"
+                            data-filename="/about/cite_issta21.bib">Cite</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/S3L-official/attack-as-detection"
+                            target="_blank" rel="noopener">Code</a>
+                    </div>
+                    <div class="publication-authors"><a href="http://s3l.shanghaitech.edu.cn/people/zhezhao/">Zhe
+                            Zhao</a>, Guangke Chen, Jingyi Wang, <b>Yiwei Yang</b>, Fu Song, Jun Sun</div>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="section row">
+            <h2 class="col">Teaching Assistant</h2>
+            <div class="section-text col-right">
+                <div class="row">
+                    <div class="col">
+                        <h3>ShanghaiTech CS131: Compiler</h3>
+                    </div>
+                    <div style="white-space: pre-line;"><a></a></div>
+                    <div style="white-space: pre-line;"><a></a></div>
+                    <div class="btn-links mb-3">
+                        <div class="col-right light">Spring 2021/2022</div>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://github.com/cs131-chocopy/">ChocoPy-LLVM</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://github.com/vickiegpt/CS131-COOL-Compiler" target="_blank"
+                            rel="noopener">COOL</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://github.com/vickiegpt/CS131-discussion" target="_blank"
+                            rel="noopener">Discussion</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://space.bilibili.com/3007867/channel/collectiondetail?sid=1727322">Video</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h3>UCSC CSE12: Computer Systems and Assembly Language</h3>
+                    </div>
+                    <div style="white-space: pre-line;"><a></a></div>
+                    <div class="btn-links mb-3">
+                        <div style="height: 20px;"></div>
+                        <div class="col-right light">Fall 2022</div>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://docs.google.com/presentation/d/1yUJxyG5CznM4OuTDPnL_nWN4vurmMKUR/edit?usp=drive_link&ouid=112951909136094460728&rtpof=true&sd=true"
+                            target="
+                            _blank" rel="noopener">Discussion 10/3</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://docs.google.com/presentation/d/1sSeCO_IdzaXfvRTtQYd6X67iMR6SlhCr/edit?usp=drive_link&ouid=112951909136094460728&rtpof=true&sd=true"
+                            target="
+                            _blank" rel="noopener">Discussion 10/19</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://docs.google.com/presentation/d/1Q_d_CybFqQoxBGoSZM8j5QQQjAQ1YEc3/edit?usp=drive_link&ouid=112951909136094460728&rtpof=true&sd=true"
+                            target="
+                            _blank" rel="noopener">Discussion 10/26</a>
+                        <a class="btn btn-outline-primary my-1 mr-1"
+                            href="https://docs.google.com/presentation/d/144rmomfhF3Szhh6z2oxxKwQ4rT_sno2z/edit?usp=drive_link&ouid=112951909136094460728&rtpof=true&sd=true"
+                            target="
+                            _blank" rel="noopener">Discussion 11/3</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h3>UCSC CSE120: Computer Architecture</h3>
+                    </div>
+                    <div style="white-space: pre-line;"><a></a></div>
+                    <div class="btn-links mb-3">
+                        <div style="height: 20px;"></div>
+                        <div class="col-right light">Spring 2026</div>
+                    </div>
+                    <a class="btn btn-outline-primary my-1 mr-1"
+                        href="https://docs.google.com/presentation/d/1Q_d_CybFqQoxBGoSZM8j5QQQjAQ1YEc3/edit?usp=drive_link&ouid=112951909136094460728&rtpof=true&sd=true"
+                        target="
+                            _blank" rel="noopener">Discussion 4/21</a>
+                </div>
+            </div>
+        </div>
+        <div class="section row">
+            <h2 class="col" id="talks-section">Talks</h2>
+            <div class="section-text col-right">
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Open-source CXL Emulation at Hyperscale Architecture and
+                            Networking</h3>
+                        <div class="publication-date">May 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://www.bilibili.com/video/BV1ALGU66ETv/?spm_id_from=333.1387.homepage.video_card.click"
+                            target="_blank" rel="noopener">IPDPS26 Tutorial</a>
+                    </div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">ChocoPy LLVM: An Undergraduate RISC-V Compiler Course Project
+                        </h3>
+                        <div class="publication-date">July 2022</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary"
+                            href="https://www.bilibili.com/video/BV1d14y1s7Q4/?spm_id_from=333.999.list.card_archive.click"
+                            target="_blank" rel="noopener">RVSC22</a>
+                    </div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Drywall: An eBPF Coherence Firewall for CXL Devices</h3>
+                        <div class="publication-date">Apr 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="https://www.bilibili.com/video/BV1BYoZBNEnm/?share_source=copy_web&vd_source=1eb773ad08afa9a71889900542e01615" target="_blank"
+                            rel="noopener">eBPFTravel26</a>
+                    </div>
+                </div>
+                <div class="publication-item">
+                    <div class="publication-header">
+                        <h3 class="publication-title">Agent with an interconnect solution</h3>
+                        <div class="publication-date">May 2026</div>
+                    </div>
+                    <div class="publication-links">
+                        <a class="btn btn-outline-primary" href="/pdf/interconnect.pdf" target="_blank"
+                            rel="noopener">UCL-Interconnect</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>const code_highlighting = true;</script>
+        <script>const isSiteThemeDark = false;</script>
+        <script>const search_config = { "indexURI": "/index.json", "minLength": 1, "threshold": 0.3 }; const i18n = { "no_results": "No results found", "placeholder": "Search...", "results": "results found" }; const content_type = { 'post': "Posts", 'project': "Projects", 'publication': "Publications", 'talk': "Talks" };</script>
+        <script id=search-hit-fuse-template type=text/x-template>
+                <div class="search-hit" id="summary-{{key}}">
+                <div class="search-hit-content">
+                  <div class="search-hit-name">
+                    <a href="{{relpermalink}}">{{title}}</a>
+                    <div class="article-metadata search-hit-type">{{type}}</div>
+                    <p class="search-hit-description">{{snippet}}</p>
+                  </div>
+                </div>
+                </div>
+            </script>
+        <div id="modal" class="modal fade" role="dialog" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cite</h5><button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                            <span aria-hidden="true">×</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre><code class="tex hljs">
+                </code></pre>
+                    </div>
+                    <div class="modal-footer"><a class="btn btn-outline-primary my-1 js-copy-cite" href="#"
+                            target="_blank"><i class="fas fa-copy"></i>Copy</a>
+                        <a class="btn btn-outline-primary my-1 js-download-cite" href="/about/issta21.bib"
+                            target="_blank"><i class="fas fa-download"></i>Download</a>
+                        <div id="modal-error"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- TODO LLM with VR on local deployment-->
+        <script>
+            (function () {
+                const modal = document.getElementById('modal');
+                if (!modal) return;
+
+                document.body.appendChild(modal);
+                modal.classList.remove('fade');
+
+                const codeBlock = modal.querySelector('.modal-body code');
+                const errorBox = document.getElementById('modal-error');
+                const downloadLink = modal.querySelector('.js-download-cite');
+                let backdrop = null;
+
+                function removeBackdrops() {
+                    document.querySelectorAll('.modal-backdrop').forEach((node) => node.remove());
+                    backdrop = null;
+                }
+
+                function disableLegacyCitationHandlers() {
+                    if (window.jQuery) {
+                        window.jQuery('.js-cite-modal').off('click');
+                    }
+                }
+
+                function setModalVisible(visible) {
+                    if (visible) {
+                        removeBackdrops();
+                        modal.style.display = 'block';
+                        modal.style.position = 'fixed';
+                        modal.style.inset = '0';
+                        modal.style.overflowX = 'hidden';
+                        modal.style.overflowY = 'auto';
+                        modal.style.zIndex = '20001';
+                        modal.removeAttribute('aria-hidden');
+                        modal.setAttribute('aria-modal', 'true');
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+
+                        const dialog = modal.querySelector('.modal-dialog');
+                        if (dialog) {
+                            dialog.style.maxWidth = '760px';
+                            dialog.style.margin = '10vh auto';
+                            dialog.style.pointerEvents = 'auto';
+                        }
+
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop show';
+                        backdrop.style.position = 'fixed';
+                        backdrop.style.inset = '0';
+                        backdrop.style.zIndex = '20000';
+                        backdrop.style.background = '#000';
+                        backdrop.style.opacity = '0.5';
+                        document.body.appendChild(backdrop);
+                        backdrop.addEventListener('click', function () {
+                            setModalVisible(false);
+                        });
+                    } else {
+                        modal.classList.remove('show');
+                        modal.style.display = 'none';
+                        modal.removeAttribute('aria-modal');
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        removeBackdrops();
+                    }
+                }
+
+                async function openCitation(filename) {
+                    if (codeBlock) codeBlock.textContent = 'Loading citation...';
+                    if (errorBox) errorBox.textContent = '';
+                    if (downloadLink) downloadLink.setAttribute('href', filename);
+                    setModalVisible(true);
+
+                    try {
+                        const response = await fetch(filename, { cache: 'no-store' });
+                        if (!response.ok) {
+                            throw new Error(response.status + ' ' + response.statusText);
+                        }
+                        if (codeBlock) codeBlock.textContent = await response.text();
+                    } catch (error) {
+                        if (codeBlock) codeBlock.textContent = '';
+                        if (errorBox) errorBox.textContent = 'Error: ' + error.message;
+                    }
+                }
+
+                document.addEventListener('click', function (event) {
+                    const citeButton = event.target.closest('.js-cite-modal');
+                    if (citeButton) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        openCitation(citeButton.getAttribute('data-filename'));
+                        return;
+                    }
+
+                    if (event.target.closest('#modal [data-dismiss="modal"]')) {
+                        event.preventDefault();
+                        setModalVisible(false);
+                    }
+                }, true);
+
+                document.addEventListener('click', async function (event) {
+                    const copyButton = event.target.closest('.js-copy-cite');
+                    if (!copyButton || !codeBlock) return;
+
+                    event.preventDefault();
+                    const citation = codeBlock.textContent.trim();
+                    if (!citation) return;
+
+                    try {
+                        await navigator.clipboard.writeText(citation);
+                    } catch (error) {
+                        const range = document.createRange();
+                        range.selectNodeContents(codeBlock);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        document.execCommand('copy');
+                        selection.removeAllRanges();
+                    }
+                }, true);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && modal.classList.contains('show')) {
+                        setModalVisible(false);
+                    }
+                });
+
+                window.addEventListener('load', disableLegacyCitationHandlers);
+                disableLegacyCitationHandlers();
+            })();
+        </script>
+        <footer>
+            <div><small>ASPLOS short links: access by <code>https://asplos.dev/&lt;year&gt;</code>, e.g.
+                    <a href='https://asplos.dev/2024' target='_blank' class='url'>asplos.dev/2024</a>.</small>
+            </div>
+            <p><small>沪ICP备18048797号-1</small></p>
+        </footer>
+</body>
+
+</html>

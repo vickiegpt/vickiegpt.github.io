@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+echo "llama.cpp smoke"
+command -v llama-cli
+command -v llama-bench
+ldd /opt/llama.cpp/llama-bench 2>/dev/null || true
+
+if [ "${1:-}" = "--run" ]; then
+    shift
+    model=${1:-}
+    if [ -z "$model" ] || [ ! -e "$model" ]; then
+        echo "usage: llama-smoke --run <model.gguf> [extra llama-bench args...]" >&2
+        exit 2
+    fi
+    shift || true
+    exec llama-bench -m "$model" -p 16 -n 4 -t 1 -ngl 0 -r 1 "$@"
+fi
+
+llama-bench --help | head -40
+echo "PASS: llama.cpp binaries are present. Use: llama-smoke --run <model.gguf>"

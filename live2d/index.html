@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html style="width: 100% !important; height: 100% !important;">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1900">
+  <title>Live2D</title>
+  <link rel="stylesheet" href="./css/live2d.css?v=20260310">
+  <link rel="stylesheet" href="./font/iconfont.css">
+  <!-- Pollyfill script -->
+  <!-- <script src="https://unpkg.com/core-js-bundle@3.6.1/minified.js"></script> -->
+  <!-- Live2DCubismCore script -->
+  <script src="./js/live2dcubismcore.js"></script>
+  <!-- Build script -->
+  <script src="./js/bundle.js"></script>
+  <!-- <style>
+    body {
+      background-color: #000; 
+      background-color: #1E1E1E;
+    }
+  </style> -->
+  <script src="js/ace.js" type="text/javascript" charset="utf-8"></script>
+  <style>
+    .example {
+      border: 1px solid black;
+      width: 50em;
+      height: 20em;
+    }
+
+    .compile-error-marker {
+      position: absolute;
+      background-color: rgba(116, 0, 0, 0.3);
+    }
+
+    .compile-button {
+      float: right;
+      background-color: rgba(143, 7, 7, 0.89);
+    }
+  </style>
+
+<style>
+#landlord { width: 320px !important; height: 520px !important; }
+</style>
+</head>
+
+<body style="width: 100%; height: 100%;">
+  <div id="landlord" style="width: 100%; height: 100%;">
+    <!-- 320*380px -->
+    <canvas id="live2d" class="live2d"></canvas>
+    <div class="message"></div>
+  </div>
+
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script src="./js/main.js"></script>
+  <script type="text/javascript" src="./js/message.js?v=20260310"></script>
+  <button id='staticCheckButton' class='compile-button'>Run Static Checks</button>
+
+  <!-- Claude 聊天界面 -->
+  <div id="claude-chat-panel"
+    style="position: fixed; top: 10px; right: 10px; width: 300px; background: rgba(0,0,0,0.8); border-radius: 10px; padding: 15px; color: white; display: none; z-index: 9998; pointer-events: auto;">
+    <h3 id="chat-title" style="margin: 0 0 10px 0; color: #ff69b4;">与yyw聊天</h3>
+    <div id="chat-messages"
+      style="height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <input type="text" id="chat-input" placeholder="输入消息..."
+        style="flex: 1; padding: 5px; border: none; border-radius: 3px;">
+      <button id="send-chat"
+        style="padding: 5px 10px; background: #ff69b4; border: none; border-radius: 3px; color: white; cursor: pointer;">发送</button>
+    </div>
+    <div style="margin-top: 10px;">
+      <label style="font-size: 12px; color: #ccc;">🔊 语音合成:</label>
+      <select id="voice-select"
+        style="width: 100%; padding: 3px; margin-top: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #666; border-radius: 3px;">
+        <option value="paimon">yyw</option>
+      </select>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #ccc; text-align: center;">
+      💡 支持GPT-SoVITS语音合成
+    </div>
+    <button id="close-chat"
+      style="position: absolute; top: 5px; right: 5px; background: #ff4444; border: none; border-radius: 50%; width: 20px; height: 20px; color: white; cursor: pointer;">×</button>
+  </div>
+
+  <!-- 聊天按钮 -->
+  <button id="open-chat"
+    style="position: fixed; top: 10px; right: 10px; background: linear-gradient(45deg, #ff69b4, #ff1493); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; cursor: pointer; z-index: 9999; font-size: 20px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4); transition: all 0.3s ease; pointer-events: auto;">💬</button>
+
+  <pre class="example"></pre>
+
+  <script>
+    var compileService = "https://asplos.dev/play_music";
+    var Range = require('ace/range').Range;
+
+    function makeEditor(example) {
+      var staticCheckButton = $("#staticCheckButton");
+      var editor = ace.edit(example, {
+        theme: "ace/theme/ambiance",
+        mode: "ace/mode/python",
+        fontSize: "1em",
+        wrap: true
+
+      });
+
+      var errorMarkers = []
+
+      function clearMarkers() {
+        editor.session.clearAnnotations();
+        for (var marker of errorMarkers) {
+          editor.session.removeMarker(marker);
+        }
+        errorMarkers.length = 0;
+      }
+
+
+      editor.on('change', () => {
+        clearMarkers();
+      });
+
+      $(".compile-button").click((e) => {
+        var button = e.target.id;
+        console.assert(button == 'staticCheckButton');
+        console.log("Running static checks...");
+        clearMarkers();
+        var code = editor.getValue();
+        fetch('https://asplos.dev/play_music/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            "text": code,
+            "text_language": "zh",
+            "ref_audio_path": "samples/Paimon/疑问—哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？.wav",
+            "prompt_text": "哇，这个，还有这个…只是和史莱姆打了一场，就有这么多结论吗？",
+            "prompt_language": "zh",
+            "top_k": 5,
+            "top_p": 1,
+            "temperature": 1,
+            "cut_punc": "，。",
+          }),
+        }).then(response => {
+            if (response.ok) {
+              return response.blob();
+            }
+            throw new Error('TTS request failed: ' + response.status);
+          })
+          .then(blob => {
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.onended = () => URL.revokeObjectURL(audioUrl);
+            audio.play().catch(err => console.error('Audio play failed:', err));
+            console.log('Success: audio playing');
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      });
+
+    }
+
+    $(".example").each((i, e) => makeEditor(e))
+
+    // Claude 聊天界面事件处理
+    $(document).ready(function () {
+      const chatPanel = $('#claude-chat-panel');
+      const openChatBtn = $('#open-chat');
+      const closeChatBtn = $('#close-chat');
+      const sendChatBtn = $('#send-chat');
+      const chatInput = $('#chat-input');
+      const chatMessages = $('#chat-messages');
+
+      // 打开聊天面板
+      openChatBtn.click(function () {
+        chatPanel.show();
+        openChatBtn.hide();
+        showMessage('哇！你想和yyw聊天吗？快来吧～', 2000);
+      });
+
+      // 关闭聊天面板
+      closeChatBtn.click(function () {
+        chatPanel.hide();
+        openChatBtn.show();
+        showMessage('记得常来找yyw聊天哦～', 2000);
+      });
+
+      // 增强按钮hover效果
+      openChatBtn.hover(
+        function () {
+          $(this).css('transform', 'scale(1.1)');
+          showMessage('点击yyw可以聊天哦～', 1000);
+        },
+        function () {
+          $(this).css('transform', 'scale(1)');
+        }
+      );
+
+      // 发送消息
+      function sendMessage() {
+        const message = chatInput.val().trim();
+        if (!message) {
+          showMessage('说点什么吧～', 1000);
+          return;
+        }
+
+        // 添加用户消息到聊天记录
+        chatMessages.append(`<div style="margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;"><strong>你:</strong> ${message}</div>`);
+        chatInput.val('');
+        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+
+        // 显示输入反馈
+        showMessage('收到你的消息了～让我想想怎么回复', 1500);
+
+        // 调用 Claude API
+        window.chatWithClaude(message);
+      }
+
+      sendChatBtn.click(sendMessage);
+      chatInput.keypress(function (e) {
+        if (e.which === 13) {
+          sendMessage();
+        }
+      });
+
+
+      // 增强 showMessage 函数的集成
+      const originalShowMessage = window.showMessage;
+      window.showMessage = function (text, timeout) {
+        // 调用原始的 showMessage 显示 Live2D 消息泡泡
+        if (originalShowMessage) {
+          originalShowMessage(text, timeout);
+        }
+
+        // 同时在聊天记录中显示消息
+        if (chatPanel.is(':visible')) {
+          chatMessages.append(`<div style="margin-bottom: 5px; color: #ff69b4;"><strong>yyw:</strong> ${text}</div>`);
+          chatMessages.scrollTop(chatMessages[0].scrollHeight);
+        }
+      };
+
+      // 增强聊天输入体验
+      chatInput.on('focus', function () {
+        showMessage('准备聊天中...', 1000);
+      });
+
+      // 语音角色切换事件
+      $('#voice-select').on('change', function () {
+        const selectedVoice = $(this).val();
+        const characterNames = {
+          'paimon': 'yyw',
+          'linyi': '林忆'
+        };
+        $('#chat-title').text(`与${characterNames[selectedVoice]}聊天`);
+      });
+    });
+  </script>
+
+</body>
+
+</html>
