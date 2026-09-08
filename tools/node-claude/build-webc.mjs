@@ -225,7 +225,7 @@ export async function build(config, adapters = {}) {
     ]);
     const manifest = {
       schema: 1,
-      url: "/about/node-claude.webc",
+      url: `/about/node-claude.webc?sha256=${sha256}`,
       size: webcInfo.size,
       sha256,
       nodeSha256,

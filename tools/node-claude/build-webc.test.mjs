@@ -172,5 +172,5 @@ test("real package matches its runtime manifest", async (t) => {
   const result = await build(await loadDefaultConfig());
   assert.equal(result.sha256, await sha256File(result.output));
   assert.equal(result.size, (await stat(result.output)).size);
-  assert.equal(result.url, "/about/node-claude.webc");
+  assert.equal(result.url, `/about/node-claude.webc?sha256=${result.sha256}`);
 });
