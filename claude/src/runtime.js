@@ -138,7 +138,7 @@ export async function launchClaude(options) {
     onProgress: options.onProgress,
   });
 
-  const sdkLoader = options.sdkLoader ?? (() => import(/* @vite-ignore */ '/claude/assets/wasmer-sdk/dist/index.js'));
+  const sdkLoader = options.sdkLoader ?? (() => import(/* @vite-ignore */ '/claude/assets/wasmer-sdk/dist/index.js?rev=17268e5'));
   const { Wasmer } = await sdkLoader();
   const wasmer = new Wasmer({
     parallelism: 2,

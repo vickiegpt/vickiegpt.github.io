@@ -7889,7 +7889,7 @@ async function Bh(e) {
     onProgress: e.onProgress
   }), u = e.sdkLoader ?? (() => import(
     /* @vite-ignore */
-    "/claude/assets/wasmer-sdk/dist/index.js"
+    "/claude/assets/wasmer-sdk/dist/index.js?rev=17268e5"
   )), { Wasmer: f } = await u(), _ = new f({
     parallelism: 2,
     cache: { namespace: `node-claude-${c.sha256.slice(0, 16)}` }

@@ -77,7 +77,10 @@ export default defineConfig({
       cssFileName: "styles",
     },
     rollupOptions: {
-      external: ["/claude/assets/wasmer-sdk/dist/index.js"],
+      external: [
+        "/claude/assets/wasmer-sdk/dist/index.js",
+        "/claude/assets/wasmer-sdk/dist/index.js?rev=17268e5",
+      ],
       output: {
         chunkFileNames: "chunks/[name]-[hash].js",
         assetFileNames: "[name][extname]",
