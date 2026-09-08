@@ -15,14 +15,17 @@ async function fixture() {
   await mkdir(path.join(root, "about"));
   const nodeSource = path.join(root, "about/node.wasm");
   const claudeSource = path.join(root, "claude.js");
+  const yogaSource = path.join(root, "yoga.wasm");
   const output = path.join(root, "node-claude.webc");
   const manifest = path.join(root, "runtime-manifest.json");
   await writeFile(nodeSource, Buffer.from([0x00, 0x61, 0x73, 0x6d, 1, 0, 0, 0]));
   await writeFile(claudeSource, "console.log('fixture')\n");
+  await writeFile(yogaSource, "yoga fixture");
   return {
     root,
     nodeSource,
     claudeSource,
+    yogaSource,
     output,
     manifest,
     config: {
@@ -31,6 +34,7 @@ async function fixture() {
       claudeVersion: "2.0.0",
       nodeSource,
       claudeSource,
+      yogaSource,
       webcOutput: output,
       manifestOutput: manifest,
       command: "node",
@@ -61,6 +65,20 @@ test("rejects symbolic-link build inputs", async () => {
   );
 });
 
+test("rejects a symbolic-link Yoga runtime", async () => {
+  const value = await fixture();
+  const link = path.join(value.root, "yoga-link.wasm");
+  const { symlink } = await import("node:fs/promises");
+  await symlink(value.yogaSource, link);
+  await assert.rejects(
+    validateInputs(
+      { ...value.config, yogaSource: link },
+      { repositoryRoot: value.root },
+    ),
+    /Yoga source must not be a symbolic link/,
+  );
+});
+
 test("builds metadata only after package inspection", async () => {
   const value = await fixture();
   const invocations = [];
@@ -68,6 +86,10 @@ test("builds metadata only after package inspection", async () => {
     invocations.push(args);
     if (args[0] === "--version") return { stdout: "wasmer 6.1.0\n", stderr: "" };
     if (args[1] === "build") {
+      assert.equal(
+        await readFile(path.join(args[2], "app/yoga.wasm"), "utf8"),
+        "yoga fixture",
+      );
       await writeFile(args[args.indexOf("--out") + 1], "fake webc bytes");
       return { stdout: "", stderr: "" };
     }
@@ -75,6 +97,7 @@ test("builds metadata only after package inspection", async () => {
     await mkdir(path.join(destination, "app"), { recursive: true });
     await writeFile(path.join(destination, "node"), "atom");
     await writeFile(path.join(destination, "app/claude-debug.mjs"), "cli");
+    await writeFile(path.join(destination, "app/yoga.wasm"), "yoga fixture");
     await writeFile(
       path.join(destination, "manifest.json"),
       JSON.stringify({ entrypoint: "node", commands: { node: {} } }),
@@ -92,6 +115,31 @@ test("builds metadata only after package inspection", async () => {
   assert.equal(JSON.parse(await readFile(value.manifest, "utf8")).sha256, result.sha256);
   assert.equal(invocations.filter((args) => args[1] === "build").length, 1);
   assert.equal(invocations.filter((args) => args[1] === "unpack").length, 1);
+});
+
+test("rejects a package missing the Yoga runtime", async () => {
+  const value = await fixture();
+  const run = async (_command, args) => {
+    if (args[0] === "--version") return { stdout: "wasmer 6.1.0\n", stderr: "" };
+    if (args[1] === "build") {
+      await writeFile(args[args.indexOf("--out") + 1], "fake webc bytes");
+      return { stdout: "", stderr: "" };
+    }
+    const destination = args[args.indexOf("--out-dir") + 1];
+    await mkdir(path.join(destination, "app"), { recursive: true });
+    await writeFile(path.join(destination, "node"), "atom");
+    await writeFile(path.join(destination, "app/claude-debug.mjs"), "cli");
+    await writeFile(
+      path.join(destination, "manifest.json"),
+      JSON.stringify({ entrypoint: "node", commands: { node: {} } }),
+    );
+    return { stdout: "", stderr: "" };
+  };
+
+  await assert.rejects(
+    build(value.config, { run, repositoryRoot: value.root }),
+    /Packaged Yoga runtime/,
+  );
 });
 
 test("rejects an incompatible Wasmer version before building", async () => {

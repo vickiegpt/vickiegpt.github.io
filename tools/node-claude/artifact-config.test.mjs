@@ -14,6 +14,8 @@ test("artifact inputs are pinned", () => {
     nodeSource: "about/node.wasm",
     claudeSource:
       "/home/out/claude-code-js-2.0.0/node_modules/@anthropic-ai/claude-code/cli.js",
+    yogaSource:
+      "/home/out/claude-code-js-2.0.0/node_modules/@anthropic-ai/claude-code/yoga.wasm",
     webcOutput: "about/node-claude.webc",
     manifestOutput: "about/runtime-manifest.json",
     command: "node",

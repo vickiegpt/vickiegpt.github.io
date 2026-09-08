@@ -39,7 +39,15 @@ function resolveFromRoot(value, root = repositoryRoot) {
 }
 
 async function requireRegularFile(filePath, label) {
-  const info = await stat(filePath);
+  let info;
+  try {
+    info = await stat(filePath);
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      throw new Error(`${label} must be a regular file`);
+    }
+    throw error;
+  }
   if (!info.isFile()) throw new Error(`${label} must be a regular file`);
   return info;
 }
@@ -85,6 +93,10 @@ export async function validateInputs(config, options = {}) {
     config.claudeSource,
     "Claude source",
   );
+  const yogaSource = await canonicalExistingFile(
+    config.yogaSource,
+    "Yoga source",
+  );
   const canonicalRoot = await realpath(root);
   if (!isInside(canonicalRoot, nodeSource)) {
     throw new Error("Node source must stay inside the repository");
@@ -112,7 +124,7 @@ export async function validateInputs(config, options = {}) {
     }
   }
 
-  return { nodeSource, claudeSource, webcOutput, manifestOutput };
+  return { nodeSource, claudeSource, yogaSource, webcOutput, manifestOutput };
 }
 
 async function productionRun(command, args) {
@@ -146,6 +158,10 @@ async function inspectPackage(run, wasmer, webcPath, inspectionDirectory) {
   await requireRegularFile(
     path.join(inspectionDirectory, "app/claude-debug.mjs"),
     "Packaged Claude script",
+  );
+  await requireRegularFile(
+    path.join(inspectionDirectory, "app/yoga.wasm"),
+    "Packaged Yoga runtime",
   );
 }
 
@@ -183,6 +199,7 @@ export async function build(config, adapters = {}) {
       copyFile(packageManifestPath, path.join(stage, "wasmer.toml")),
       copyFile(validated.nodeSource, path.join(stage, "node.wasm")),
       copyFile(validated.claudeSource, path.join(appDirectory, "claude-debug.mjs")),
+      copyFile(validated.yogaSource, path.join(appDirectory, "yoga.wasm")),
       copyFile(validated.claudeSource, temporaryCli),
     ]);
 
