@@ -101,6 +101,36 @@ describe("BrowserNodeRuntime lifecycle", () => {
     processExit.resolve({ exitCode: 0, reason: "exited" });
   });
 
+  it("copies shared worker output before writing it to xterm", async () => {
+    const shared = new Uint8Array(new SharedArrayBuffer(3));
+    shared.set([65, 66, 67]);
+    const processExit = deferred();
+    const process = {
+      stdin: null,
+      stdout: asyncChunks([shared]),
+      stderr: asyncChunks([]),
+      async wait() { return processExit.promise; },
+      async terminate() {},
+    };
+    const terminal = fakeTerminal();
+    terminal.write = function write(chunk) {
+      assert.ok(chunk.buffer instanceof ArrayBuffer);
+      this.output.push(chunk);
+    };
+    const runtime = new BrowserNodeRuntime({}, {
+      launch: async () => ({
+        process,
+        sandbox: { close: async () => {} },
+        wasmer: { close: async () => {} },
+      }),
+    });
+
+    await runtime.start("capability", terminal);
+    await runtime.waitForPumps();
+    assert.deepEqual([...terminal.output[0]], [65, 66, 67]);
+    processExit.resolve({ exitCode: 0, reason: "exited" });
+  });
+
   it("cancels a stale start and closes resources in reverse ownership order", async () => {
     const launched = deferred();
     const order = [];

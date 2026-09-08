@@ -255,7 +255,12 @@ export class BrowserNodeRuntime {
           if (!stream) return;
           for await (const chunk of stream) {
             if (generation !== this.generation) return;
-            terminal.write(chunk);
+            let output = chunk;
+            if (ArrayBuffer.isView(chunk) && !(chunk.buffer instanceof ArrayBuffer)) {
+              output = new Uint8Array(chunk.byteLength);
+              output.set(new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+            }
+            terminal.write(output);
           }
         };
         this.pumps = [pump(process.stdout), pump(process.stderr)];

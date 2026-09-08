@@ -7978,7 +7978,8 @@ class Rh {
           if (l)
             for await (const a of l) {
               if (s !== this.generation) return;
-              i.write(a);
+              let c = a;
+              ArrayBuffer.isView(a) && !(a.buffer instanceof ArrayBuffer) && (c = new Uint8Array(a.byteLength), c.set(new Uint8Array(a.buffer, a.byteOffset, a.byteLength))), i.write(c);
             }
         };
         return this.pumps = [h(o.stdout), h(o.stderr)], this.state = "running", o.wait?.().then(
