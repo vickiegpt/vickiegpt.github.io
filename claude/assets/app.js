@@ -7833,14 +7833,14 @@ function xh(e) {
 function tn(e) {
   if (!e || typeof e != "object" || Array.isArray(e))
     throw Jt("expected an object");
-  if (e.schema !== 1 || e.url !== en || !Number.isSafeInteger(e.size) || e.size < 1 || e.size > yh || !or.test(e.sha256) || !or.test(e.nodeSha256) || e.sdkVersion !== bh || typeof e.nodeVersion != "string" || e.nodeVersion.length === 0 || typeof e.claudeVersion != "string" || e.claudeVersion.length === 0 || e.command !== "node" || !Array.isArray(e.args) || e.args.length !== 1 || e.args[0] !== "/app/claude-debug.mjs")
+  if (e.schema !== 1 || e.url !== `${en}?sha256=${e.sha256}` || !Number.isSafeInteger(e.size) || e.size < 1 || e.size > yh || !or.test(e.sha256) || !or.test(e.nodeSha256) || e.sdkVersion !== bh || typeof e.nodeVersion != "string" || e.nodeVersion.length === 0 || typeof e.claudeVersion != "string" || e.claudeVersion.length === 0 || e.command !== "node" || !Array.isArray(e.args) || e.args.length !== 1 || e.args[0] !== "/app/claude-debug.mjs")
     throw Jt("contract mismatch");
   return e;
 }
 async function Eh(e, t = {}) {
   tn(e);
   const i = new URL(t.baseUrl ?? globalThis.location.href), s = new URL(e.url, i);
-  if (s.origin !== i.origin || s.pathname !== en)
+  if (s.origin !== i.origin || s.pathname !== en || s.search !== `?sha256=${e.sha256}` || s.hash !== "")
     throw Jt("artifact must be same-origin");
   const n = await (t.fetchImpl ?? fetch)(s.href, {
     cache: "force-cache",

@@ -41,7 +41,7 @@ export function validateRuntimeManifest(manifest) {
   }
   if (
     manifest.schema !== 1
-    || manifest.url !== ARTIFACT_PATH
+    || manifest.url !== `${ARTIFACT_PATH}?sha256=${manifest.sha256}`
     || !Number.isSafeInteger(manifest.size)
     || manifest.size < 1
     || manifest.size > MAX_ARTIFACT_BYTES
@@ -66,7 +66,12 @@ export async function fetchVerifiedWebc(manifest, options = {}) {
   validateRuntimeManifest(manifest);
   const baseUrl = new URL(options.baseUrl ?? globalThis.location.href);
   const artifactUrl = new URL(manifest.url, baseUrl);
-  if (artifactUrl.origin !== baseUrl.origin || artifactUrl.pathname !== ARTIFACT_PATH) {
+  if (
+    artifactUrl.origin !== baseUrl.origin
+    || artifactUrl.pathname !== ARTIFACT_PATH
+    || artifactUrl.search !== `?sha256=${manifest.sha256}`
+    || artifactUrl.hash !== ''
+  ) {
     throw runtimeError('artifact must be same-origin');
   }
 

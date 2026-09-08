@@ -16,13 +16,14 @@ async function hash(bytes) {
 
 async function fixture() {
   const bytes = encoder.encode('webc-fixture');
+  const sha256 = await hash(bytes);
   return {
     bytes,
     manifest: {
       schema: 1,
-      url: '/about/node-claude.webc',
+      url: `/about/node-claude.webc?sha256=${sha256}`,
       size: bytes.byteLength,
-      sha256: await hash(bytes),
+      sha256,
       nodeSha256: 'f'.repeat(64),
       sdkVersion: '0.11.0',
       nodeVersion: '25.0.0-pre',
@@ -53,7 +54,7 @@ describe('browser Wasmer runtime', () => {
     const result = await fetchVerifiedWebc(manifest, {
       baseUrl: 'https://asplos.dev/claude/',
       fetchImpl: async (url) => {
-        assert.equal(url, 'https://asplos.dev/about/node-claude.webc');
+        assert.equal(url, `https://asplos.dev/about/node-claude.webc?sha256=${manifest.sha256}`);
         return new Response(bytes, {
           headers: { 'Content-Length': String(bytes.byteLength) },
         });
@@ -64,7 +65,11 @@ describe('browser Wasmer runtime', () => {
     assert.deepEqual(result, bytes);
     assert.deepEqual(progress.at(-1), [bytes.byteLength, bytes.byteLength]);
     await assert.rejects(
-      fetchVerifiedWebc({ ...manifest, sha256: '0'.repeat(64) }, {
+      fetchVerifiedWebc({
+        ...manifest,
+        sha256: '0'.repeat(64),
+        url: `/about/node-claude.webc?sha256=${'0'.repeat(64)}`,
+      }, {
         baseUrl: 'https://asplos.dev/claude/',
         fetchImpl: async () => new Response(bytes),
       }),
