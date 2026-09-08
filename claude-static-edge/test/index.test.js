@@ -16,7 +16,10 @@ test('proxies only Claude static files with native isolation headers', async () 
     async (request) => {
       seen.push(request.url);
       return new Response('runtime', {
-        headers: { 'content-type': 'application/javascript' },
+        headers: {
+          'content-type': 'application/javascript',
+          'content-security-policy': "default-src 'none'; sandbox",
+        },
       });
     },
   );
@@ -29,6 +32,11 @@ test('proxies only Claude static files with native isolation headers', async () 
   assert.equal(response.headers.get('Cross-Origin-Embedder-Policy'), 'credentialless');
   assert.equal(response.headers.get('Cross-Origin-Resource-Policy'), 'same-origin');
   assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  const policy = response.headers.get('Content-Security-Policy');
+  assert.doesNotMatch(policy, /sandbox|default-src 'none'/);
+  assert.match(policy, /script-src 'self' 'wasm-unsafe-eval' https:\/\/challenges\.cloudflare\.com/);
+  assert.match(policy, /worker-src 'self' blob:/);
+  assert.match(policy, /connect-src 'self' https:\/\/challenges\.cloudflare\.com wss:\/\/wisp\.mercurywork\.shop/);
 });
 
 test('rejects requests outside the Claude static prefix', async () => {

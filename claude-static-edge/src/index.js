@@ -1,5 +1,19 @@
 const STATIC_ROOT = 'https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main';
 const STATIC_PREFIX = '/claude/';
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://challenges.cloudflare.com wss://wisp.mercurywork.shop",
+  "worker-src 'self' blob:",
+  "frame-src https://challenges.cloudflare.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
 
 const CONTENT_TYPES = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -30,6 +44,7 @@ export async function handleRequest(request, fetchImpl = fetch) {
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
   headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
   headers.set('Content-Type', contentType(pathname, headers.get('Content-Type') || 'application/octet-stream'));
   headers.delete('Content-Length');
 
