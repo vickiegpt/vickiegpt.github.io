@@ -8094,11 +8094,21 @@ function Oh({
   documentImpl: t = globalThis.document,
   src: i = Mh
 } = {}) {
-  return e.turnstile ? Promise.resolve(e.turnstile) : t ? new Promise((s, r) => {
-    const n = t.querySelector(
+  const s = e.turnstile;
+  return typeof s?.render == "function" ? Promise.resolve(s) : typeof s?.ready == "function" ? new Promise((r, n) => {
+    try {
+      s.ready(() => {
+        const o = e.turnstile;
+        typeof o?.render == "function" ? r(o) : n(new Error("Security challenge failed to load"));
+      });
+    } catch {
+      n(new Error("Security challenge failed to load"));
+    }
+  }) : t ? new Promise((r, n) => {
+    const o = t.querySelector(
       'script[src^="https://challenges.cloudflare.com/turnstile/"]'
-    ), o = n || t.createElement("script"), h = () => e.turnstile ? s(e.turnstile) : r(new Error("Security challenge failed to load")), l = () => r(new Error("Security challenge failed to load"));
-    o.addEventListener("load", h, { once: !0 }), o.addEventListener("error", l, { once: !0 }), n || (o.src = i, o.async = !0, o.defer = !0, t.head.append(o));
+    ), h = o || t.createElement("script"), l = () => typeof e.turnstile?.render == "function" ? r(e.turnstile) : n(new Error("Security challenge failed to load")), a = () => n(new Error("Security challenge failed to load"));
+    h.addEventListener("load", l, { once: !0 }), h.addEventListener("error", a, { once: !0 }), o || (h.src = i, h.async = !0, h.defer = !0, t.head.append(h));
   }) : Promise.reject(new Error("Security challenge failed to load"));
 }
 class Ih {

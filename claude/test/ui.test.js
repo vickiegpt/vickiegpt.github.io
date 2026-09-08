@@ -56,6 +56,24 @@ describe("browser Claude terminal UI", () => {
     assert.equal(appended, 0);
   });
 
+  it("waits for an existing Turnstile stub before calling render", async () => {
+    let readyCallback;
+    const turnstile = {
+      ready(callback) {
+        readyCallback = callback;
+      },
+    };
+    const loading = loadTurnstileApi({
+      globalImpl: { turnstile },
+      documentImpl: null,
+    });
+
+    assert.equal(typeof readyCallback, "function");
+    turnstile.render = () => "widget";
+    readyCallback();
+    assert.equal(await loading, turnstile);
+  });
+
   it("contains terminal controls and removes the direct API editor", async () => {
     const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
     for (const id of [
@@ -178,7 +196,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-3/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-4/);
 });
 
 versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {

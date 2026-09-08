@@ -110,7 +110,21 @@ export function loadTurnstileApi({
   documentImpl = globalThis.document,
   src = TURNSTILE_SCRIPT,
 } = {}) {
-  if (globalImpl.turnstile) return Promise.resolve(globalImpl.turnstile);
+  const current = globalImpl.turnstile;
+  if (typeof current?.render === "function") return Promise.resolve(current);
+  if (typeof current?.ready === "function") {
+    return new Promise((resolve, reject) => {
+      try {
+        current.ready(() => {
+          const ready = globalImpl.turnstile;
+          if (typeof ready?.render === "function") resolve(ready);
+          else reject(new Error("Security challenge failed to load"));
+        });
+      } catch {
+        reject(new Error("Security challenge failed to load"));
+      }
+    });
+  }
   if (!documentImpl) return Promise.reject(new Error("Security challenge failed to load"));
 
   return new Promise((resolve, reject) => {
@@ -118,7 +132,7 @@ export function loadTurnstileApi({
       'script[src^="https://challenges.cloudflare.com/turnstile/"]',
     );
     const script = existing || documentImpl.createElement("script");
-    const loaded = () => globalImpl.turnstile
+    const loaded = () => typeof globalImpl.turnstile?.render === "function"
       ? resolve(globalImpl.turnstile)
       : reject(new Error("Security challenge failed to load"));
     const failed = () => reject(new Error("Security challenge failed to load"));
