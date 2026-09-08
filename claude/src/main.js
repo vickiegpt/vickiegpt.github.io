@@ -1,7 +1,9 @@
 const SESSION_PATH = "/api/claude/session";
 const CONFIG_PATH = "/api/claude/config";
 const ISOLATION_RELOAD_KEY = "claude-coi-reload";
-const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+const TURNSTILE_CALLBACK = "__claudeTurnstileReady";
+const TURNSTILE_TIMEOUT_MS = 15000;
 
 function abortError() {
   return new DOMException("Runtime startup was cancelled", "AbortError");
@@ -109,18 +111,26 @@ export function loadTurnstileApi({
   globalImpl = globalThis,
   documentImpl = globalThis.document,
   src = TURNSTILE_SCRIPT,
+  setTimer = globalThis.setTimeout,
+  clearTimer = globalThis.clearTimeout,
 } = {}) {
   const current = globalImpl.turnstile;
   if (typeof current?.render === "function") return Promise.resolve(current);
   if (typeof current?.ready === "function") {
     return new Promise((resolve, reject) => {
+      const timer = setTimer(
+        () => reject(new Error("Security challenge timed out while loading")),
+        TURNSTILE_TIMEOUT_MS,
+      );
       try {
         current.ready(() => {
+          clearTimer(timer);
           const ready = globalImpl.turnstile;
           if (typeof ready?.render === "function") resolve(ready);
           else reject(new Error("Security challenge failed to load"));
         });
       } catch {
+        clearTimer(timer);
         reject(new Error("Security challenge failed to load"));
       }
     });
@@ -131,19 +141,49 @@ export function loadTurnstileApi({
     const existing = documentImpl.querySelector(
       'script[src^="https://challenges.cloudflare.com/turnstile/"]',
     );
-    const script = existing || documentImpl.createElement("script");
-    const loaded = () => typeof globalImpl.turnstile?.render === "function"
-      ? resolve(globalImpl.turnstile)
-      : reject(new Error("Security challenge failed to load"));
-    const failed = () => reject(new Error("Security challenge failed to load"));
-    script.addEventListener("load", loaded, { once: true });
-    script.addEventListener("error", failed, { once: true });
-    if (!existing) {
-      script.src = src;
-      script.async = true;
-      script.defer = true;
-      documentImpl.head.append(script);
+    if (existing) {
+      reject(new Error("Security challenge script loaded without an API"));
+      return;
     }
+
+    const script = documentImpl.createElement("script");
+    let timer;
+    let settled = false;
+    const cleanup = () => {
+      clearTimer(timer);
+      script.removeEventListener?.("error", failed);
+      if (globalImpl[TURNSTILE_CALLBACK] === loaded) {
+        delete globalImpl[TURNSTILE_CALLBACK];
+      }
+    };
+    const finish = (callback) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback();
+    };
+    const loaded = () => finish(() => {
+      const ready = globalImpl.turnstile;
+      if (typeof ready?.render === "function") resolve(ready);
+      else reject(new Error("Security challenge failed to load"));
+    });
+    const failed = () => finish(
+      () => reject(new Error("Security challenge failed to load")),
+    );
+
+    const scriptUrl = new URL(src);
+    scriptUrl.searchParams.set("onload", TURNSTILE_CALLBACK);
+    scriptUrl.searchParams.set("render", "explicit");
+    globalImpl[TURNSTILE_CALLBACK] = loaded;
+    script.src = scriptUrl.href;
+    script.async = true;
+    script.defer = true;
+    script.addEventListener("error", failed, { once: true });
+    timer = setTimer(
+      () => finish(() => reject(new Error("Security challenge timed out while loading"))),
+      TURNSTILE_TIMEOUT_MS,
+    );
+    documentImpl.head.append(script);
   });
 }
 

@@ -74,6 +74,36 @@ describe("browser Claude terminal UI", () => {
     assert.equal(await loading, turnstile);
   });
 
+  it("loads Turnstile once through its explicit ready callback", async () => {
+    const globalImpl = {};
+    let script;
+    const loading = loadTurnstileApi({
+      globalImpl,
+      documentImpl: {
+        querySelector() { return null; },
+        createElement() {
+          script = {
+            addEventListener() {},
+            removeEventListener() {},
+          };
+          return script;
+        },
+        head: { append() {} },
+      },
+    });
+
+    const source = new URL(script.src);
+    assert.equal(source.searchParams.get("render"), "explicit");
+    const callbackName = source.searchParams.get("onload");
+    assert.ok(callbackName);
+    assert.equal(typeof globalImpl[callbackName], "function");
+
+    const turnstile = { render() {} };
+    globalImpl.turnstile = turnstile;
+    globalImpl[callbackName]();
+    assert.equal(await loading, turnstile);
+  });
+
   it("contains terminal controls and removes the direct API editor", async () => {
     const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
     for (const id of [
@@ -90,13 +120,11 @@ describe("browser Claude terminal UI", () => {
     assert.match(html, /\.\/assets\/app\.js/);
   });
 
-  it("loads the official explicit Turnstile API before the application module", async () => {
+  it("lets the application own the single Turnstile script load", async () => {
     const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-    const turnstile = html.indexOf("https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit");
-    const application = html.indexOf("./assets/app.js");
 
-    assert.notEqual(turnstile, -1);
-    assert.ok(turnstile < application);
+    assert.doesNotMatch(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js/);
+    assert.match(html, /\.\/assets\/app\.js/);
   });
 
   it("uses a compact challenge that cannot widen the launch sidebar", async () => {
@@ -222,7 +250,8 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-6/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-7/);
+  assertVersionedEntry.match(html, /\.\/assets\/styles\.css\?v=20260908-7/);
 });
 
 versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {
