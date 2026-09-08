@@ -216,6 +216,26 @@ describe("browser Claude terminal UI", () => {
     assert.deepEqual(storageWrites, []);
   });
 
+  it("invokes injected browser timers without rebinding their receiver", async () => {
+    let timerCalls = 0;
+    function setTimer() {
+      assert.equal(this, undefined);
+      timerCalls += 1;
+      return null;
+    }
+    const controller = new RuntimeController({
+      runtime: { async start() {}, async stop() {} },
+      terminal: {},
+      challenge: { async execute() { return "token"; }, reset() {} },
+      requestSession: async () => ({ capability: "cap", expiresIn: 300 }),
+      setTimer,
+      clearTimer() {},
+    });
+
+    await controller.start();
+    assert.equal(timerCalls, 1);
+  });
+
   it("invalidates a pending start before stopping the runtime", async () => {
     let releaseChallenge;
     const challenge = new Promise((resolve) => {
@@ -253,7 +273,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-8/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-9/);
   assertVersionedEntry.match(html, /\.\/assets\/styles\.css\?v=20260908-7/);
 });
 

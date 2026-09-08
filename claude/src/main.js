@@ -194,8 +194,8 @@ export class RuntimeController {
     this.challenge = challenge;
     this.requestSession = requestSession;
     this.onState = onState;
-    this.setTimer = setTimer;
-    this.clearTimer = clearTimer;
+    this.setTimer = (...args) => setTimer(...args);
+    this.clearTimer = (...args) => clearTimer(...args);
     this.state = "idle";
     this.generation = 0;
     this.expiryTimer = null;

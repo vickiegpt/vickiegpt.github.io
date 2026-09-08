@@ -8139,7 +8139,7 @@ function Nh({
 class Hh {
   constructor({ runtime: t, terminal: i, challenge: s, requestSession: r, onState: n = () => {
   }, setTimer: o = globalThis.setTimeout, clearTimer: h = globalThis.clearTimeout }) {
-    this.runtime = t, this.terminal = i, this.challenge = s, this.requestSession = r, this.onState = n, this.setTimer = o, this.clearTimer = h, this.state = "idle", this.generation = 0, this.expiryTimer = null;
+    this.runtime = t, this.terminal = i, this.challenge = s, this.requestSession = r, this.onState = n, this.setTimer = (...l) => o(...l), this.clearTimer = (...l) => h(...l), this.state = "idle", this.generation = 0, this.expiryTimer = null;
   }
   setState(t) {
     this.state = t, this.onState(t);
