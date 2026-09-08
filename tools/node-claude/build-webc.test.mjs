@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -82,8 +82,14 @@ test("rejects a symbolic-link Yoga runtime", async () => {
 test("builds metadata only after package inspection", async () => {
   const value = await fixture();
   const invocations = [];
-  const run = async (_command, args) => {
+  let stripped = false;
+  const run = async (command, args) => {
     invocations.push(args);
+    if (command === "wasm-strip") {
+      stripped = true;
+      await copyFile(args[0], args[2]);
+      return { stdout: "", stderr: "" };
+    }
     if (args[0] === "--version") return { stdout: "wasmer 6.1.0\n", stderr: "" };
     if (args[1] === "build") {
       assert.equal(
@@ -115,11 +121,16 @@ test("builds metadata only after package inspection", async () => {
   assert.equal(JSON.parse(await readFile(value.manifest, "utf8")).sha256, result.sha256);
   assert.equal(invocations.filter((args) => args[1] === "build").length, 1);
   assert.equal(invocations.filter((args) => args[1] === "unpack").length, 1);
+  assert.equal(stripped, true);
 });
 
 test("rejects a package missing the Yoga runtime", async () => {
   const value = await fixture();
-  const run = async (_command, args) => {
+  const run = async (command, args) => {
+    if (command === "wasm-strip") {
+      await copyFile(args[0], args[2]);
+      return { stdout: "", stderr: "" };
+    }
     if (args[0] === "--version") return { stdout: "wasmer 6.1.0\n", stderr: "" };
     if (args[1] === "build") {
       await writeFile(args[args.indexOf("--out") + 1], "fake webc bytes");

@@ -197,11 +197,16 @@ export async function build(config, adapters = {}) {
     await mkdir(appDirectory);
     await Promise.all([
       copyFile(packageManifestPath, path.join(stage, "wasmer.toml")),
-      copyFile(validated.nodeSource, path.join(stage, "node.wasm")),
       copyFile(validated.claudeSource, path.join(appDirectory, "claude-debug.mjs")),
       copyFile(validated.yogaSource, path.join(appDirectory, "yoga.wasm")),
       copyFile(validated.claudeSource, temporaryCli),
     ]);
+    await run("wasm-strip", [
+      validated.nodeSource,
+      "-o",
+      path.join(stage, "node.wasm"),
+    ]);
+    await requireRegularFile(path.join(stage, "node.wasm"), "Stripped Node atom");
 
     await run(wasmer, [
       "package",

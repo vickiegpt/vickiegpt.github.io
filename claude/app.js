@@ -170,6 +170,11 @@ async function boot() {
       const percent = detail.total ? (detail.loaded / detail.total) * 100 : 0;
       setProgress(percent, `Downloading runtime · ${Math.round(percent)}%`);
     },
+    onPhase(phase) {
+      if (phase === "compiling") {
+        setProgress(100, "Compiling Node WASM locally");
+      }
+    },
     onExit(output) {
       terminal.writeln(`\r\n\x1b[38;2;137;146;129mProcess exited (${output?.exitCode ?? "unknown"}).\x1b[0m`);
       setState("exited");

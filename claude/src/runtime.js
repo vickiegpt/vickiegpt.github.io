@@ -133,7 +133,7 @@ export async function launchClaude(options) {
     onProgress: options.onProgress,
   });
 
-  const sdkLoader = options.sdkLoader ?? (() => import('@wasmer/sdk/browser'));
+  const sdkLoader = options.sdkLoader ?? (() => import(/* @vite-ignore */ '/claude/assets/wasmer-sdk/dist/index.js'));
   const { Wasmer } = await sdkLoader();
   const wasmer = new Wasmer({
     parallelism: 2,
@@ -177,23 +177,20 @@ export async function launchClaude(options) {
 }
 
 function runtimeAbortError() {
-  return new DOMException("Runtime startup was cancelled", "AbortError");
+  const error = new Error("Browser runtime startup was cancelled");
+  error.name = "AbortError";
+  return error;
 }
 
 async function closeRuntimeResources(resources, pumps = [], disposables = []) {
-  for (const disposable of disposables) disposable?.dispose?.();
-  if (!resources) return;
-
-  try {
-    await resources.process?.terminate?.({ gracePeriodMs: 1_000 });
-  } finally {
-    await Promise.allSettled(pumps);
-    try {
-      await resources.sandbox?.close?.();
-    } finally {
-      await resources.wasmer?.close?.();
-    }
+  for (const disposable of [...disposables].reverse()) disposable?.dispose?.();
+  if (resources?.process) {
+    await resources.process.terminate?.().catch(() => {});
+    await resources.process.wait?.().catch(() => {});
   }
+  await Promise.allSettled(pumps);
+  await resources?.sandbox?.close?.().catch(() => {});
+  await resources?.wasmer?.close?.().catch(() => {});
 }
 
 export class BrowserNodeRuntime {
@@ -252,23 +249,37 @@ export class BrowserNodeRuntime {
         ].filter(Boolean);
 
         const pump = async (stream) => {
-          if (!stream) return;
+          if (!stream) return 0;
+          let written = 0;
           for await (const chunk of stream) {
             if (generation !== this.generation) return;
             let output = chunk;
-            if (ArrayBuffer.isView(chunk) && !(chunk.buffer instanceof ArrayBuffer)) {
+            if (ArrayBuffer.isView(chunk)) {
               output = new Uint8Array(chunk.byteLength);
               output.set(new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength));
             }
             terminal.write(output);
+            written += output.byteLength;
           }
+          return written;
         };
         this.pumps = [pump(process.stdout), pump(process.stderr)];
         this.state = "running";
 
-        void process.wait?.().then(
-          (output) => {
+        const processExit = process.wait?.();
+        void processExit?.then(
+          async (output) => {
             if (generation !== this.generation) return;
+            const pumpResults = await Promise.allSettled(this.pumps);
+            const streamed = pumpResults.reduce(
+              (total, result) => total + (result.status === "fulfilled" ? result.value : 0),
+              0,
+            );
+            if (streamed === 0) {
+              for (const captured of [output?.stdout?.bytes, output?.stderr?.bytes]) {
+                if (captured?.byteLength) terminal.write(captured.slice());
+              }
+            }
             this.state = "exited";
             this.options.onExit?.(output);
           },

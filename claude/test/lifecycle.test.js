@@ -131,6 +131,32 @@ describe("BrowserNodeRuntime lifecycle", () => {
     processExit.resolve({ exitCode: 0, reason: "exited" });
   });
 
+  it("copies ordinary Wasmer output before xterm parses it asynchronously", async () => {
+    const chunk = new Uint8Array([65, 66, 67]);
+    const processExit = deferred();
+    const process = {
+      stdin: null,
+      stdout: asyncChunks([chunk]),
+      stderr: asyncChunks([]),
+      async wait() { return processExit.promise; },
+      async terminate() {},
+    };
+    const terminal = fakeTerminal();
+    const runtime = new BrowserNodeRuntime({}, {
+      launch: async () => ({
+        process,
+        sandbox: { close: async () => {} },
+        wasmer: { close: async () => {} },
+      }),
+    });
+
+    await runtime.start("capability", terminal);
+    await runtime.waitForPumps();
+    chunk.fill(0);
+    assert.deepEqual([...terminal.output[0]], [65, 66, 67]);
+    processExit.resolve({ exitCode: 0, reason: "exited" });
+  });
+
   it("cancels a stale start and closes resources in reverse ownership order", async () => {
     const launched = deferred();
     const order = [];

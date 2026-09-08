@@ -147,6 +147,21 @@ describe("browser Claude terminal UI", () => {
     assert.match(source, /addEventListener\(["']resize["']/);
   });
 
+  it("reports Node compilation separately from artifact download", async () => {
+    const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
+
+    assert.match(source, /onPhase\(phase\)/);
+    assert.match(source, /Compiling Node WASM/);
+  });
+
+  it("runs Wasmer directly in the top-level application context", async () => {
+    const runtime = await readFile(new URL("../src/runtime.js", import.meta.url), "utf8");
+
+    assert.match(runtime, /this\.launch = adapters\.launch\s*\?\? launchClaude;/);
+    assert.match(runtime, /@vite-ignore.*\/claude\/assets\/wasmer-sdk\/dist\/index\.js/);
+    assert.doesNotMatch(runtime, /launchClaudeInFrame|runtime-frame\.html/);
+  });
+
   it("exchanges a one-time challenge using the fixed same-origin endpoint", async () => {
     const calls = [];
     const result = await requestCapability("challenge-token", {
@@ -273,7 +288,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-10/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-12/);
   assertVersionedEntry.match(html, /\.\/assets\/styles\.css\?v=20260908-7/);
 });
 
