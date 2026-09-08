@@ -12,7 +12,7 @@ import {
   requestCapability,
 } from "./src/main.js";
 
-const FIXED_WISP_URL = "wss://asplos.dev/wisp/";
+const FIXED_WISP_URL = "wss://wisp.mercurywork.shop/";
 const MANIFEST_URL = "https://asplos.dev/about/runtime-manifest.json";
 
 const $ = (selector) => document.querySelector(selector);

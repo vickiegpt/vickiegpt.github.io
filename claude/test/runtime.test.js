@@ -114,7 +114,7 @@ describe('browser Wasmer runtime', () => {
 
     const launched = await launchClaude({
       capability: 'signed-five-minute-capability',
-      wispUrl: 'wss://asplos.dev/wisp/',
+      wispUrl: 'wss://wisp.mercurywork.shop/',
       manifestUrl: 'https://asplos.dev/about/runtime-manifest.json',
       columns: 100,
       rows: 30,
@@ -132,7 +132,7 @@ describe('browser Wasmer runtime', () => {
     const sandboxOptions = calls.find(([name]) => name === 'sandbox')[1];
     assert.deepEqual(sandboxOptions.network, {
       mode: 'wisp',
-      url: 'wss://asplos.dev/wisp/',
+      url: 'wss://wisp.mercurywork.shop/',
     });
     assert.equal(sandboxOptions.env.HOME, '/workspace');
     assert.equal(
@@ -155,14 +155,14 @@ describe('browser Wasmer runtime', () => {
     ]);
   });
 
-  it('requires cross-origin isolation and the fixed same-origin WISP endpoint', async () => {
+  it('requires cross-origin isolation and the fixed WISP endpoint', async () => {
     const base = {
       capability: 'signed-five-minute-capability',
       manifestUrl: 'https://asplos.dev/about/runtime-manifest.json',
       fetchImpl: async () => { throw new Error('must not fetch'); },
     };
     await assert.rejects(
-      launchClaude({ ...base, isolated: false, wispUrl: 'wss://asplos.dev/wisp/' }),
+      launchClaude({ ...base, isolated: false, wispUrl: 'wss://wisp.mercurywork.shop/' }),
       /cross-origin isolated/i,
     );
     await assert.rejects(

@@ -69,10 +69,10 @@ h1 em { color: var(--muted); font-weight: 500; }
 .privacy-note span { border: 1px solid var(--line); padding: 4px 6px; color: #6f7869; font-size: 8px; letter-spacing: .07em; }
 
 .terminal-panel { display: grid; grid-template-rows: 54px minmax(0, 1fr) 30px; overflow: hidden; }
-.terminal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 13px 0 18px; border-bottom: 1px solid var(--line); }
+.terminal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; padding: 0 13px 0 18px; border-bottom: 1px solid var(--line); }
 .terminal-title { display: flex; gap: 10px; min-width: 0; color: #adb6a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .prompt-mark { color: var(--acid); }
-.terminal-actions { display: flex; gap: 7px; }
+.terminal-actions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; }
 .control { border: 1px solid var(--line); padding: 7px 11px; color: var(--ink); background: transparent; cursor: pointer; }
 .control:hover:not(:disabled) { border-color: #637054; }
 .control:disabled { opacity: .38; cursor: not-allowed; }
@@ -91,7 +91,7 @@ noscript { position: fixed; inset: 0; z-index: 20; display: grid; place-items: c
   .intro-panel { display: grid; grid-template-columns: 1fr 1fr; }
   .privacy-note { grid-column: 1 / -1; }
 }
-@media (max-width: 620px) {
+@media (max-width: 640px) {
   .masthead { grid-template-columns: 1fr auto; padding: 0 14px; }
   .runtime-state { display: none; }
   .source-link { display: none; }
@@ -100,7 +100,7 @@ noscript { position: fixed; inset: 0; z-index: 20; display: grid; place-items: c
   h1 { font-size: 38px; }
   .terminal-toolbar { height: auto; align-items: stretch; flex-direction: column; padding: 10px; }
   .terminal-title { display: none; }
-  .terminal-actions { display: grid; grid-template-columns: 1fr 1fr 1.3fr; }
+  .terminal-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); width: 100%; }
   .control { padding: 10px 7px; }
   .terminal-panel { grid-template-rows: auto minmax(0, 1fr) 34px; }
   #terminal { padding: 10px 5px; }

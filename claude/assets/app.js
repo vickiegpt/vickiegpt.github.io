@@ -7814,7 +7814,7 @@ var ch = class {
     for (Be of e) if (Be && (Be === 1 / 0 || isNaN(Be) || Be % 1 !== 0 || Be < 0)) throw new Error("This API only accepts positive integers");
   }
 };
-const vh = "/about/runtime-manifest.json", Zr = "/about/node-claude.webc", mh = "wss://asplos.dev/wisp/", Sh = "0.11.0", wh = 512 * 1024 * 1024, nr = /^[0-9a-f]{64}$/;
+const vh = "/about/runtime-manifest.json", Zr = "/about/node-claude.webc", mh = "wss://wisp.mercurywork.shop/", Sh = "0.11.0", wh = 512 * 1024 * 1024, nr = /^[0-9a-f]{64}$/;
 function jt(e) {
   return new Error(`Invalid runtime manifest: ${e}`);
 }
@@ -8126,7 +8126,7 @@ class Oh {
     }
   }
 }
-const Ih = "wss://asplos.dev/wisp/", Nh = "https://asplos.dev/about/runtime-manifest.json", Se = (e) => document.querySelector(e), Hh = Se("#status-text"), Wh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), zh = Se("#progress-fill");
+const Ih = "wss://wisp.mercurywork.shop/", Nh = "https://asplos.dev/about/runtime-manifest.json", Se = (e) => document.querySelector(e), Hh = Se("#status-text"), Wh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), zh = Se("#progress-fill");
 function st(e, t) {
   const i = Math.max(0, Math.min(100, Math.round(e || 0)));
   ar.setAttribute("aria-valuenow", String(i)), ar.textContent = t, zh.style.width = `${i}%`;

@@ -1,6 +1,6 @@
 const MANIFEST_PATH = '/about/runtime-manifest.json';
 const ARTIFACT_PATH = '/about/node-claude.webc';
-const WISP_URL = 'wss://asplos.dev/wisp/';
+const WISP_URL = 'wss://wisp.mercurywork.shop/';
 const SDK_VERSION = '0.11.0';
 const MAX_ARTIFACT_BYTES = 512 * 1024 * 1024;
 const SHA256 = /^[0-9a-f]{64}$/;

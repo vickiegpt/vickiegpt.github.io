@@ -146,5 +146,13 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-1/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-2/);
+});
+
+versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {
+  const css = await readVersionedEntry(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assertVersionedEntry.match(css, /\.terminal-toolbar\s*\{[^}]*min-width:\s*0/s);
+  assertVersionedEntry.match(css, /\.terminal-actions\s*\{[^}]*flex-wrap:\s*wrap/s);
+  assertVersionedEntry.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*\.terminal-actions\s*\{[^}]*width:\s*100%/s);
 });
