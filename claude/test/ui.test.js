@@ -103,7 +103,17 @@ describe("browser Claude terminal UI", () => {
     const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
 
     assert.match(source, /size:\s*["']compact["']/);
+    assert.match(source, /appearance:\s*["']always["']/);
     assert.doesNotMatch(source, /size:\s*["']flexible["']/);
+    assert.doesNotMatch(source, /appearance:\s*["']interaction-only["']/);
+  });
+
+  it("fits the terminal without observing its own changing dimensions", async () => {
+    const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
+
+    assert.doesNotMatch(source, /new ResizeObserver/);
+    assert.match(source, /Math\.min\(240,/);
+    assert.match(source, /addEventListener\(["']resize["']/);
   });
 
   it("exchanges a one-time challenge using the fixed same-origin endpoint", async () => {
@@ -212,7 +222,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-5/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-6/);
 });
 
 versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {
@@ -222,5 +232,6 @@ versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens'
   assertVersionedEntry.match(css, /\.terminal-actions\s*\{[^}]*flex-wrap:\s*wrap/s);
   assertVersionedEntry.match(css, /\.terminal-actions\s*\{[^}]*max-width:\s*100%/s);
   assertVersionedEntry.match(css, /\.runtime-shell\s*\{[^}]*min-width:\s*0/s);
+  assertVersionedEntry.match(css, /#terminal\s*\{[^}]*contain:\s*inline-size/s);
   assertVersionedEntry.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*\.terminal-actions\s*\{[^}]*width:\s*100%/s);
 });

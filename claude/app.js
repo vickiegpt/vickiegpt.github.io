@@ -57,7 +57,7 @@ async function createChallenge(siteKey) {
     sitekey: siteKey,
     action: "claude-session",
     execution: "execute",
-    appearance: "interaction-only",
+    appearance: "always",
     size: "compact",
     callback(token) {
       resolveToken?.(token);
@@ -128,7 +128,17 @@ async function boot() {
   const fit = new FitAddon();
   terminal.loadAddon(fit);
   terminal.open($("#terminal"));
-  fit.fit();
+
+  function fitTerminal() {
+    const dimensions = fit.proposeDimensions();
+    if (!dimensions) return;
+    terminal.resize(
+      Math.max(20, Math.min(240, dimensions.cols)),
+      Math.max(5, Math.min(100, dimensions.rows)),
+    );
+  }
+
+  fitTerminal();
   terminal.writeln("\x1b[38;2;199;255;74mNode WASIX runtime ready to download.\x1b[0m");
   terminal.writeln("Press Start runtime to launch Claude Code.\r\n");
 
@@ -201,11 +211,11 @@ async function boot() {
   const resize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      fit.fit();
+      fitTerminal();
       $("#terminal-size").textContent = `${terminal.cols} × ${terminal.rows}`;
     }, 80);
   };
-  new ResizeObserver(resize).observe($("#terminal"));
+  addEventListener("resize", resize);
   terminal.onResize(({ cols, rows }) => {
     $("#terminal-size").textContent = `${cols} × ${rows}`;
   });

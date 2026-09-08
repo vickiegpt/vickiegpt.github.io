@@ -78,8 +78,9 @@ h1 em { color: var(--muted); font-weight: 500; }
 .control:disabled { opacity: .38; cursor: not-allowed; }
 .control-start { border-color: var(--acid); color: #11150d; background: var(--acid); font-weight: 700; }
 .control-stop:not(:disabled) { border-color: #6d3e34; color: var(--ember); }
-#terminal { min-height: 0; padding: 15px 12px 8px 16px; background: var(--ground); }
-#terminal .xterm { height: 100%; }
+#terminal { width: 100%; max-width: 100%; min-height: 0; overflow: hidden; contain: inline-size; padding: 15px 12px 8px 16px; background: var(--ground); }
+#terminal .xterm { height: 100%; max-width: 100%; }
+#terminal .xterm-screen, #terminal .xterm-viewport { max-width: 100%; }
 #terminal .xterm-viewport { scrollbar-color: #35402d transparent; }
 .terminal-footer { display: flex; align-items: center; gap: 17px; padding: 0 14px; border-top: 1px solid var(--line); color: #687061; font-size: 9px; }
 #focus-keyboard { display: none; margin-left: auto; border: 0; color: var(--acid); background: transparent; }
