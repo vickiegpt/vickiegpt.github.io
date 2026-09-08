@@ -7,7 +7,7 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data:",
   "font-src 'self' data:",
   "connect-src 'self' data: https://challenges.cloudflare.com wss://wisp.mercurywork.shop",
-  "worker-src 'self' blob:",
+  "worker-src 'self' blob: data:",
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
