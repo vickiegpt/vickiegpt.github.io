@@ -1,14 +1,46 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
+import * as mainModule from "../src/main.js";
 
 import {
   RuntimeController,
+  ensureCrossOriginIsolation,
   loadTurnstileApi,
   requestCapability,
 } from "../src/main.js";
 
 describe("browser Claude terminal UI", () => {
+  it("unregisters the legacy isolation worker when edge headers already isolate the page", async () => {
+    let unregistered = 0;
+    const result = await ensureCrossOriginIsolation({
+      isolated: true,
+      navigatorImpl: {
+        serviceWorker: {
+          async getRegistrations() {
+            return [{ async unregister() { unregistered += 1; } }];
+          },
+        },
+      },
+      storage: { removeItem() {} },
+    });
+
+    assert.equal(result, true);
+    assert.equal(unregistered, 1);
+  });
+
+  it("shows concrete runtime failures without exposing bearer material", () => {
+    assert.equal(typeof mainModule.describeRuntimeError, "function");
+    assert.equal(
+      mainModule.describeRuntimeError(new Error("WebAssembly.Memory(): could not allocate memory")),
+      "WebAssembly.Memory(): could not allocate memory",
+    );
+    assert.doesNotMatch(
+      mainModule.describeRuntimeError(new Error("network failed token=secret-value")),
+      /secret-value/,
+    );
+  });
+
   it("reuses an existing Turnstile API without appending another script", async () => {
     const turnstile = { render() {} };
     let appended = 0;
@@ -146,7 +178,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-2/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-3/);
 });
 
 versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {

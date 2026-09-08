@@ -7,6 +7,16 @@ function abortError() {
   return new DOMException("Runtime startup was cancelled", "AbortError");
 }
 
+export function describeRuntimeError(error) {
+  if (error?.name === "AbortError") return "Startup cancelled";
+  const message = typeof error?.message === "string" ? error.message : "";
+  if (!message) return "The browser runtime could not start";
+  return message
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/(authorization|bearer|capability|token)(\s*[:=]\s*)([^\s,;]+)/gi, "$1$2[redacted]")
+    .slice(0, 240);
+}
+
 function requireProductionOrigin(value) {
   const origin = new URL(value).origin;
   if (origin !== "https://asplos.dev") {
@@ -74,6 +84,12 @@ export async function ensureCrossOriginIsolation({
 } = {}) {
   if (isolated) {
     storage?.removeItem(ISOLATION_RELOAD_KEY);
+    try {
+      const registrations = await navigatorImpl?.serviceWorker?.getRegistrations?.() ?? [];
+      await Promise.allSettled(registrations.map((registration) => registration.unregister()));
+    } catch {
+      // Native edge isolation is already active; stale worker cleanup is best effort.
+    }
     return true;
   }
   if (!navigatorImpl?.serviceWorker || !locationImpl) {

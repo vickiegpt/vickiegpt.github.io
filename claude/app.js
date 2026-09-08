@@ -6,6 +6,7 @@ import "./styles.css";
 import { BrowserNodeRuntime } from "./src/runtime.js";
 import {
   RuntimeController,
+  describeRuntimeError,
   ensureCrossOriginIsolation,
   loadPublicConfig,
   loadTurnstileApi,
@@ -93,20 +94,8 @@ async function createChallenge(siteKey) {
 }
 
 function safeMessage(error) {
-  if (error?.name === "AbortError") return "Startup cancelled.";
-  const allowed = [
-    "Runtime configuration is unavailable",
-    "Runtime configuration is invalid",
-    "Session authorization failed",
-    "Security challenge failed to load",
-    "Security challenge was not completed",
-    "Security challenge expired",
-    "Cross-origin isolation could not be enabled",
-    "This browser cannot create an isolated WebAssembly runtime",
-  ];
-  return allowed.includes(error?.message)
-    ? `${error.message}.`
-    : "The browser runtime could not start. Check memory and network access.";
+  const message = describeRuntimeError(error);
+  return message.endsWith(".") ? message : `${message}.`;
 }
 
 async function boot() {
@@ -175,8 +164,9 @@ async function boot() {
       terminal.writeln(`\r\n\x1b[38;2;137;146;129mProcess exited (${output?.exitCode ?? "unknown"}).\x1b[0m`);
       setState("exited");
     },
-    onError() {
-      terminal.writeln("\r\n\x1b[38;2;255;118;87mRuntime stream failed.\x1b[0m");
+    onError(error) {
+      console.error("Browser runtime stream failed", error);
+      terminal.writeln(`\r\n\x1b[38;2;255;118;87mRuntime stream failed: ${safeMessage(error)}\x1b[0m`);
       setState("failed");
     },
   });
@@ -195,6 +185,7 @@ async function boot() {
       setProgress(100, "Runtime verified and running");
       terminal.focus();
     } catch (error) {
+      console.error("Browser runtime startup failed", error);
       if (error?.name !== "AbortError") terminal.writeln(`\r\n\x1b[38;2;255;118;87m${safeMessage(error)}\x1b[0m`);
       setProgress(0, safeMessage(error));
     }
@@ -223,6 +214,7 @@ async function boot() {
 }
 
 boot().catch((error) => {
+  console.error("Browser runtime boot failed", error);
   setState("failed");
   setProgress(0, safeMessage(error));
 });

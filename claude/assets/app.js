@@ -23,7 +23,7 @@ var hr = Object.defineProperty, an = Object.getOwnPropertyDescriptor, hn = (e, t
 }, q = (e, t, i, s) => {
   for (var r = s > 1 ? void 0 : s ? an(t, i) : t, n = e.length - 1, o; n >= 0; n--) (o = e[n]) && (r = (s ? o(t, i, r) : o(r)) || r);
   return s && r && hr(t, i, r), r;
-}, S = (e, t) => (i, s) => t(i, s, e), ds = "Terminal input", vi = { get: () => ds, set: (e) => ds = e }, us = "Too much output to announce, navigate to rows manually to read", mi = { get: () => us, set: (e) => us = e };
+}, S = (e, t) => (i, s) => t(i, s, e), ds = "Terminal input", mi = { get: () => ds, set: (e) => ds = e }, us = "Too much output to announce, navigate to rows manually to read", Si = { get: () => us, set: (e) => us = e };
 function ln(e) {
   return e.replace(/\r?\n/g, "\r");
 }
@@ -52,7 +52,7 @@ function _s(e, t, i, s, r) {
 function Ke(e) {
   return e > 65535 ? (e -= 65536, String.fromCharCode((e >> 10) + 55296) + String.fromCharCode(e % 1024 + 56320)) : String.fromCharCode(e);
 }
-function Gt(e, t = 0, i = e.length) {
+function Jt(e, t = 0, i = e.length) {
   let s = "";
   for (let r = t; r < i; ++r) {
     let n = e[r];
@@ -165,7 +165,7 @@ var _n = class {
   }
 }, dr = "", Ue = " ", xt = class ur {
   constructor() {
-    this.fg = 0, this.bg = 0, this.extended = new Kt();
+    this.fg = 0, this.bg = 0, this.extended = new Ut();
   }
   static toColorRGB(t) {
     return [t >>> 16 & 255, t >>> 8 & 255, t & 255];
@@ -292,7 +292,7 @@ var _n = class {
   getUnderlineVariantOffset() {
     return this.extended.underlineVariantOffset;
   }
-}, Kt = class _r {
+}, Ut = class _r {
   constructor(t = 0, i = 0) {
     this._ext = 0, this._urlId = 0, this._ext = t, this._urlId = i;
   }
@@ -335,7 +335,7 @@ var _n = class {
   }
 }, we = class fr extends xt {
   constructor() {
-    super(...arguments), this.content = 0, this.fg = 0, this.bg = 0, this.extended = new Kt(), this.combinedData = "";
+    super(...arguments), this.content = 0, this.fg = 0, this.bg = 0, this.extended = new Ut(), this.combinedData = "";
   }
   static fromCharData(t) {
     let i = new fr();
@@ -369,22 +369,22 @@ var _n = class {
   getAsCharData() {
     return [this.fg, this.getChars(), this.getWidth(), this.getCode()];
   }
-}, fs = "di$target", Si = "di$dependencies", ii = /* @__PURE__ */ new Map();
+}, fs = "di$target", wi = "di$dependencies", si = /* @__PURE__ */ new Map();
 function pn(e) {
-  return e[Si] || [];
+  return e[wi] || [];
 }
 function ie(e) {
-  if (ii.has(e)) return ii.get(e);
+  if (si.has(e)) return si.get(e);
   let t = function(i, s, r) {
     if (arguments.length !== 3) throw new Error("@IServiceName-decorator can only be used to decorate a parameter");
     gn(t, i, r);
   };
-  return t._id = e, ii.set(e, t), t;
+  return t._id = e, si.set(e, t), t;
 }
 function gn(e, t, i) {
-  t[fs] === t ? t[Si].push({ id: e, index: i }) : (t[Si] = [{ id: e, index: i }], t[fs] = t);
+  t[fs] === t ? t[wi].push({ id: e, index: i }) : (t[wi] = [{ id: e, index: i }], t[fs] = t);
 }
-var he = ie("BufferService"), pr = ie("CoreMouseService"), et = ie("CoreService"), vn = ie("CharsetService"), ts = ie("InstantiationService"), gr = ie("LogService"), le = ie("OptionsService"), vr = ie("OscLinkService"), mn = ie("UnicodeService"), Et = ie("DecorationService"), wi = class {
+var he = ie("BufferService"), pr = ie("CoreMouseService"), et = ie("CoreService"), vn = ie("CharsetService"), ts = ie("InstantiationService"), gr = ie("LogService"), le = ie("OptionsService"), vr = ie("OscLinkService"), mn = ie("UnicodeService"), Et = ie("DecorationService"), bi = class {
   constructor(e, t, i) {
     this._bufferService = e, this._optionsService = t, this._oscLinkService = i;
   }
@@ -419,7 +419,7 @@ var he = ie("BufferService"), pr = ie("CoreMouseService"), et = ie("CoreService"
     t(s);
   }
 };
-wi = q([S(0, he), S(1, le), S(2, vr)], wi);
+bi = q([S(0, he), S(1, le), S(2, vr)], bi);
 function Sn(e, t) {
   if (confirm(`Do you want to navigate to ${t}?
 
@@ -434,7 +434,7 @@ WARNING: This link could potentially be dangerous`)) {
     } else console.warn("Opening link blocked as opener could not be cleared");
   }
 }
-var Jt = ie("CharSizeService"), Oe = ie("CoreBrowserService"), is = ie("MouseService"), Ie = ie("RenderService"), wn = ie("SelectionService"), mr = ie("CharacterJoinerService"), ot = ie("ThemeService"), Sr = ie("LinkProviderService"), bn = class {
+var Zt = ie("CharSizeService"), Oe = ie("CoreBrowserService"), is = ie("MouseService"), Ie = ie("RenderService"), wn = ie("SelectionService"), mr = ie("CharacterJoinerService"), ot = ie("ThemeService"), Sr = ie("LinkProviderService"), bn = class {
   constructor() {
     this.listeners = [], this.unexpectedErrorHandler = function(e) {
       setTimeout(() => {
@@ -475,31 +475,31 @@ var Jt = ie("CharSizeService"), Oe = ie("CoreBrowserService"), is = ie("MouseSer
 function Nt(e) {
   Cn(e) || yn.onUnexpectedError(e);
 }
-var bi = "Canceled";
+var yi = "Canceled";
 function Cn(e) {
-  return e instanceof kn ? !0 : e instanceof Error && e.name === bi && e.message === bi;
+  return e instanceof kn ? !0 : e instanceof Error && e.name === yi && e.message === yi;
 }
 var kn = class extends Error {
   constructor() {
-    super(bi), this.name = this.message;
+    super(yi), this.name = this.message;
   }
 };
 function xn(e) {
   return new Error(`Illegal argument: ${e}`);
 }
-var ps = class yi extends Error {
+var ps = class Ci extends Error {
   constructor(t) {
     super(t), this.name = "CodeExpectedError";
   }
   static fromError(t) {
-    if (t instanceof yi) return t;
-    let i = new yi();
+    if (t instanceof Ci) return t;
+    let i = new Ci();
     return i.message = t.message, i.stack = t.stack, i;
   }
   static isErrorNoTelemetry(t) {
     return t.name === "CodeExpectedError";
   }
-}, Ci = class wr extends Error {
+}, ki = class wr extends Error {
   constructor(t) {
     super(t || "An unexpected bug occurred."), Object.setPrototypeOf(this, wr.prototype);
   }
@@ -714,13 +714,13 @@ var nt = class {
     let e = this._value;
     return this._value = void 0, e;
   }
-}, Ae = typeof window == "object" ? window : globalThis, ki = class xi {
+}, Ae = typeof window == "object" ? window : globalThis, xi = class Ei {
   constructor(t) {
-    this.element = t, this.next = xi.Undefined, this.prev = xi.Undefined;
+    this.element = t, this.next = Ei.Undefined, this.prev = Ei.Undefined;
   }
 };
-ki.Undefined = new ki(void 0);
-var $ = ki, gs = class {
+xi.Undefined = new xi(void 0);
+var $ = xi, gs = class {
   constructor() {
     this._first = $.Undefined, this._last = $.Undefined, this._size = 0;
   }
@@ -1024,9 +1024,9 @@ var $ = ki, gs = class {
   }
   e.fromObservableLight = F;
 })(ne ||= {});
-var Ei = class Bi {
+var Bi = class Di {
   constructor(t) {
-    this.listenerCount = 0, this.invocationCount = 0, this.elapsedOverall = 0, this.durations = [], this.name = `${t}_${Bi._idPool++}`, Bi.all.add(this);
+    this.listenerCount = 0, this.invocationCount = 0, this.elapsedOverall = 0, this.durations = [], this.name = `${t}_${Di._idPool++}`, Di.all.add(this);
   }
   start(t) {
     this._stopWatch = new Mn(), this.listenerCount = t;
@@ -1038,8 +1038,8 @@ var Ei = class Bi {
     }
   }
 };
-Ei.all = /* @__PURE__ */ new Set(), Ei._idPool = 0;
-var Ln = Ei, Pn = -1, xr = class Er {
+Bi.all = /* @__PURE__ */ new Set(), Bi._idPool = 0;
+var Ln = Bi, Pn = -1, xr = class Er {
   constructor(t, i, s = (Er._idPool++).toString(16).padStart(3, "0")) {
     this._errorHandler = t, this.threshold = i, this.name = s, this._warnCountdown = 0;
   }
@@ -1092,7 +1092,7 @@ var Tn = xr, An = class Br {
   constructor(e, t) {
     super(e), this.name = "ListenerRefusalError", this.stack = t;
   }
-}, Nn = 0, si = class {
+}, Nn = 0, ri = class {
   constructor(e) {
     this.value = e, this.id = Nn++;
   }
@@ -1113,8 +1113,8 @@ var Tn = xr, An = class Br {
       }
       if (this._disposed) return L.None;
       t && (e = e.bind(t));
-      let s = new si(e), r;
-      this._leakageMon && this._size >= Math.ceil(this._leakageMon.threshold * 0.2) && (s.stack = An.create(), r = this._leakageMon.check(s.stack, this._size + 1)), this._listeners ? this._listeners instanceof si ? (this._deliveryQueue ??= new zn(), this._listeners = [this._listeners, s]) : this._listeners.push(s) : (this._options?.onWillAddFirstListener?.(this), this._listeners = s, this._options?.onDidAddFirstListener?.(this)), this._size++;
+      let s = new ri(e), r;
+      this._leakageMon && this._size >= Math.ceil(this._leakageMon.threshold * 0.2) && (s.stack = An.create(), r = this._leakageMon.check(s.stack, this._size + 1)), this._listeners ? this._listeners instanceof ri ? (this._deliveryQueue ??= new zn(), this._listeners = [this._listeners, s]) : this._listeners.push(s) : (this._options?.onWillAddFirstListener?.(this), this._listeners = s, this._options?.onDidAddFirstListener?.(this)), this._size++;
       let n = z(() => {
         r?.(), this._removeListener(s);
       });
@@ -1156,7 +1156,7 @@ var Tn = xr, An = class Br {
     e.reset();
   }
   fire(e) {
-    if (this._deliveryQueue?.current && (this._deliverQueue(this._deliveryQueue), this._perfMon?.stop()), this._perfMon?.start(this._size), this._listeners) if (this._listeners instanceof si) this._deliver(this._listeners, e);
+    if (this._deliveryQueue?.current && (this._deliverQueue(this._deliveryQueue), this._perfMon?.stop()), this._perfMon?.start(this._size), this._listeners) if (this._listeners instanceof ri) this._deliver(this._listeners, e);
     else {
       let t = this._deliveryQueue;
       t.enqueue(this, e, this._listeners.length), this._deliverQueue(t);
@@ -1176,7 +1176,7 @@ var Tn = xr, An = class Br {
   reset() {
     this.i = this.end, this.current = void 0, this.value = void 0;
   }
-}, Di = class {
+}, Ri = class {
   constructor() {
     this.mapWindowIdToZoomLevel = /* @__PURE__ */ new Map(), this._onDidChangeZoomLevel = new m(), this.onDidChangeZoomLevel = this._onDidChangeZoomLevel.event, this.mapWindowIdToZoomFactor = /* @__PURE__ */ new Map(), this._onDidChangeFullscreen = new m(), this.onDidChangeFullscreen = this._onDidChangeFullscreen.event, this.mapWindowIdToFullScreen = /* @__PURE__ */ new Map();
   }
@@ -1206,8 +1206,8 @@ var Tn = xr, An = class Br {
     return t.vscodeWindowId;
   }
 };
-Di.INSTANCE = new Di();
-var ss = Di;
+Ri.INSTANCE = new Ri();
+var ss = Ri;
 function Fn(e, t, i) {
   typeof t == "string" && (t = e.matchMedia(t)), t.addEventListener("change", i);
 }
@@ -1216,21 +1216,21 @@ function $n(e) {
   return ss.INSTANCE.getZoomFactor(e);
 }
 ss.INSTANCE.onDidChangeFullscreen;
-var at = typeof navigator == "object" ? navigator.userAgent : "", Ri = at.indexOf("Firefox") >= 0, Kn = at.indexOf("AppleWebKit") >= 0, rs = at.indexOf("Chrome") >= 0, Un = !rs && at.indexOf("Safari") >= 0;
+var at = typeof navigator == "object" ? navigator.userAgent : "", Mi = at.indexOf("Firefox") >= 0, Kn = at.indexOf("AppleWebKit") >= 0, rs = at.indexOf("Chrome") >= 0, Un = !rs && at.indexOf("Safari") >= 0;
 at.indexOf("Electron/") >= 0;
 at.indexOf("Android") >= 0;
-var ri = !1;
+var ni = !1;
 if (typeof Ae.matchMedia == "function") {
   let e = Ae.matchMedia("(display-mode: standalone) or (display-mode: window-controls-overlay)"), t = Ae.matchMedia("(display-mode: fullscreen)");
-  ri = e.matches, Fn(Ae, e, ({ matches: i }) => {
-    ri && t.matches || (ri = i);
+  ni = e.matches, Fn(Ae, e, ({ matches: i }) => {
+    ni && t.matches || (ni = i);
   });
 }
-var rt = "en", Mi = !1, Li = !1, Ht = !1, Dr = !1, Lt, Wt = rt, vs = rt, qn, Te, Je = globalThis, fe;
+var rt = "en", Li = !1, Pi = !1, Ht = !1, Dr = !1, Lt, Wt = rt, vs = rt, qn, Te, Je = globalThis, fe;
 typeof Je.vscode < "u" && typeof Je.vscode.process < "u" ? fe = Je.vscode.process : typeof process < "u" && typeof process?.versions?.node == "string" && (fe = process);
 var Vn = typeof fe?.versions?.electron == "string", Yn = Vn && fe?.type === "renderer";
 if (typeof fe == "object") {
-  Mi = fe.platform === "win32", Li = fe.platform === "darwin", Ht = fe.platform === "linux", Ht && fe.env.SNAP && fe.env.SNAP_REVISION, fe.env.CI || fe.env.BUILD_ARTIFACTSTAGINGDIRECTORY, Lt = rt, Wt = rt;
+  Li = fe.platform === "win32", Pi = fe.platform === "darwin", Ht = fe.platform === "linux", Ht && fe.env.SNAP && fe.env.SNAP_REVISION, fe.env.CI || fe.env.BUILD_ARTIFACTSTAGINGDIRECTORY, Lt = rt, Wt = rt;
   let e = fe.env.VSCODE_NLS_CONFIG;
   if (e) try {
     let t = JSON.parse(e);
@@ -1238,8 +1238,8 @@ if (typeof fe == "object") {
   } catch {
   }
   Dr = !0;
-} else typeof navigator == "object" && !Yn ? (Te = navigator.userAgent, Mi = Te.indexOf("Windows") >= 0, Li = Te.indexOf("Macintosh") >= 0, (Te.indexOf("Macintosh") >= 0 || Te.indexOf("iPad") >= 0 || Te.indexOf("iPhone") >= 0) && navigator.maxTouchPoints && navigator.maxTouchPoints > 0, Ht = Te.indexOf("Linux") >= 0, Te?.indexOf("Mobi") >= 0, Wt = globalThis._VSCODE_NLS_LANGUAGE || rt, Lt = navigator.language.toLowerCase(), vs = Lt) : console.error("Unable to resolve platform.");
-var Rr = Mi, Me = Li, Xn = Ht, ms = Dr, Le = Te, ze = Wt, jn;
+} else typeof navigator == "object" && !Yn ? (Te = navigator.userAgent, Li = Te.indexOf("Windows") >= 0, Pi = Te.indexOf("Macintosh") >= 0, (Te.indexOf("Macintosh") >= 0 || Te.indexOf("iPad") >= 0 || Te.indexOf("iPhone") >= 0) && navigator.maxTouchPoints && navigator.maxTouchPoints > 0, Ht = Te.indexOf("Linux") >= 0, Te?.indexOf("Mobi") >= 0, Wt = globalThis._VSCODE_NLS_LANGUAGE || rt, Lt = navigator.language.toLowerCase(), vs = Lt) : console.error("Unable to resolve platform.");
+var Rr = Li, Me = Pi, Xn = Ht, ms = Dr, Le = Te, ze = Wt, jn;
 ((e) => {
   function t() {
     return ze;
@@ -1295,14 +1295,14 @@ var ns = class {
   strToKeyCode(e) {
     return this._strToKeyCode[e.toLowerCase()] || 0;
   }
-}, ni = new ns(), Ss = new ns(), ws = new ns(), Zn = new Array(230), Mr;
+}, oi = new ns(), Ss = new ns(), ws = new ns(), Zn = new Array(230), Mr;
 ((e) => {
   function t(h) {
-    return ni.keyCodeToStr(h);
+    return oi.keyCodeToStr(h);
   }
   e.toString = t;
   function i(h) {
-    return ni.strToKeyCode(h);
+    return oi.strToKeyCode(h);
   }
   e.fromString = i;
   function s(h) {
@@ -1329,7 +1329,7 @@ var ns = class {
       case 17:
         return "Right";
     }
-    return ni.keyCodeToStr(h);
+    return oi.keyCodeToStr(h);
   }
   e.toElectronAccelerator = o;
 })(Mr ||= {});
@@ -1376,7 +1376,7 @@ function to(e) {
   }
   let t = e.keyCode;
   if (t === 3) return 7;
-  if (Ri) switch (t) {
+  if (Mi) switch (t) {
     case 59:
       return 85;
     case 60:
@@ -1486,13 +1486,13 @@ var ao = class {
       else if (typeof n.VERTICAL_AXIS < "u" && n.axis === n.VERTICAL_AXIS) this.deltaY = -n.detail / 3;
       else if (e.type === "wheel") {
         let h = e;
-        h.deltaMode === h.DOM_DELTA_LINE ? Ri && !Me ? this.deltaY = -e.deltaY / 3 : this.deltaY = -e.deltaY : this.deltaY = -e.deltaY / 40;
+        h.deltaMode === h.DOM_DELTA_LINE ? Mi && !Me ? this.deltaY = -e.deltaY / 3 : this.deltaY = -e.deltaY : this.deltaY = -e.deltaY / 40;
       }
       if (typeof r.wheelDeltaX < "u") Un && Rr ? this.deltaX = -(r.wheelDeltaX / 120) : s ? this.deltaX = r.wheelDeltaX / (120 * o) : this.deltaX = r.wheelDeltaX / 120;
       else if (typeof n.HORIZONTAL_AXIS < "u" && n.axis === n.HORIZONTAL_AXIS) this.deltaX = -e.detail / 3;
       else if (e.type === "wheel") {
         let h = e;
-        h.deltaMode === h.DOM_DELTA_LINE ? Ri && !Me ? this.deltaX = -e.deltaX / 3 : this.deltaX = -e.deltaX : this.deltaX = -e.deltaX / 40;
+        h.deltaMode === h.DOM_DELTA_LINE ? Mi && !Me ? this.deltaX = -e.deltaX / 3 : this.deltaX = -e.deltaX : this.deltaX = -e.deltaX / 40;
       }
       this.deltaY === 0 && this.deltaX === 0 && e.wheelDelta && (s ? this.deltaY = e.wheelDelta / (120 * o) : this.deltaY = e.wheelDelta / 120);
     }
@@ -1542,13 +1542,13 @@ var lo = class {
     this._token !== -1 && (clearTimeout(this._token), this._token = -1);
   }
   cancelAndSet(e, t) {
-    if (this._isDisposed) throw new Ci("Calling 'cancelAndSet' on a disposed TimeoutTimer");
+    if (this._isDisposed) throw new ki("Calling 'cancelAndSet' on a disposed TimeoutTimer");
     this.cancel(), this._token = setTimeout(() => {
       this._token = -1, e();
     }, t);
   }
   setIfNotSet(e, t) {
-    if (this._isDisposed) throw new Ci("Calling 'setIfNotSet' on a disposed TimeoutTimer");
+    if (this._isDisposed) throw new ki("Calling 'setIfNotSet' on a disposed TimeoutTimer");
     this._token === -1 && (this._token = setTimeout(() => {
       this._token = -1, e();
     }, t));
@@ -1561,7 +1561,7 @@ var lo = class {
     this.disposable?.dispose(), this.disposable = void 0;
   }
   cancelAndSet(e, t, i = globalThis) {
-    if (this.isDisposed) throw new Ci("Calling 'cancelAndSet' on a disposed IntervalTimer");
+    if (this.isDisposed) throw new ki("Calling 'cancelAndSet' on a disposed IntervalTimer");
     this.cancel();
     let s = i.setInterval(() => {
       e();
@@ -2094,7 +2094,7 @@ var wo = pt, hs = class extends L {
       this._pointerdownRepeatTimer.cancel(), this._pointerdownScheduleRepeatTimer.cancel();
     }), e.preventDefault();
   }
-}, yo = class Pi {
+}, yo = class Ti {
   constructor(t, i, s, r, n, o, h) {
     this._forceIntegerValues = t, this._scrollStateBrand = void 0, this._forceIntegerValues && (i = i | 0, s = s | 0, r = r | 0, n = n | 0, o = o | 0, h = h | 0), this.rawScrollLeft = r, this.rawScrollTop = h, i < 0 && (i = 0), r + i > s && (r = s - i), r < 0 && (r = 0), n < 0 && (n = 0), h + n > o && (h = o - n), h < 0 && (h = 0), this.width = i, this.scrollWidth = s, this.scrollLeft = r, this.height = n, this.scrollHeight = o, this.scrollTop = h;
   }
@@ -2102,10 +2102,10 @@ var wo = pt, hs = class extends L {
     return this.rawScrollLeft === t.rawScrollLeft && this.rawScrollTop === t.rawScrollTop && this.width === t.width && this.scrollWidth === t.scrollWidth && this.scrollLeft === t.scrollLeft && this.height === t.height && this.scrollHeight === t.scrollHeight && this.scrollTop === t.scrollTop;
   }
   withScrollDimensions(t, i) {
-    return new Pi(this._forceIntegerValues, typeof t.width < "u" ? t.width : this.width, typeof t.scrollWidth < "u" ? t.scrollWidth : this.scrollWidth, i ? this.rawScrollLeft : this.scrollLeft, typeof t.height < "u" ? t.height : this.height, typeof t.scrollHeight < "u" ? t.scrollHeight : this.scrollHeight, i ? this.rawScrollTop : this.scrollTop);
+    return new Ti(this._forceIntegerValues, typeof t.width < "u" ? t.width : this.width, typeof t.scrollWidth < "u" ? t.scrollWidth : this.scrollWidth, i ? this.rawScrollLeft : this.scrollLeft, typeof t.height < "u" ? t.height : this.height, typeof t.scrollHeight < "u" ? t.scrollHeight : this.scrollHeight, i ? this.rawScrollTop : this.scrollTop);
   }
   withScrollPosition(t) {
-    return new Pi(this._forceIntegerValues, this.width, this.scrollWidth, typeof t.scrollLeft < "u" ? t.scrollLeft : this.rawScrollLeft, this.height, this.scrollHeight, typeof t.scrollTop < "u" ? t.scrollTop : this.rawScrollTop);
+    return new Ti(this._forceIntegerValues, this.width, this.scrollWidth, typeof t.scrollLeft < "u" ? t.scrollLeft : this.rawScrollLeft, this.height, this.scrollHeight, typeof t.scrollTop < "u" ? t.scrollTop : this.rawScrollTop);
   }
   createScrollEvent(t, i) {
     let s = this.width !== t.width, r = this.scrollWidth !== t.scrollWidth, n = this.scrollLeft !== t.scrollLeft, o = this.height !== t.height, h = this.scrollHeight !== t.scrollHeight, l = this.scrollTop !== t.scrollTop;
@@ -2182,7 +2182,7 @@ var wo = pt, hs = class extends L {
     this.scrollLeft = e, this.scrollTop = t, this.isDone = i;
   }
 };
-function oi(e, t) {
+function ai(e, t) {
   let i = t - e;
   return function(s) {
     return e + i * Eo(s);
@@ -2193,7 +2193,7 @@ function ko(e, t, i) {
     return s < i ? e(s / i) : t((s - i) / (1 - i));
   };
 }
-var Rs = class Ti {
+var Rs = class Ai {
   constructor(t, i, s, r) {
     this.from = t, this.to = i, this.duration = r, this.startTime = s, this.animationFrameDisposable = null, this._initAnimations();
   }
@@ -2203,9 +2203,9 @@ var Rs = class Ti {
   _initAnimation(t, i, s) {
     if (Math.abs(t - i) > 2.5 * s) {
       let r, n;
-      return t < i ? (r = t + 0.75 * s, n = i - 0.75 * s) : (r = t - 0.75 * s, n = i + 0.75 * s), ko(oi(t, r), oi(n, i), 0.33);
+      return t < i ? (r = t + 0.75 * s, n = i - 0.75 * s) : (r = t - 0.75 * s, n = i + 0.75 * s), ko(ai(t, r), ai(n, i), 0.33);
     }
-    return oi(t, i);
+    return ai(t, i);
   }
   dispose() {
     this.animationFrameDisposable !== null && (this.animationFrameDisposable.dispose(), this.animationFrameDisposable = null);
@@ -2225,12 +2225,12 @@ var Rs = class Ti {
     return new Ds(this.to.scrollLeft, this.to.scrollTop, !0);
   }
   combine(t, i, s) {
-    return Ti.start(t, i, s);
+    return Ai.start(t, i, s);
   }
   static start(t, i, s) {
     s = s + 10;
     let r = Date.now() - 10;
-    return new Ti(t, i, r, s);
+    return new Ai(t, i, r, s);
   }
 };
 function xo(e) {
@@ -2352,12 +2352,12 @@ var Bo = class extends L {
   isNeeded() {
     return this._scrollbarState.isNeeded();
   }
-}, Or = class Ai {
+}, Or = class Oi {
   constructor(t, i, s, r, n, o) {
     this._scrollbarSize = Math.round(i), this._oppositeScrollbarSize = Math.round(s), this._arrowSize = Math.round(t), this._visibleSize = r, this._scrollSize = n, this._scrollPosition = o, this._computedAvailableSize = 0, this._computedIsNeeded = !1, this._computedSliderSize = 0, this._computedSliderRatio = 0, this._computedSliderPosition = 0, this._refreshComputedValues();
   }
   clone() {
-    return new Ai(this._arrowSize, this._scrollbarSize, this._oppositeScrollbarSize, this._visibleSize, this._scrollSize, this._scrollPosition);
+    return new Oi(this._arrowSize, this._scrollbarSize, this._oppositeScrollbarSize, this._visibleSize, this._scrollSize, this._scrollPosition);
   }
   setVisibleSize(t) {
     let i = Math.round(t);
@@ -2384,7 +2384,7 @@ var Bo = class extends L {
     return { computedAvailableSize: Math.round(o), computedIsNeeded: l, computedSliderSize: Math.round(a), computedSliderRatio: d, computedSliderPosition: Math.round(c) };
   }
   _refreshComputedValues() {
-    let t = Ai._computeValues(this._oppositeScrollbarSize, this._arrowSize, this._visibleSize, this._scrollSize, this._scrollPosition);
+    let t = Oi._computeValues(this._oppositeScrollbarSize, this._arrowSize, this._visibleSize, this._scrollSize, this._scrollPosition);
     this._computedAvailableSize = t.computedAvailableSize, this._computedIsNeeded = t.computedIsNeeded, this._computedSliderSize = t.computedSliderSize, this._computedSliderRatio = t.computedSliderRatio, this._computedSliderPosition = t.computedSliderPosition;
   }
   getArrowSize() {
@@ -2493,7 +2493,7 @@ var Bo = class extends L {
   constructor(e, t, i) {
     this.timestamp = e, this.deltaX = t, this.deltaY = i, this.score = 0;
   }
-}, Oi = class {
+}, Ii = class {
   constructor() {
     this._capacity = 5, this._memory = [], this._front = -1, this._rear = -1;
   }
@@ -2530,8 +2530,8 @@ var Bo = class extends L {
     return Math.abs(Math.round(t) - t) < 0.01;
   }
 };
-Oi.INSTANCE = new Oi();
-var To = Oi, Ao = class extends hs {
+Ii.INSTANCE = new Ii();
+var To = Ii, Ao = class extends hs {
   constructor(e, t, i) {
     super(), this._onScroll = this._register(new m()), this.onScroll = this._onScroll.event, this._onWillScroll = this._register(new m()), this.onWillScroll = this._onWillScroll.event, this._options = Io(t), this._scrollable = i, this._register(this._scrollable.onScroll((r) => {
       this._onWillScroll.fire(r), this._onDidScroll(r), this._onScroll.fire(r);
@@ -2653,7 +2653,7 @@ function Io(e) {
   let t = { lazyRender: typeof e.lazyRender < "u" ? e.lazyRender : !1, className: typeof e.className < "u" ? e.className : "", useShadows: typeof e.useShadows < "u" ? e.useShadows : !0, handleMouseWheel: typeof e.handleMouseWheel < "u" ? e.handleMouseWheel : !0, flipAxes: typeof e.flipAxes < "u" ? e.flipAxes : !1, consumeMouseWheelIfScrollbarIsNeeded: typeof e.consumeMouseWheelIfScrollbarIsNeeded < "u" ? e.consumeMouseWheelIfScrollbarIsNeeded : !1, alwaysConsumeMouseWheel: typeof e.alwaysConsumeMouseWheel < "u" ? e.alwaysConsumeMouseWheel : !1, scrollYToX: typeof e.scrollYToX < "u" ? e.scrollYToX : !1, mouseWheelScrollSensitivity: typeof e.mouseWheelScrollSensitivity < "u" ? e.mouseWheelScrollSensitivity : 1, fastScrollSensitivity: typeof e.fastScrollSensitivity < "u" ? e.fastScrollSensitivity : 5, scrollPredominantAxis: typeof e.scrollPredominantAxis < "u" ? e.scrollPredominantAxis : !0, mouseWheelSmoothScroll: typeof e.mouseWheelSmoothScroll < "u" ? e.mouseWheelSmoothScroll : !0, arrowSize: typeof e.arrowSize < "u" ? e.arrowSize : 11, listenOnDomNode: typeof e.listenOnDomNode < "u" ? e.listenOnDomNode : null, horizontal: typeof e.horizontal < "u" ? e.horizontal : 1, horizontalScrollbarSize: typeof e.horizontalScrollbarSize < "u" ? e.horizontalScrollbarSize : 10, horizontalSliderSize: typeof e.horizontalSliderSize < "u" ? e.horizontalSliderSize : 0, horizontalHasArrows: typeof e.horizontalHasArrows < "u" ? e.horizontalHasArrows : !1, vertical: typeof e.vertical < "u" ? e.vertical : 1, verticalScrollbarSize: typeof e.verticalScrollbarSize < "u" ? e.verticalScrollbarSize : 10, verticalHasArrows: typeof e.verticalHasArrows < "u" ? e.verticalHasArrows : !1, verticalSliderSize: typeof e.verticalSliderSize < "u" ? e.verticalSliderSize : 0, scrollByPage: typeof e.scrollByPage < "u" ? e.scrollByPage : !1 };
   return t.horizontalSliderSize = typeof e.horizontalSliderSize < "u" ? e.horizontalSliderSize : t.horizontalScrollbarSize, t.verticalSliderSize = typeof e.verticalSliderSize < "u" ? e.verticalSliderSize : t.verticalScrollbarSize, Me && (t.className += " mac"), t;
 }
-var Ii = class extends L {
+var Ni = class extends L {
   constructor(e, t, i, s, r, n, o, h) {
     super(), this._bufferService = i, this._optionsService = o, this._renderService = h, this._onRequestScrollLines = this._register(new m()), this.onRequestScrollLines = this._onRequestScrollLines.event, this._isSyncing = !1, this._isHandlingScroll = !1, this._suppressOnScrollHandler = !1;
     let l = this._register(new Co({ forceIntegerValues: !1, smoothScrollDuration: this._optionsService.rawOptions.smoothScrollDuration, scheduleAtNextAnimationFrame: (a) => as(s.window, a) }));
@@ -2695,8 +2695,8 @@ var Ii = class extends L {
     i !== 0 && (this._latestYDisp = t, this._onRequestScrollLines.fire(i)), this._isHandlingScroll = !1;
   }
 };
-Ii = q([S(2, he), S(3, Oe), S(4, pr), S(5, ot), S(6, le), S(7, Ie)], Ii);
-var Ni = class extends L {
+Ni = q([S(2, he), S(3, Oe), S(4, pr), S(5, ot), S(6, le), S(7, Ie)], Ni);
+var Hi = class extends L {
   constructor(e, t, i, s, r) {
     super(), this._screenElement = e, this._bufferService = t, this._coreBrowserService = i, this._decorationService = s, this._renderService = r, this._decorationElements = /* @__PURE__ */ new Map(), this._altBufferIsActive = !1, this._dimensionsChanged = !1, this._container = document.createElement("div"), this._container.classList.add("xterm-decoration-container"), this._screenElement.appendChild(this._container), this._register(this._renderService.onRenderedViewportChange(() => this._doRefreshDecorations())), this._register(this._renderService.onDimensionsChange(() => {
       this._dimensionsChanged = !0, this._queueRefresh();
@@ -2743,7 +2743,7 @@ var Ni = class extends L {
     this._decorationElements.get(e)?.remove(), this._decorationElements.delete(e), e.dispose();
   }
 };
-Ni = q([S(1, he), S(2, Oe), S(3, Et), S(4, Ie)], Ni);
+Hi = q([S(1, he), S(2, Oe), S(3, Et), S(4, Ie)], Hi);
 var No = class {
   constructor() {
     this._zones = [], this._zonePool = [], this._zonePoolIndex = 0, this._linePadding = { full: 0, left: 0, center: 0, right: 0 };
@@ -2782,7 +2782,7 @@ var No = class {
   _addLineToZone(e, t) {
     e.startBufferLine = Math.min(e.startBufferLine, t), e.endBufferLine = Math.max(e.endBufferLine, t);
   }
-}, Ee = { full: 0, left: 0, center: 0, right: 0 }, Fe = { full: 0, left: 0, center: 0, right: 0 }, lt = { full: 0, left: 0, center: 0, right: 0 }, Ut = class extends L {
+}, Ee = { full: 0, left: 0, center: 0, right: 0 }, Fe = { full: 0, left: 0, center: 0, right: 0 }, lt = { full: 0, left: 0, center: 0, right: 0 }, qt = class extends L {
   constructor(e, t, i, s, r, n, o, h) {
     super(), this._viewportElement = e, this._screenElement = t, this._bufferService = i, this._decorationService = s, this._renderService = r, this._optionsService = n, this._themeService = o, this._coreBrowserService = h, this._colorZoneStore = new No(), this._shouldUpdateDimensions = !0, this._shouldUpdateAnchor = !0, this._lastKnownBufferLength = 0, this._canvas = this._coreBrowserService.mainDocument.createElement("canvas"), this._canvas.classList.add("xterm-decoration-overview-ruler"), this._refreshCanvasDimensions(), this._viewportElement.parentElement?.insertBefore(this._canvas, this._viewportElement), this._register(z(() => this._canvas?.remove()));
     let l = this._canvas.getContext("2d");
@@ -2835,7 +2835,7 @@ var No = class {
     }));
   }
 };
-Ut = q([S(2, he), S(3, Et), S(4, Ie), S(5, le), S(6, ot), S(7, Oe)], Ut);
+qt = q([S(2, he), S(3, Et), S(4, Ie), S(5, le), S(6, ot), S(7, Oe)], qt);
 var g;
 ((e) => (e.NUL = "\0", e.SOH = "", e.STX = "", e.ETX = "", e.EOT = "", e.ENQ = "", e.ACK = "", e.BEL = "\x07", e.BS = "\b", e.HT = "	", e.LF = `
 `, e.VT = "\v", e.FF = "\f", e.CR = "\r", e.SO = "", e.SI = "", e.DLE = "", e.DC1 = "", e.DC2 = "", e.DC3 = "", e.DC4 = "", e.NAK = "", e.SYN = "", e.ETB = "", e.CAN = "", e.EM = "", e.SUB = "", e.ESC = "\x1B", e.FS = "", e.GS = "", e.RS = "", e.US = "", e.SP = " ", e.DEL = ""))(g ||= {});
@@ -2843,7 +2843,7 @@ var zt;
 ((e) => (e.PAD = "", e.HOP = "", e.BPH = "", e.NBH = "", e.IND = "", e.NEL = "", e.SSA = "", e.ESA = "", e.HTS = "", e.HTJ = "", e.VTS = "", e.PLD = "", e.PLU = "", e.RI = "", e.SS2 = "", e.SS3 = "", e.DCS = "", e.PU1 = "", e.PU2 = "", e.STS = "", e.CCH = "", e.MW = "", e.SPA = "", e.EPA = "", e.SOS = "", e.SGCI = "", e.SCI = "", e.CSI = "", e.ST = "", e.OSC = "", e.PM = "", e.APC = ""))(zt ||= {});
 var Ir;
 ((e) => e.ST = `${g.ESC}\\`)(Ir ||= {});
-var Hi = class {
+var Wi = class {
   constructor(e, t, i, s, r, n) {
     this._textarea = e, this._compositionView = t, this._bufferService = i, this._optionsService = s, this._coreService = r, this._renderService = n, this._isComposing = !1, this._isSendingComposition = !1, this._compositionPosition = { start: 0, end: 0 }, this._dataAlreadySent = "";
   }
@@ -2905,7 +2905,7 @@ var Hi = class {
     }
   }
 };
-Hi = q([S(2, he), S(3, le), S(4, et), S(5, Ie)], Hi);
+Wi = q([S(2, he), S(3, le), S(4, et), S(5, Ie)], Wi);
 var Q = 0, ee = 0, te = 0, U = 0, Ls = { css: "#00000000", rgba: 0 }, X;
 ((e) => {
   function t(r, n, o, h) {
@@ -3074,7 +3074,7 @@ var Ho = class extends xt {
   getAsCharData() {
     return [this.fg, this.getChars(), this.getWidth(), this.getCode()];
   }
-}, qt = class {
+}, Vt = class {
   constructor(e) {
     this._bufferService = e, this._characterJoiners = [], this._nextCharacterJoinerId = 0, this._workCell = new we();
   }
@@ -3116,7 +3116,7 @@ var Ho = class extends xt {
     }
     for (let h = 1; h < this._characterJoiners.length; h++) try {
       let l = this._characterJoiners[h].handler(n);
-      for (let a = 0; a < l.length; a++) qt._mergeRanges(o, l[a]);
+      for (let a = 0; a < l.length; a++) Vt._mergeRanges(o, l[a]);
     } catch (l) {
       console.error(l);
     }
@@ -3156,7 +3156,7 @@ var Ho = class extends xt {
     return i ? e[e.length - 1][1] = t[1] : e.push(t), e;
   }
 };
-qt = q([S(0, he)], qt);
+Vt = q([S(0, he)], Vt);
 function Wo(e) {
   return 57508 <= e && e <= 57558;
 }
@@ -3172,7 +3172,7 @@ function $o() {
 function Tt() {
   return { width: 0, height: 0 };
 }
-var Wi = class {
+var zi = class {
   constructor(e, t, i, s, r, n, o) {
     this._document = e, this._characterJoinerService = t, this._optionsService = i, this._coreBrowserService = s, this._coreService = r, this._decorationService = n, this._themeService = o, this._workCell = new we(), this._columnSelectMode = !1, this.defaultSpacing = 0;
   }
@@ -3189,8 +3189,8 @@ var Wi = class {
       if (C === 0) continue;
       let b = !1, x = v >= Rt, R = v, y = this._workCell;
       if (_.length > 0 && v === _[0][0] && x) {
-        let O = _.shift(), ti = this._isCellInSelection(O[0], t);
-        for (N = O[0] + 1; N < O[1]; N++) x &&= ti === this._isCellInSelection(N, t);
+        let O = _.shift(), ii = this._isCellInSelection(O[0], t);
+        for (N = O[0] + 1; N < O[1]; N++) x &&= ii === this._isCellInSelection(N, t);
         x &&= !i || n < O[0] || n >= O[1], x ? (b = !0, y = new Ho(this._workCell, e.translateToString(!0, O[0], O[1]), O[1] - O[0]), R = O[1] - 1, C = y.getWidth()) : Rt = O[1];
       }
       let H = this._isCellInSelection(v, t), re = i && v === n, Ce = k && v >= a && v <= d, Ne = !1;
@@ -3226,12 +3226,12 @@ var Wi = class {
         this._optionsService.rawOptions.drawBoldTextInBrightColors && y.isBold() && O < 8 && (O += 8), p.style.textDecorationColor = f.ansi[O].css;
       }
       y.isOverline() && (F.push("xterm-overline"), E === " " && (E = " ")), y.isStrikethrough() && F.push("xterm-strikethrough"), Ce && (p.style.textDecoration = "underline");
-      let ce = y.getFgColor(), xe = y.getFgColorMode(), pe = y.getBgColor(), Ve = y.getBgColorMode(), ei = !!y.isInverse();
-      if (ei) {
+      let ce = y.getFgColor(), xe = y.getFgColorMode(), pe = y.getBgColor(), Ve = y.getBgColorMode(), ti = !!y.isInverse();
+      if (ti) {
         let O = ce;
         ce = pe, pe = O;
-        let ti = xe;
-        xe = Ve, Ve = ti;
+        let ii = xe;
+        xe = Ve, Ve = ii;
       }
       let He, Mt, ht = !1;
       this._decorationService.forEachDecorationAtCell(v, t, void 0, (O) => {
@@ -3247,7 +3247,7 @@ var Wi = class {
           We = X.toColor(pe >> 16, pe >> 8 & 255, pe & 255), this._addStyle(p, `background-color:#${Ps((pe >>> 0).toString(16), "0", 6)}`);
           break;
         default:
-          ei ? (We = f.foreground, F.push("xterm-bg-257")) : We = f.background;
+          ti ? (We = f.foreground, F.push("xterm-bg-257")) : We = f.background;
       }
       switch (He || y.isDim() && (He = W.multiplyOpacity(We, 0.5)), xe) {
         case 16777216:
@@ -3259,7 +3259,7 @@ var Wi = class {
           this._applyMinimumContrast(p, We, O, y, He, Mt) || this._addStyle(p, `color:#${Ps(ce.toString(16), "0", 6)}`);
           break;
         default:
-          this._applyMinimumContrast(p, We, f.foreground, y, He, Mt) || ei && F.push("xterm-fg-257");
+          this._applyMinimumContrast(p, We, f.foreground, y, He, Mt) || ti && F.push("xterm-fg-257");
       }
       F.length && (p.className = F.join(" "), F.length = 0), !re && !b && !Ne && x ? w++ : p.textContent = E, ye !== this.defaultSpacing && (p.style.letterSpacing = `${ye}px`), c.push(p), v = R;
     }
@@ -3285,7 +3285,7 @@ var Wi = class {
     return !i || !s ? !1 : this._columnSelectMode ? i[0] <= s[0] ? e >= i[0] && t >= i[1] && e < s[0] && t <= s[1] : e < i[0] && t >= i[1] && e >= s[0] && t <= s[1] : t > i[1] && t < s[1] || i[1] === s[1] && t === i[1] && e >= i[0] && e < s[0] || i[1] < s[1] && t === s[1] && e < s[0] || i[1] < s[1] && t === i[1] && e >= i[0];
   }
 };
-Wi = q([S(1, mr), S(2, le), S(3, Oe), S(4, et), S(5, Et), S(6, ot)], Wi);
+zi = q([S(1, mr), S(2, le), S(3, Oe), S(4, et), S(5, Et), S(6, ot)], zi);
 function Ps(e, t, i) {
   for (; e.length < i; ) e = t + e;
   return e;
@@ -3357,10 +3357,10 @@ var Ko = class {
 function qo() {
   return new Uo();
 }
-var ai = "xterm-dom-renderer-owner-", ge = "xterm-rows", At = "xterm-fg-", Ts = "xterm-bg-", ct = "xterm-focus", Ot = "xterm-selection", Vo = 1, zi = class extends L {
+var hi = "xterm-dom-renderer-owner-", ge = "xterm-rows", At = "xterm-fg-", Ts = "xterm-bg-", ct = "xterm-focus", Ot = "xterm-selection", Vo = 1, Fi = class extends L {
   constructor(e, t, i, s, r, n, o, h, l, a, d, c, _, f) {
-    super(), this._terminal = e, this._document = t, this._element = i, this._screenElement = s, this._viewportElement = r, this._helperContainer = n, this._linkifier2 = o, this._charSizeService = l, this._optionsService = a, this._bufferService = d, this._coreService = c, this._coreBrowserService = _, this._themeService = f, this._terminalClass = Vo++, this._rowElements = [], this._selectionRenderModel = qo(), this.onRequestRedraw = this._register(new m()).event, this._rowContainer = this._document.createElement("div"), this._rowContainer.classList.add(ge), this._rowContainer.style.lineHeight = "normal", this._rowContainer.setAttribute("aria-hidden", "true"), this._refreshRowElements(this._bufferService.cols, this._bufferService.rows), this._selectionContainer = this._document.createElement("div"), this._selectionContainer.classList.add(Ot), this._selectionContainer.setAttribute("aria-hidden", "true"), this.dimensions = $o(), this._updateDimensions(), this._register(this._optionsService.onOptionChange(() => this._handleOptionsChanged())), this._register(this._themeService.onChangeColors((u) => this._injectCss(u))), this._injectCss(this._themeService.colors), this._rowFactory = h.createInstance(Wi, document), this._element.classList.add(ai + this._terminalClass), this._screenElement.appendChild(this._rowContainer), this._screenElement.appendChild(this._selectionContainer), this._register(this._linkifier2.onShowLinkUnderline((u) => this._handleLinkHover(u))), this._register(this._linkifier2.onHideLinkUnderline((u) => this._handleLinkLeave(u))), this._register(z(() => {
-      this._element.classList.remove(ai + this._terminalClass), this._rowContainer.remove(), this._selectionContainer.remove(), this._widthCache.dispose(), this._themeStyleElement.remove(), this._dimensionsStyleElement.remove();
+    super(), this._terminal = e, this._document = t, this._element = i, this._screenElement = s, this._viewportElement = r, this._helperContainer = n, this._linkifier2 = o, this._charSizeService = l, this._optionsService = a, this._bufferService = d, this._coreService = c, this._coreBrowserService = _, this._themeService = f, this._terminalClass = Vo++, this._rowElements = [], this._selectionRenderModel = qo(), this.onRequestRedraw = this._register(new m()).event, this._rowContainer = this._document.createElement("div"), this._rowContainer.classList.add(ge), this._rowContainer.style.lineHeight = "normal", this._rowContainer.setAttribute("aria-hidden", "true"), this._refreshRowElements(this._bufferService.cols, this._bufferService.rows), this._selectionContainer = this._document.createElement("div"), this._selectionContainer.classList.add(Ot), this._selectionContainer.setAttribute("aria-hidden", "true"), this.dimensions = $o(), this._updateDimensions(), this._register(this._optionsService.onOptionChange(() => this._handleOptionsChanged())), this._register(this._themeService.onChangeColors((u) => this._injectCss(u))), this._injectCss(this._themeService.colors), this._rowFactory = h.createInstance(zi, document), this._element.classList.add(hi + this._terminalClass), this._screenElement.appendChild(this._rowContainer), this._screenElement.appendChild(this._selectionContainer), this._register(this._linkifier2.onShowLinkUnderline((u) => this._handleLinkHover(u))), this._register(this._linkifier2.onHideLinkUnderline((u) => this._handleLinkLeave(u))), this._register(z(() => {
+      this._element.classList.remove(hi + this._terminalClass), this._rowContainer.remove(), this._selectionContainer.remove(), this._widthCache.dispose(), this._themeStyleElement.remove(), this._dimensionsStyleElement.remove();
     })), this._widthCache = new Ko(this._document, this._helperContainer), this._widthCache.setFont(this._optionsService.rawOptions.fontFamily, this._optionsService.rawOptions.fontSize, this._optionsService.rawOptions.fontWeight, this._optionsService.rawOptions.fontWeightBold), this._setDefaultSpacing();
   }
   _updateDimensions() {
@@ -3444,7 +3444,7 @@ var ai = "xterm-dom-renderer-owner-", ge = "xterm-rows", At = "xterm-fg-", Ts = 
     }
   }
   get _terminalSelector() {
-    return `.${ai}${this._terminalClass}`;
+    return `.${hi}${this._terminalClass}`;
   }
   _handleLinkHover(e) {
     this._setCellUnderline(e.x1, e.x2, e.y1, e.y2, e.cols, !0);
@@ -3464,8 +3464,8 @@ var ai = "xterm-dom-renderer-owner-", ge = "xterm-rows", At = "xterm-fg-", Ts = 
     }
   }
 };
-zi = q([S(7, ts), S(8, Jt), S(9, le), S(10, he), S(11, et), S(12, Oe), S(13, ot)], zi);
-var Fi = class extends L {
+Fi = q([S(7, ts), S(8, Zt), S(9, le), S(10, he), S(11, et), S(12, Oe), S(13, ot)], Fi);
+var $i = class extends L {
   constructor(e, t, i) {
     super(), this._optionsService = i, this.width = 0, this.height = 0, this._onCharSizeChange = this._register(new m()), this.onCharSizeChange = this._onCharSizeChange.event;
     try {
@@ -3483,7 +3483,7 @@ var Fi = class extends L {
     (e.width !== this.width || e.height !== this.height) && (this.width = e.width, this.height = e.height, this._onCharSizeChange.fire());
   }
 };
-Fi = q([S(2, le)], Fi);
+$i = q([S(2, le)], $i);
 var Nr = class extends L {
   constructor() {
     super(...arguments), this._result = { width: 0, height: 0 };
@@ -3564,7 +3564,7 @@ function Zo(e, t, i, s, r, n, o, h, l) {
   let a = ls(e, t, i);
   if (a) return a[0] = Math.ceil((a[0] + (l ? o / 2 : 0)) / o), a[1] = Math.ceil(a[1] / h), a[0] = Math.min(Math.max(a[0], 1), s + (l ? 1 : 0)), a[1] = Math.min(Math.max(a[1], 1), r), a;
 }
-var $i = class {
+var Ki = class {
   constructor(e, t) {
     this._renderService = e, this._charSizeService = t;
   }
@@ -3576,7 +3576,7 @@ var $i = class {
     if (this._charSizeService.hasValidSize) return i[0] = Math.min(Math.max(i[0], 0), this._renderService.dimensions.css.canvas.width - 1), i[1] = Math.min(Math.max(i[1], 0), this._renderService.dimensions.css.canvas.height - 1), { col: Math.floor(i[0] / this._renderService.dimensions.css.cell.width), row: Math.floor(i[1] / this._renderService.dimensions.css.cell.height), x: Math.floor(i[0]), y: Math.floor(i[1]) };
   }
 };
-$i = q([S(0, Ie), S(1, Jt)], $i);
+Ki = q([S(0, Ie), S(1, Zt)], Ki);
 var Qo = class {
   constructor(e, t) {
     this._renderCallback = e, this._coreBrowserService = t, this._refreshCallbacks = [];
@@ -3603,14 +3603,14 @@ var Qo = class {
     this._refreshCallbacks = [];
   }
 }, Hr = {};
-hn(Hr, { getSafariVersion: () => ta, isChromeOS: () => $r, isFirefox: () => Wr, isIpad: () => ia, isIphone: () => sa, isLegacyEdge: () => ea, isLinux: () => cs, isMac: () => Vt, isNode: () => Zt, isSafari: () => zr, isWindows: () => Fr });
-var Zt = typeof process < "u" && "title" in process, Bt = Zt ? "node" : navigator.userAgent, Dt = Zt ? "node" : navigator.platform, Wr = Bt.includes("Firefox"), ea = Bt.includes("Edge"), zr = /^((?!chrome|android).)*safari/i.test(Bt);
+hn(Hr, { getSafariVersion: () => ta, isChromeOS: () => $r, isFirefox: () => Wr, isIpad: () => ia, isIphone: () => sa, isLegacyEdge: () => ea, isLinux: () => cs, isMac: () => Yt, isNode: () => Qt, isSafari: () => zr, isWindows: () => Fr });
+var Qt = typeof process < "u" && "title" in process, Bt = Qt ? "node" : navigator.userAgent, Dt = Qt ? "node" : navigator.platform, Wr = Bt.includes("Firefox"), ea = Bt.includes("Edge"), zr = /^((?!chrome|android).)*safari/i.test(Bt);
 function ta() {
   if (!zr) return 0;
   let e = Bt.match(/Version\/(\d+)/);
   return e === null || e.length < 2 ? 0 : parseInt(e[1]);
 }
-var Vt = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(Dt), ia = Dt === "iPad", sa = Dt === "iPhone", Fr = ["Windows", "Win16", "Win32", "WinCE"].includes(Dt), cs = Dt.indexOf("Linux") >= 0, $r = /\bCrOS\b/.test(Bt), Kr = class {
+var Yt = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(Dt), ia = Dt === "iPad", sa = Dt === "iPhone", Fr = ["Windows", "Win16", "Win32", "WinCE"].includes(Dt), cs = Dt.indexOf("Linux") >= 0, $r = /\bCrOS\b/.test(Bt), Kr = class {
   constructor() {
     this._tasks = [], this._i = 0;
   }
@@ -3657,9 +3657,9 @@ var Vt = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(Dt), ia = Dt ===
   _cancelCallback(e) {
     cancelIdleCallback(e);
   }
-}, Yt = !Zt && "requestIdleCallback" in window ? na : ra, oa = class {
+}, Xt = !Qt && "requestIdleCallback" in window ? na : ra, oa = class {
   constructor() {
-    this._queue = new Yt();
+    this._queue = new Xt();
   }
   set(e) {
     this._queue.clear(), this._queue.enqueue(e);
@@ -3667,7 +3667,7 @@ var Vt = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(Dt), ia = Dt ===
   flush() {
     this._queue.flush();
   }
-}, Ki = class extends L {
+}, Ui = class extends L {
   constructor(e, t, i, s, r, n, o, h, l) {
     super(), this._rowCount = e, this._optionsService = i, this._charSizeService = s, this._coreService = r, this._coreBrowserService = h, this._renderer = this._register(new nt()), this._pausedResizeTask = new oa(), this._observerDisposable = this._register(new nt()), this._isPaused = !1, this._needsFullRefresh = !1, this._isNextRenderRedrawOnly = !0, this._needsSelectionRefresh = !1, this._canvasWidth = 0, this._canvasHeight = 0, this._selectionState = { start: void 0, end: void 0, columnSelectMode: !1 }, this._onDimensionsChange = this._register(new m()), this.onDimensionsChange = this._onDimensionsChange.event, this._onRenderedViewportChange = this._register(new m()), this.onRenderedViewportChange = this._onRenderedViewportChange.event, this._onRender = this._register(new m()), this.onRender = this._onRender.event, this._onRefreshRequest = this._register(new m()), this.onRefreshRequest = this._onRefreshRequest.event, this._renderDebouncer = new Qo((a, d) => this._renderRows(a, d), this._coreBrowserService), this._register(this._renderDebouncer), this._syncOutputHandler = new aa(this._coreBrowserService, this._coreService, () => this._fullRefresh()), this._register(z(() => this._syncOutputHandler.dispose())), this._register(this._coreBrowserService.onDprChange(() => this.handleDevicePixelRatioChange())), this._register(o.onResize(() => this._fullRefresh())), this._register(o.buffers.onBufferActivate(() => this._renderer.value?.clear())), this._register(this._optionsService.onOptionChange(() => this._handleOptionsChanged())), this._register(this._charSizeService.onCharSizeChange(() => this.handleCharSizeChanged())), this._register(n.onDecorationRegistered(() => this._fullRefresh())), this._register(n.onDecorationRemoved(() => this._fullRefresh())), this._register(this._optionsService.onMultipleOptionChange(["customGlyphs", "drawBoldTextInBrightColors", "letterSpacing", "lineHeight", "fontFamily", "fontSize", "fontWeight", "fontWeightBold", "minimumContrastRatio", "rescaleOverlappingGlyphs"], () => {
       this.clear(), this.handleResize(o.cols, o.rows), this._fullRefresh();
@@ -3755,7 +3755,7 @@ var Vt = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"].includes(Dt), ia = Dt ===
     this._renderer.value?.clear();
   }
 };
-Ki = q([S(2, le), S(3, Jt), S(4, et), S(5, Et), S(6, he), S(7, Oe), S(8, ot)], Ki);
+Ui = q([S(2, le), S(3, Zt), S(4, et), S(5, Et), S(6, he), S(7, Oe), S(8, ot)], Ui);
 var aa = class {
   constructor(e, t, i) {
     this._coreBrowserService = e, this._coreService = t, this._onTimeout = i, this._start = 0, this._end = 0, this._isBuffering = !1;
@@ -3776,7 +3776,7 @@ var aa = class {
 };
 function ha(e, t, i, s) {
   let r = i.buffer.x, n = i.buffer.y;
-  if (!i.buffer.hasScrollback) return da(r, n, e, t, i, s) + Qt(n, t, i, s) + ua(r, n, e, t, i, s);
+  if (!i.buffer.hasScrollback) return da(r, n, e, t, i, s) + ei(n, t, i, s) + ua(r, n, e, t, i, s);
   let o;
   if (n === t) return o = r > e ? "D" : "C", Ct(Math.abs(r - e), yt(o, s));
   o = n > t ? "D" : "C";
@@ -3790,15 +3790,15 @@ function ca(e, t) {
   return t.cols - e;
 }
 function da(e, t, i, s, r, n) {
-  return Qt(t, s, r, n).length === 0 ? "" : Ct(qr(e, t, e, t - Qe(t, r), !1, r).length, yt("D", n));
+  return ei(t, s, r, n).length === 0 ? "" : Ct(qr(e, t, e, t - Qe(t, r), !1, r).length, yt("D", n));
 }
-function Qt(e, t, i, s) {
+function ei(e, t, i, s) {
   let r = e - Qe(e, i), n = t - Qe(t, i), o = Math.abs(r - n) - _a(e, t, i);
   return Ct(o, yt(Ur(e, t), s));
 }
 function ua(e, t, i, s, r, n) {
   let o;
-  Qt(t, s, r, n).length > 0 ? o = s - Qe(s, r) : o = t;
+  ei(t, s, r, n).length > 0 ? o = s - Qe(s, r) : o = t;
   let h = s, l = fa(e, t, i, s, r, n);
   return Ct(qr(e, o, i, h, l === "C", r).length, yt(l, n));
 }
@@ -3817,7 +3817,7 @@ function Qe(e, t) {
 }
 function fa(e, t, i, s, r, n) {
   let o;
-  return Qt(i, s, r, n).length > 0 ? o = s - Qe(s, r) : o = t, e < i && o <= s || e >= i && o < s ? "C" : "D";
+  return ei(i, s, r, n).length > 0 ? o = s - Qe(s, r) : o = t, e < i && o <= s || e >= i && o < s ? "C" : "D";
 }
 function Ur(e, t) {
   return e > t ? "A" : "B";
@@ -3873,7 +3873,7 @@ function As(e, t) {
   if (e.start.y > e.end.y) throw new Error(`Buffer range end (${e.end.x}, ${e.end.y}) cannot be before start (${e.start.x}, ${e.start.y})`);
   return t * (e.end.y - e.start.y) + (e.end.x - e.start.x + 1);
 }
-var hi = 50, ga = 15, va = 50, ma = 500, Sa = " ", wa = new RegExp(Sa, "g"), Ui = class extends L {
+var li = 50, ga = 15, va = 50, ma = 500, Sa = " ", wa = new RegExp(Sa, "g"), qi = class extends L {
   constructor(e, t, i, s, r, n, o, h, l) {
     super(), this._element = e, this._screenElement = t, this._linkifier = i, this._bufferService = s, this._coreService = r, this._mouseService = n, this._optionsService = o, this._renderService = h, this._coreBrowserService = l, this._dragScrollAmount = 0, this._enabled = !0, this._workCell = new we(), this._mouseDownTimeStamp = 0, this._oldHasSelection = !1, this._oldSelectionStart = void 0, this._oldSelectionEnd = void 0, this._onLinuxMouseSelection = this._register(new m()), this.onLinuxMouseSelection = this._onLinuxMouseSelection.event, this._onRedrawRequest = this._register(new m()), this.onRequestRedraw = this._onRedrawRequest.event, this._onSelectionChange = this._register(new m()), this.onSelectionChange = this._onSelectionChange.event, this._onRequestScrollLines = this._register(new m()), this.onRequestScrollLines = this._onRequestScrollLines.event, this._mouseMoveListener = (a) => this._handleMouseMove(a), this._mouseUpListener = (a) => this._handleMouseUp(a), this._coreService.onUserInput(() => {
       this.hasSelection && this.clearSelection();
@@ -3970,10 +3970,10 @@ var hi = 50, ga = 15, va = 50, ma = 500, Sa = " ", wa = new RegExp(Sa, "g"), Ui
   }
   _getMouseEventScrollAmount(e) {
     let t = ls(this._coreBrowserService.window, e, this._screenElement)[1], i = this._renderService.dimensions.css.canvas.height;
-    return t >= 0 && t <= i ? 0 : (t > i && (t -= i), t = Math.min(Math.max(t, -hi), hi), t /= hi, t / Math.abs(t) + Math.round(t * (ga - 1)));
+    return t >= 0 && t <= i ? 0 : (t > i && (t -= i), t = Math.min(Math.max(t, -li), li), t /= li, t / Math.abs(t) + Math.round(t * (ga - 1)));
   }
   shouldForceSelection(e) {
-    return Vt ? e.altKey && this._optionsService.rawOptions.macOptionClickForcesSelection : e.shiftKey;
+    return Yt ? e.altKey && this._optionsService.rawOptions.macOptionClickForcesSelection : e.shiftKey;
   }
   handleMouseDown(e) {
     if (this._mouseDownTimeStamp = e.timeStamp, !(e.button === 2 && this.hasSelection) && e.button === 0) {
@@ -4007,7 +4007,7 @@ var hi = 50, ga = 15, va = 50, ma = 500, Sa = " ", wa = new RegExp(Sa, "g"), Ui
     t && (this._activeSelectionMode = 2, this._selectLineAt(t[1]));
   }
   shouldColumnSelect(e) {
-    return e.altKey && !(Vt && this._optionsService.rawOptions.macOptionClickForcesSelection);
+    return e.altKey && !(Yt && this._optionsService.rawOptions.macOptionClickForcesSelection);
   }
   _handleMouseMove(e) {
     if (e.stopImmediatePropagation(), !this._model.selectionStart) return;
@@ -4141,7 +4141,7 @@ var hi = 50, ga = 15, va = 50, ma = 500, Sa = " ", wa = new RegExp(Sa, "g"), Ui
     this._model.selectionStart = [0, t.first], this._model.selectionEnd = void 0, this._model.selectionStartLength = As(i, this._bufferService.cols);
   }
 };
-Ui = q([S(3, he), S(4, et), S(5, is), S(6, le), S(7, Ie), S(8, Oe)], Ui);
+qi = q([S(3, he), S(4, et), S(5, is), S(6, le), S(7, Ie), S(8, Oe)], qi);
 var Os = class {
   constructor() {
     this._data = {};
@@ -4185,7 +4185,7 @@ var Os = class {
     e.push({ css: X.toCss(s, s, s), rgba: X.toRgba(s, s, s) });
   }
   return e;
-})()), Xe = K.toColor("#ffffff"), gt = K.toColor("#000000"), Ns = K.toColor("#ffffff"), Hs = gt, dt = { css: "rgba(255, 255, 255, 0.3)", rgba: 4294967117 }, ba = Xe, qi = class extends L {
+})()), Xe = K.toColor("#ffffff"), gt = K.toColor("#000000"), Ns = K.toColor("#ffffff"), Hs = gt, dt = { css: "rgba(255, 255, 255, 0.3)", rgba: 4294967117 }, ba = Xe, Vi = class extends L {
   constructor(e) {
     super(), this._optionsService = e, this._contrastCache = new Is(), this._halfContrastCache = new Is(), this._onChangeColors = this._register(new m()), this.onChangeColors = this._onChangeColors.event, this._colors = { foreground: Xe, background: gt, cursor: Ns, cursorAccent: Hs, selectionForeground: void 0, selectionBackgroundTransparent: dt, selectionBackgroundOpaque: W.blend(gt, dt), selectionInactiveBackgroundTransparent: dt, selectionInactiveBackgroundOpaque: W.blend(gt, dt), scrollbarSliderBackground: W.opacity(Xe, 0.2), scrollbarSliderHoverBackground: W.opacity(Xe, 0.4), scrollbarSliderActiveBackground: W.opacity(Xe, 0.5), overviewRulerBorder: Xe, ansi: j.slice(), contrastCache: this._contrastCache, halfContrastCache: this._halfContrastCache }, this._updateRestoreColors(), this._setTheme(this._optionsService.rawOptions.theme), this._register(this._optionsService.onSpecificOptionChange("minimumContrastRatio", () => this._contrastCache.clear())), this._register(this._optionsService.onSpecificOptionChange("theme", () => this._setTheme(this._optionsService.rawOptions.theme)));
   }
@@ -4229,7 +4229,7 @@ var Os = class {
     this._restoreColors = { foreground: this._colors.foreground, background: this._colors.background, cursor: this._colors.cursor, ansi: this._colors.ansi.slice() };
   }
 };
-qi = q([S(0, le)], qi);
+Vi = q([S(0, le)], Vi);
 function I(e, t) {
   if (e !== void 0) try {
     return K.toColor(e);
@@ -4276,7 +4276,7 @@ var ya = class {
     if (t.length !== r) throw new Error(`[createInstance] First service dependency of ${e.name} at position ${r + 1} conflicts with ${t.length} static arguments`);
     return new e(...t, ...s);
   }
-}, ka = { trace: 0, debug: 1, info: 2, warn: 3, error: 4, off: 5 }, xa = "xterm.js: ", Vi = class extends L {
+}, ka = { trace: 0, debug: 1, info: 2, warn: 3, error: 4, off: 5 }, xa = "xterm.js: ", Yi = class extends L {
   constructor(e) {
     super(), this._optionsService = e, this._logLevel = 5, this._updateLogLevel(), this._register(this._optionsService.onSpecificOptionChange("logLevel", () => this._updateLogLevel()));
   }
@@ -4308,7 +4308,7 @@ var ya = class {
     this._logLevel <= 4 && this._log(this._optionsService.options.logger?.error.bind(this._optionsService.options.logger) ?? console.error, e, t);
   }
 };
-Vi = q([S(0, le)], Vi);
+Yi = q([S(0, le)], Yi);
 var Ws = class extends L {
   constructor(e) {
     super(), this._maxLength = e, this.onDeleteEmitter = this._register(new m()), this.onDelete = this.onDeleteEmitter.event, this.onInsertEmitter = this._register(new m()), this.onInsert = this.onInsertEmitter.event, this.onTrimEmitter = this._register(new m()), this.onTrim = this.onTrimEmitter.event, this._array = new Array(this._maxLength), this._startIndex = 0, this._length = 0;
@@ -4377,7 +4377,7 @@ var Ws = class extends L {
   _getCyclicIndex(e) {
     return (this._startIndex + e) % this._maxLength;
   }
-}, M = 3, Y = Object.freeze(new xt()), It = 0, li = 2, vt = class Vr {
+}, M = 3, Y = Object.freeze(new xt()), It = 0, ci = 2, vt = class Vr {
   constructor(t, i, s = !1) {
     this.isWrapped = s, this._combined = {}, this._extendedAttrs = {}, this._data = new Uint32Array(t * M);
     let r = i || we.fromCharData([0, dr, 1, 0]);
@@ -4457,7 +4457,7 @@ var Ws = class extends L {
     for (t && this.getWidth(t - 1) === 2 && this.setCellFromCodepoint(t - 1, 0, 1, s), i < this.length && this.getWidth(i - 1) === 2 && this.setCellFromCodepoint(i, 0, 1, s); t < i && t < this.length; ) this.setCell(t++, s);
   }
   resize(t, i) {
-    if (t === this.length) return this._data.length * 4 * li < this._data.buffer.byteLength;
+    if (t === this.length) return this._data.length * 4 * ci < this._data.buffer.byteLength;
     let s = t * M;
     if (t > this.length) {
       if (this._data.buffer.byteLength >= s * 4) this._data = new Uint32Array(this._data.buffer, 0, s);
@@ -4479,10 +4479,10 @@ var Ws = class extends L {
         h >= t && delete this._extendedAttrs[h];
       }
     }
-    return this.length = t, s * 4 * li < this._data.buffer.byteLength;
+    return this.length = t, s * 4 * ci < this._data.buffer.byteLength;
   }
   cleanupMemory() {
-    if (this._data.length * 4 * li < this._data.buffer.byteLength) {
+    if (this._data.length * 4 * ci < this._data.buffer.byteLength) {
       let t = new Uint32Array(this._data.length);
       return t.set(this._data), this._data = t, 1;
     }
@@ -4635,13 +4635,13 @@ J.H = J[7] = { "@": "É", "[": "Ä", "\\": "Ö", "]": "Å", "^": "Ü", "`": "é"
 J["="] = { "#": "ù", "@": "à", "[": "é", "\\": "ç", "]": "ê", "^": "î", _: "è", "`": "ô", "{": "ä", "|": "ö", "}": "ü", "~": "û" };
 var zs = 4294967295, Fs = class {
   constructor(e, t, i) {
-    this._hasScrollback = e, this._optionsService = t, this._bufferService = i, this.ydisp = 0, this.ybase = 0, this.y = 0, this.x = 0, this.tabs = {}, this.savedY = 0, this.savedX = 0, this.savedCurAttrData = Y.clone(), this.savedCharset = je, this.markers = [], this._nullCell = we.fromCharData([0, dr, 1, 0]), this._whitespaceCell = we.fromCharData([0, Ue, 1, 32]), this._isClearing = !1, this._memoryCleanupQueue = new Yt(), this._memoryCleanupPosition = 0, this._cols = this._bufferService.cols, this._rows = this._bufferService.rows, this.lines = new Ws(this._getCorrectBufferLength(this._rows)), this.scrollTop = 0, this.scrollBottom = this._rows - 1, this.setupTabStops();
+    this._hasScrollback = e, this._optionsService = t, this._bufferService = i, this.ydisp = 0, this.ybase = 0, this.y = 0, this.x = 0, this.tabs = {}, this.savedY = 0, this.savedX = 0, this.savedCurAttrData = Y.clone(), this.savedCharset = je, this.markers = [], this._nullCell = we.fromCharData([0, dr, 1, 0]), this._whitespaceCell = we.fromCharData([0, Ue, 1, 32]), this._isClearing = !1, this._memoryCleanupQueue = new Xt(), this._memoryCleanupPosition = 0, this._cols = this._bufferService.cols, this._rows = this._bufferService.rows, this.lines = new Ws(this._getCorrectBufferLength(this._rows)), this.scrollTop = 0, this.scrollBottom = this._rows - 1, this.setupTabStops();
   }
   getNullCell(e) {
-    return e ? (this._nullCell.fg = e.fg, this._nullCell.bg = e.bg, this._nullCell.extended = e.extended) : (this._nullCell.fg = 0, this._nullCell.bg = 0, this._nullCell.extended = new Kt()), this._nullCell;
+    return e ? (this._nullCell.fg = e.fg, this._nullCell.bg = e.bg, this._nullCell.extended = e.extended) : (this._nullCell.fg = 0, this._nullCell.bg = 0, this._nullCell.extended = new Ut()), this._nullCell;
   }
   getWhitespaceCell(e) {
-    return e ? (this._whitespaceCell.fg = e.fg, this._whitespaceCell.bg = e.bg, this._whitespaceCell.extended = e.extended) : (this._whitespaceCell.fg = 0, this._whitespaceCell.bg = 0, this._whitespaceCell.extended = new Kt()), this._whitespaceCell;
+    return e ? (this._whitespaceCell.fg = e.fg, this._whitespaceCell.bg = e.bg, this._whitespaceCell.extended = e.extended) : (this._whitespaceCell.fg = 0, this._whitespaceCell.bg = 0, this._whitespaceCell.extended = new Ut()), this._whitespaceCell;
   }
   getBlankLine(e, t) {
     return new vt(this._bufferService.cols, this.getNullCell(e), t);
@@ -4834,7 +4834,7 @@ var zs = 4294967295, Fs = class {
   setupTabStops(e) {
     this._normal.setupTabStops(e), this._alt.setupTabStops(e);
   }
-}, jr = 2, Gr = 1, Yi = class extends L {
+}, jr = 2, Gr = 1, Xi = class extends L {
   constructor(e) {
     super(), this.isUserScrolling = !1, this._onResize = this._register(new m()), this.onResize = this._onResize.event, this._onScroll = this._register(new m()), this.onScroll = this._onScroll.event, this.cols = Math.max(e.rawOptions.cols || 0, jr), this.rows = Math.max(e.rawOptions.rows || 0, Gr), this.buffers = this._register(new La(e, this)), this._register(this.buffers.onBufferActivate((t) => {
       this._onScroll.fire(t.activeBuffer.ydisp);
@@ -4873,8 +4873,8 @@ var zs = 4294967295, Fs = class {
     i.ydisp = Math.max(Math.min(i.ydisp + e, i.ybase), 0), s !== i.ydisp && (t || this._onScroll.fire(i.ydisp));
   }
 };
-Yi = q([S(0, le)], Yi);
-var it = { cols: 80, rows: 24, cursorBlink: !1, cursorStyle: "block", cursorWidth: 1, cursorInactiveStyle: "outline", customGlyphs: !0, drawBoldTextInBrightColors: !0, documentOverride: null, fastScrollModifier: "alt", fastScrollSensitivity: 5, fontFamily: "monospace", fontSize: 15, fontWeight: "normal", fontWeightBold: "bold", ignoreBracketedPasteMode: !1, lineHeight: 1, letterSpacing: 0, linkHandler: null, logLevel: "info", logger: null, scrollback: 1e3, scrollOnEraseInDisplay: !1, scrollOnUserInput: !0, scrollSensitivity: 1, screenReaderMode: !1, smoothScrollDuration: 0, macOptionIsMeta: !1, macOptionClickForcesSelection: !1, minimumContrastRatio: 1, disableStdin: !1, allowProposedApi: !1, allowTransparency: !1, tabStopWidth: 8, theme: {}, reflowCursorLine: !1, rescaleOverlappingGlyphs: !1, rightClickSelectsWord: Vt, windowOptions: {}, windowsMode: !1, windowsPty: {}, wordSeparator: " ()[]{}',\"`", altClickMovesCursor: !0, convertEol: !1, termName: "xterm", cancelEvents: !1, overviewRuler: {} }, Pa = ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"], Ta = class extends L {
+Xi = q([S(0, le)], Xi);
+var it = { cols: 80, rows: 24, cursorBlink: !1, cursorStyle: "block", cursorWidth: 1, cursorInactiveStyle: "outline", customGlyphs: !0, drawBoldTextInBrightColors: !0, documentOverride: null, fastScrollModifier: "alt", fastScrollSensitivity: 5, fontFamily: "monospace", fontSize: 15, fontWeight: "normal", fontWeightBold: "bold", ignoreBracketedPasteMode: !1, lineHeight: 1, letterSpacing: 0, linkHandler: null, logLevel: "info", logger: null, scrollback: 1e3, scrollOnEraseInDisplay: !1, scrollOnUserInput: !0, scrollSensitivity: 1, screenReaderMode: !1, smoothScrollDuration: 0, macOptionIsMeta: !1, macOptionClickForcesSelection: !1, minimumContrastRatio: 1, disableStdin: !1, allowProposedApi: !1, allowTransparency: !1, tabStopWidth: 8, theme: {}, reflowCursorLine: !1, rescaleOverlappingGlyphs: !1, rightClickSelectsWord: Yt, windowOptions: {}, windowsMode: !1, windowsPty: {}, wordSeparator: " ()[]{}',\"`", altClickMovesCursor: !0, convertEol: !1, termName: "xterm", cancelEvents: !1, overviewRuler: {} }, Pa = ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"], Ta = class extends L {
   constructor(e) {
     super(), this._onOptionChange = this._register(new m()), this.onOptionChange = this._onOptionChange.event;
     let t = { ...it };
@@ -4960,7 +4960,7 @@ function mt(e, t = 5) {
   for (let s in e) i[s] = t <= 1 ? e[s] : e[s] && mt(e[s], t - 1);
   return i;
 }
-var $s = Object.freeze({ insertMode: !1 }), Ks = Object.freeze({ applicationCursorKeys: !1, applicationKeypad: !1, bracketedPasteMode: !1, cursorBlink: void 0, cursorStyle: void 0, origin: !1, reverseWraparound: !1, sendFocus: !1, synchronizedOutput: !1, wraparound: !0 }), Xi = class extends L {
+var $s = Object.freeze({ insertMode: !1 }), Ks = Object.freeze({ applicationCursorKeys: !1, applicationKeypad: !1, bracketedPasteMode: !1, cursorBlink: void 0, cursorStyle: void 0, origin: !1, reverseWraparound: !1, sendFocus: !1, synchronizedOutput: !1, wraparound: !0 }), ji = class extends L {
   constructor(e, t, i) {
     super(), this._bufferService = e, this._logService = t, this._optionsService = i, this.isCursorInitialized = !1, this.isCursorHidden = !1, this._onData = this._register(new m()), this.onData = this._onData.event, this._onUserInput = this._register(new m()), this.onUserInput = this._onUserInput.event, this._onBinary = this._register(new m()), this.onBinary = this._onBinary.event, this._onRequestScrollToBottom = this._register(new m()), this.onRequestScrollToBottom = this._onRequestScrollToBottom.event, this.modes = mt($s), this.decPrivateModes = mt(Ks);
   }
@@ -4976,22 +4976,22 @@ var $s = Object.freeze({ insertMode: !1 }), Ks = Object.freeze({ applicationCurs
     this._optionsService.rawOptions.disableStdin || (this._logService.debug(`sending binary "${e}"`), this._logService.trace("sending binary (codes)", () => e.split("").map((t) => t.charCodeAt(0))), this._onBinary.fire(e));
   }
 };
-Xi = q([S(0, he), S(1, gr), S(2, le)], Xi);
+ji = q([S(0, he), S(1, gr), S(2, le)], ji);
 var Us = { NONE: { events: 0, restrict: () => !1 }, X10: { events: 1, restrict: (e) => e.button === 4 || e.action !== 1 ? !1 : (e.ctrl = !1, e.alt = !1, e.shift = !1, !0) }, VT200: { events: 19, restrict: (e) => e.action !== 32 }, DRAG: { events: 23, restrict: (e) => !(e.action === 32 && e.button === 3) }, ANY: { events: 31, restrict: (e) => !0 } };
-function ci(e, t) {
+function di(e, t) {
   let i = (e.ctrl ? 16 : 0) | (e.shift ? 4 : 0) | (e.alt ? 8 : 0);
   return e.button === 4 ? (i |= 64, i |= e.action) : (i |= e.button & 3, e.button & 4 && (i |= 64), e.button & 8 && (i |= 128), e.action === 32 ? i |= 32 : e.action === 0 && !t && (i |= 3)), i;
 }
-var di = String.fromCharCode, qs = { DEFAULT: (e) => {
-  let t = [ci(e, !1) + 32, e.col + 32, e.row + 32];
-  return t[0] > 255 || t[1] > 255 || t[2] > 255 ? "" : `\x1B[M${di(t[0])}${di(t[1])}${di(t[2])}`;
+var ui = String.fromCharCode, qs = { DEFAULT: (e) => {
+  let t = [di(e, !1) + 32, e.col + 32, e.row + 32];
+  return t[0] > 255 || t[1] > 255 || t[2] > 255 ? "" : `\x1B[M${ui(t[0])}${ui(t[1])}${ui(t[2])}`;
 }, SGR: (e) => {
   let t = e.action === 0 && e.button !== 4 ? "m" : "M";
-  return `\x1B[<${ci(e, !0)};${e.col};${e.row}${t}`;
+  return `\x1B[<${di(e, !0)};${e.col};${e.row}${t}`;
 }, SGR_PIXELS: (e) => {
   let t = e.action === 0 && e.button !== 4 ? "m" : "M";
-  return `\x1B[<${ci(e, !0)};${e.x};${e.y}${t}`;
-} }, ji = class extends L {
+  return `\x1B[<${di(e, !0)};${e.x};${e.y}${t}`;
+} }, Gi = class extends L {
   constructor(e, t, i) {
     super(), this._bufferService = e, this._coreService = t, this._optionsService = i, this._protocols = {}, this._encodings = {}, this._activeProtocol = "", this._activeEncoding = "", this._lastEvent = null, this._wheelPartialScroll = 0, this._onProtocolChange = this._register(new m()), this.onProtocolChange = this._onProtocolChange.event;
     for (let s of Object.keys(Us)) this.addProtocol(s, Us[s]);
@@ -5047,8 +5047,8 @@ var di = String.fromCharCode, qs = { DEFAULT: (e) => {
     return !(e.button !== t.button || e.action !== t.action || e.ctrl !== t.ctrl || e.alt !== t.alt || e.shift !== t.shift);
   }
 };
-ji = q([S(0, he), S(1, et), S(2, le)], ji);
-var ui = [[768, 879], [1155, 1158], [1160, 1161], [1425, 1469], [1471, 1471], [1473, 1474], [1476, 1477], [1479, 1479], [1536, 1539], [1552, 1557], [1611, 1630], [1648, 1648], [1750, 1764], [1767, 1768], [1770, 1773], [1807, 1807], [1809, 1809], [1840, 1866], [1958, 1968], [2027, 2035], [2305, 2306], [2364, 2364], [2369, 2376], [2381, 2381], [2385, 2388], [2402, 2403], [2433, 2433], [2492, 2492], [2497, 2500], [2509, 2509], [2530, 2531], [2561, 2562], [2620, 2620], [2625, 2626], [2631, 2632], [2635, 2637], [2672, 2673], [2689, 2690], [2748, 2748], [2753, 2757], [2759, 2760], [2765, 2765], [2786, 2787], [2817, 2817], [2876, 2876], [2879, 2879], [2881, 2883], [2893, 2893], [2902, 2902], [2946, 2946], [3008, 3008], [3021, 3021], [3134, 3136], [3142, 3144], [3146, 3149], [3157, 3158], [3260, 3260], [3263, 3263], [3270, 3270], [3276, 3277], [3298, 3299], [3393, 3395], [3405, 3405], [3530, 3530], [3538, 3540], [3542, 3542], [3633, 3633], [3636, 3642], [3655, 3662], [3761, 3761], [3764, 3769], [3771, 3772], [3784, 3789], [3864, 3865], [3893, 3893], [3895, 3895], [3897, 3897], [3953, 3966], [3968, 3972], [3974, 3975], [3984, 3991], [3993, 4028], [4038, 4038], [4141, 4144], [4146, 4146], [4150, 4151], [4153, 4153], [4184, 4185], [4448, 4607], [4959, 4959], [5906, 5908], [5938, 5940], [5970, 5971], [6002, 6003], [6068, 6069], [6071, 6077], [6086, 6086], [6089, 6099], [6109, 6109], [6155, 6157], [6313, 6313], [6432, 6434], [6439, 6440], [6450, 6450], [6457, 6459], [6679, 6680], [6912, 6915], [6964, 6964], [6966, 6970], [6972, 6972], [6978, 6978], [7019, 7027], [7616, 7626], [7678, 7679], [8203, 8207], [8234, 8238], [8288, 8291], [8298, 8303], [8400, 8431], [12330, 12335], [12441, 12442], [43014, 43014], [43019, 43019], [43045, 43046], [64286, 64286], [65024, 65039], [65056, 65059], [65279, 65279], [65529, 65531]], Oa = [[68097, 68099], [68101, 68102], [68108, 68111], [68152, 68154], [68159, 68159], [119143, 119145], [119155, 119170], [119173, 119179], [119210, 119213], [119362, 119364], [917505, 917505], [917536, 917631], [917760, 917999]], G;
+Gi = q([S(0, he), S(1, et), S(2, le)], Gi);
+var _i = [[768, 879], [1155, 1158], [1160, 1161], [1425, 1469], [1471, 1471], [1473, 1474], [1476, 1477], [1479, 1479], [1536, 1539], [1552, 1557], [1611, 1630], [1648, 1648], [1750, 1764], [1767, 1768], [1770, 1773], [1807, 1807], [1809, 1809], [1840, 1866], [1958, 1968], [2027, 2035], [2305, 2306], [2364, 2364], [2369, 2376], [2381, 2381], [2385, 2388], [2402, 2403], [2433, 2433], [2492, 2492], [2497, 2500], [2509, 2509], [2530, 2531], [2561, 2562], [2620, 2620], [2625, 2626], [2631, 2632], [2635, 2637], [2672, 2673], [2689, 2690], [2748, 2748], [2753, 2757], [2759, 2760], [2765, 2765], [2786, 2787], [2817, 2817], [2876, 2876], [2879, 2879], [2881, 2883], [2893, 2893], [2902, 2902], [2946, 2946], [3008, 3008], [3021, 3021], [3134, 3136], [3142, 3144], [3146, 3149], [3157, 3158], [3260, 3260], [3263, 3263], [3270, 3270], [3276, 3277], [3298, 3299], [3393, 3395], [3405, 3405], [3530, 3530], [3538, 3540], [3542, 3542], [3633, 3633], [3636, 3642], [3655, 3662], [3761, 3761], [3764, 3769], [3771, 3772], [3784, 3789], [3864, 3865], [3893, 3893], [3895, 3895], [3897, 3897], [3953, 3966], [3968, 3972], [3974, 3975], [3984, 3991], [3993, 4028], [4038, 4038], [4141, 4144], [4146, 4146], [4150, 4151], [4153, 4153], [4184, 4185], [4448, 4607], [4959, 4959], [5906, 5908], [5938, 5940], [5970, 5971], [6002, 6003], [6068, 6069], [6071, 6077], [6086, 6086], [6089, 6099], [6109, 6109], [6155, 6157], [6313, 6313], [6432, 6434], [6439, 6440], [6450, 6450], [6457, 6459], [6679, 6680], [6912, 6915], [6964, 6964], [6966, 6970], [6972, 6972], [6978, 6978], [7019, 7027], [7616, 7626], [7678, 7679], [8203, 8207], [8234, 8238], [8288, 8291], [8298, 8303], [8400, 8431], [12330, 12335], [12441, 12442], [43014, 43014], [43019, 43019], [43045, 43046], [64286, 64286], [65024, 65039], [65056, 65059], [65279, 65279], [65529, 65531]], Oa = [[68097, 68099], [68101, 68102], [68108, 68111], [68152, 68154], [68159, 68159], [119143, 119145], [119155, 119170], [119173, 119179], [119210, 119213], [119362, 119364], [917505, 917505], [917536, 917631], [917760, 917999]], G;
 function Ia(e, t) {
   let i = 0, s = t.length - 1, r;
   if (e < t[0][0] || e > t[s][1]) return !1;
@@ -5061,7 +5061,7 @@ var Na = class {
   constructor() {
     if (this.version = "6", !G) {
       G = new Uint8Array(65536), G.fill(1), G[0] = 0, G.fill(0, 1, 32), G.fill(0, 127, 160), G.fill(2, 4352, 4448), G[9001] = 2, G[9002] = 2, G.fill(2, 11904, 42192), G[12351] = 1, G.fill(2, 44032, 55204), G.fill(2, 63744, 64256), G.fill(2, 65040, 65050), G.fill(2, 65072, 65136), G.fill(2, 65280, 65377), G.fill(2, 65504, 65511);
-      for (let e = 0; e < ui.length; ++e) G.fill(0, ui[e][0], ui[e][1] + 1);
+      for (let e = 0; e < _i.length; ++e) G.fill(0, _i[e][0], _i[e][1] + 1);
     }
   }
   wcwidth(e) {
@@ -5147,13 +5147,13 @@ function Vs(e) {
   let t = e.buffer.lines.get(e.buffer.ybase + e.buffer.y - 1)?.get(e.cols - 1), i = e.buffer.lines.get(e.buffer.ybase + e.buffer.y);
   i && t && (i.isWrapped = t[3] !== 0 && t[3] !== 32);
 }
-var ut = 2147483647, Wa = 256, Jr = class Gi {
+var ut = 2147483647, Wa = 256, Jr = class Ji {
   constructor(t = 32, i = 32) {
     if (this.maxLength = t, this.maxSubParamsLength = i, i > Wa) throw new Error("maxSubParamsLength must not be greater than 256");
     this.params = new Int32Array(t), this.length = 0, this._subParams = new Int32Array(i), this._subParamsLength = 0, this._subParamsIdx = new Uint16Array(t), this._rejectDigits = !1, this._rejectSubDigits = !1, this._digitIsSub = !1;
   }
   static fromArray(t) {
-    let i = new Gi();
+    let i = new Ji();
     if (!t.length) return i;
     for (let s = Array.isArray(t[0]) ? 1 : 0; s < t.length; ++s) {
       let r = t[s];
@@ -5163,7 +5163,7 @@ var ut = 2147483647, Wa = 256, Jr = class Gi {
     return i;
   }
   clone() {
-    let t = new Gi(this.maxLength, this.maxSubParamsLength);
+    let t = new Ji(this.maxLength, this.maxSubParamsLength);
     return t.params.set(this.params), t.length = this.length, t._subParams.set(this._subParams), t._subParamsLength = this._subParamsLength, t._subParamsIdx.set(this._subParamsIdx), t._rejectDigits = this._rejectDigits, t._rejectSubDigits = this._rejectSubDigits, t._digitIsSub = this._digitIsSub, t;
   }
   toArray() {
@@ -5249,7 +5249,7 @@ var ut = 2147483647, Wa = 256, Jr = class Gi {
     else for (let e = this._active.length - 1; e >= 0; e--) this._active[e].start();
   }
   _put(e, t, i) {
-    if (!this._active.length) this._handlerFb(this._id, "PUT", Gt(e, t, i));
+    if (!this._active.length) this._handlerFb(this._id, "PUT", Jt(e, t, i));
     else for (let s = this._active.length - 1; s >= 0; s--) this._active[s].put(e, t, i);
   }
   start() {
@@ -5294,7 +5294,7 @@ var ut = 2147483647, Wa = 256, Jr = class Gi {
     this._data = "", this._hitLimit = !1;
   }
   put(e, t, i) {
-    this._hitLimit || (this._data += Gt(e, t, i), this._data.length > 1e7 && (this._data = "", this._hitLimit = !0));
+    this._hitLimit || (this._data += Jt(e, t, i), this._data.length > 1e7 && (this._data = "", this._hitLimit = !0));
   }
   end(e) {
     let t = !1;
@@ -5334,7 +5334,7 @@ var ut = 2147483647, Wa = 256, Jr = class Gi {
     else for (let i = this._active.length - 1; i >= 0; i--) this._active[i].hook(t);
   }
   put(e, t, i) {
-    if (!this._active.length) this._handlerFb(this._ident, "PUT", Gt(e, t, i));
+    if (!this._active.length) this._handlerFb(this._ident, "PUT", Jt(e, t, i));
     else for (let s = this._active.length - 1; s >= 0; s--) this._active[s].put(e, t, i);
   }
   unhook(e, t = !0) {
@@ -5359,7 +5359,7 @@ var Ys = class {
     this._params = e.length > 1 || e.params[0] ? e.clone() : St, this._data = "", this._hitLimit = !1;
   }
   put(e, t, i) {
-    this._hitLimit || (this._data += Gt(e, t, i), this._data.length > 1e7 && (this._data = "", this._hitLimit = !0));
+    this._hitLimit || (this._data += Jt(e, t, i), this._data.length > 1e7 && (this._data = "", this._hitLimit = !0));
   }
   unhook(e) {
     let t = !1;
@@ -5637,7 +5637,7 @@ function Xs(e) {
     return s;
   }
 }
-function _i(e, t) {
+function fi(e, t) {
   let i = e.toString(16), s = i.length < 2 ? "0" + i : i;
   switch (t) {
     case 4:
@@ -5652,7 +5652,7 @@ function _i(e, t) {
 }
 function Ya(e, t = 16) {
   let [i, s, r] = e;
-  return `rgb:${_i(i, t)}/${_i(s, t)}/${_i(r, t)}`;
+  return `rgb:${fi(i, t)}/${fi(s, t)}/${fi(r, t)}`;
 }
 var Xa = { "(": 0, ")": 1, "*": 2, "+": 3, "-": 1, ".": 2 }, $e = 131072, js = 10;
 function Gs(e, t) {
@@ -5707,7 +5707,7 @@ function Gs(e, t) {
 }
 var Js = 5e3, Zs = 0, ja = class extends L {
   constructor(e, t, i, s, r, n, o, h, l = new Ua()) {
-    super(), this._bufferService = e, this._charsetService = t, this._coreService = i, this._logService = s, this._optionsService = r, this._oscLinkService = n, this._coreMouseService = o, this._unicodeService = h, this._parser = l, this._parseBuffer = new Uint32Array(4096), this._stringDecoder = new _n(), this._utf8Decoder = new fn(), this._windowTitle = "", this._iconName = "", this._windowTitleStack = [], this._iconNameStack = [], this._curAttrData = Y.clone(), this._eraseAttrDataInternal = Y.clone(), this._onRequestBell = this._register(new m()), this.onRequestBell = this._onRequestBell.event, this._onRequestRefreshRows = this._register(new m()), this.onRequestRefreshRows = this._onRequestRefreshRows.event, this._onRequestReset = this._register(new m()), this.onRequestReset = this._onRequestReset.event, this._onRequestSendFocus = this._register(new m()), this.onRequestSendFocus = this._onRequestSendFocus.event, this._onRequestSyncScrollBar = this._register(new m()), this.onRequestSyncScrollBar = this._onRequestSyncScrollBar.event, this._onRequestWindowsOptionsReport = this._register(new m()), this.onRequestWindowsOptionsReport = this._onRequestWindowsOptionsReport.event, this._onA11yChar = this._register(new m()), this.onA11yChar = this._onA11yChar.event, this._onA11yTab = this._register(new m()), this.onA11yTab = this._onA11yTab.event, this._onCursorMove = this._register(new m()), this.onCursorMove = this._onCursorMove.event, this._onLineFeed = this._register(new m()), this.onLineFeed = this._onLineFeed.event, this._onScroll = this._register(new m()), this.onScroll = this._onScroll.event, this._onTitleChange = this._register(new m()), this.onTitleChange = this._onTitleChange.event, this._onColor = this._register(new m()), this.onColor = this._onColor.event, this._parseStack = { paused: !1, cursorStartX: 0, cursorStartY: 0, decodedLength: 0, position: 0 }, this._specialColors = [256, 257, 258], this._register(this._parser), this._dirtyRowTracker = new Ji(this._bufferService), this._activeBuffer = this._bufferService.buffer, this._register(this._bufferService.buffers.onBufferActivate((a) => this._activeBuffer = a.activeBuffer)), this._parser.setCsiHandlerFallback((a, d) => {
+    super(), this._bufferService = e, this._charsetService = t, this._coreService = i, this._logService = s, this._optionsService = r, this._oscLinkService = n, this._coreMouseService = o, this._unicodeService = h, this._parser = l, this._parseBuffer = new Uint32Array(4096), this._stringDecoder = new _n(), this._utf8Decoder = new fn(), this._windowTitle = "", this._iconName = "", this._windowTitleStack = [], this._iconNameStack = [], this._curAttrData = Y.clone(), this._eraseAttrDataInternal = Y.clone(), this._onRequestBell = this._register(new m()), this.onRequestBell = this._onRequestBell.event, this._onRequestRefreshRows = this._register(new m()), this.onRequestRefreshRows = this._onRequestRefreshRows.event, this._onRequestReset = this._register(new m()), this.onRequestReset = this._onRequestReset.event, this._onRequestSendFocus = this._register(new m()), this.onRequestSendFocus = this._onRequestSendFocus.event, this._onRequestSyncScrollBar = this._register(new m()), this.onRequestSyncScrollBar = this._onRequestSyncScrollBar.event, this._onRequestWindowsOptionsReport = this._register(new m()), this.onRequestWindowsOptionsReport = this._onRequestWindowsOptionsReport.event, this._onA11yChar = this._register(new m()), this.onA11yChar = this._onA11yChar.event, this._onA11yTab = this._register(new m()), this.onA11yTab = this._onA11yTab.event, this._onCursorMove = this._register(new m()), this.onCursorMove = this._onCursorMove.event, this._onLineFeed = this._register(new m()), this.onLineFeed = this._onLineFeed.event, this._onScroll = this._register(new m()), this.onScroll = this._onScroll.event, this._onTitleChange = this._register(new m()), this.onTitleChange = this._onTitleChange.event, this._onColor = this._register(new m()), this.onColor = this._onColor.event, this._parseStack = { paused: !1, cursorStartX: 0, cursorStartY: 0, decodedLength: 0, position: 0 }, this._specialColors = [256, 257, 258], this._register(this._parser), this._dirtyRowTracker = new Zi(this._bufferService), this._activeBuffer = this._bufferService.buffer, this._register(this._bufferService.buffers.onBufferActivate((a) => this._activeBuffer = a.activeBuffer)), this._parser.setCsiHandlerFallback((a, d) => {
       this._logService.debug("Unknown CSI code: ", { identifier: this._parser.identToString(a), params: d.toArray() });
     }), this._parser.setEscHandlerFallback((a) => {
       this._logService.debug("Unknown ESC code: ", { identifier: this._parser.identToString(a) });
@@ -6453,7 +6453,7 @@ var Js = 5e3, Zs = 0, ja = class extends L {
   markRangeDirty(e, t) {
     this._dirtyRowTracker.markRangeDirty(e, t);
   }
-}, Ji = class {
+}, Zi = class {
   constructor(e) {
     this._bufferService = e, this.clearRange();
   }
@@ -6470,7 +6470,7 @@ var Js = 5e3, Zs = 0, ja = class extends L {
     this.markRangeDirty(0, this._bufferService.rows - 1);
   }
 };
-Ji = q([S(0, he)], Ji);
+Zi = q([S(0, he)], Zi);
 function Qs(e) {
   return 0 <= e && e < 256;
 }
@@ -6523,7 +6523,7 @@ var Ga = 5e7, er = 12, Ja = 50, Za = class extends L {
     }
     this._writeBuffer.length > this._bufferOffset ? (this._bufferOffset > Ja && (this._writeBuffer = this._writeBuffer.slice(this._bufferOffset), this._callbacks = this._callbacks.slice(this._bufferOffset), this._bufferOffset = 0), setTimeout(() => this._innerWrite())) : (this._writeBuffer.length = 0, this._callbacks.length = 0, this._pendingData = 0, this._bufferOffset = 0), this._onWriteParsed.fire();
   }
-}, Zi = class {
+}, Qi = class {
   constructor(e) {
     this._bufferService = e, this._nextId = 1, this._entriesWithId = /* @__PURE__ */ new Map(), this._dataByLinkId = /* @__PURE__ */ new Map();
   }
@@ -6556,10 +6556,10 @@ var Ga = 5e7, er = 12, Ja = 50, Za = class extends L {
     i !== -1 && (e.lines.splice(i, 1), e.lines.length === 0 && (e.data.id !== void 0 && this._entriesWithId.delete(e.key), this._dataByLinkId.delete(e.id)));
   }
 };
-Zi = q([S(0, he)], Zi);
+Qi = q([S(0, he)], Qi);
 var tr = !1, Qa = class extends L {
   constructor(e) {
-    super(), this._windowsWrappingHeuristics = this._register(new nt()), this._onBinary = this._register(new m()), this.onBinary = this._onBinary.event, this._onData = this._register(new m()), this.onData = this._onData.event, this._onLineFeed = this._register(new m()), this.onLineFeed = this._onLineFeed.event, this._onResize = this._register(new m()), this.onResize = this._onResize.event, this._onWriteParsed = this._register(new m()), this.onWriteParsed = this._onWriteParsed.event, this._onScroll = this._register(new m()), this._instantiationService = new Ca(), this.optionsService = this._register(new Ta(e)), this._instantiationService.setService(le, this.optionsService), this._bufferService = this._register(this._instantiationService.createInstance(Yi)), this._instantiationService.setService(he, this._bufferService), this._logService = this._register(this._instantiationService.createInstance(Vi)), this._instantiationService.setService(gr, this._logService), this.coreService = this._register(this._instantiationService.createInstance(Xi)), this._instantiationService.setService(et, this.coreService), this.coreMouseService = this._register(this._instantiationService.createInstance(ji)), this._instantiationService.setService(pr, this.coreMouseService), this.unicodeService = this._register(this._instantiationService.createInstance(Ge)), this._instantiationService.setService(mn, this.unicodeService), this._charsetService = this._instantiationService.createInstance(Ha), this._instantiationService.setService(vn, this._charsetService), this._oscLinkService = this._instantiationService.createInstance(Zi), this._instantiationService.setService(vr, this._oscLinkService), this._inputHandler = this._register(new ja(this._bufferService, this._charsetService, this.coreService, this._logService, this.optionsService, this._oscLinkService, this.coreMouseService, this.unicodeService)), this._register(ne.forward(this._inputHandler.onLineFeed, this._onLineFeed)), this._register(this._inputHandler), this._register(ne.forward(this._bufferService.onResize, this._onResize)), this._register(ne.forward(this.coreService.onData, this._onData)), this._register(ne.forward(this.coreService.onBinary, this._onBinary)), this._register(this.coreService.onRequestScrollToBottom(() => this.scrollToBottom(!0))), this._register(this.coreService.onUserInput(() => this._writeBuffer.handleUserInput())), this._register(this.optionsService.onMultipleOptionChange(["windowsMode", "windowsPty"], () => this._handleWindowsPtyOptionChange())), this._register(this._bufferService.onScroll(() => {
+    super(), this._windowsWrappingHeuristics = this._register(new nt()), this._onBinary = this._register(new m()), this.onBinary = this._onBinary.event, this._onData = this._register(new m()), this.onData = this._onData.event, this._onLineFeed = this._register(new m()), this.onLineFeed = this._onLineFeed.event, this._onResize = this._register(new m()), this.onResize = this._onResize.event, this._onWriteParsed = this._register(new m()), this.onWriteParsed = this._onWriteParsed.event, this._onScroll = this._register(new m()), this._instantiationService = new Ca(), this.optionsService = this._register(new Ta(e)), this._instantiationService.setService(le, this.optionsService), this._bufferService = this._register(this._instantiationService.createInstance(Xi)), this._instantiationService.setService(he, this._bufferService), this._logService = this._register(this._instantiationService.createInstance(Yi)), this._instantiationService.setService(gr, this._logService), this.coreService = this._register(this._instantiationService.createInstance(ji)), this._instantiationService.setService(et, this.coreService), this.coreMouseService = this._register(this._instantiationService.createInstance(Gi)), this._instantiationService.setService(pr, this.coreMouseService), this.unicodeService = this._register(this._instantiationService.createInstance(Ge)), this._instantiationService.setService(mn, this.unicodeService), this._charsetService = this._instantiationService.createInstance(Ha), this._instantiationService.setService(vn, this._charsetService), this._oscLinkService = this._instantiationService.createInstance(Qi), this._instantiationService.setService(vr, this._oscLinkService), this._inputHandler = this._register(new ja(this._bufferService, this._charsetService, this.coreService, this._logService, this.optionsService, this._oscLinkService, this.coreMouseService, this.unicodeService)), this._register(ne.forward(this._inputHandler.onLineFeed, this._onLineFeed)), this._register(this._inputHandler), this._register(ne.forward(this._bufferService.onResize, this._onResize)), this._register(ne.forward(this.coreService.onData, this._onData)), this._register(ne.forward(this.coreService.onBinary, this._onBinary)), this._register(this.coreService.onRequestScrollToBottom(() => this.scrollToBottom(!0))), this._register(this.coreService.onUserInput(() => this._writeBuffer.handleUserInput())), this._register(this.optionsService.onMultipleOptionChange(["windowsMode", "windowsPty"], () => this._handleWindowsPtyOptionChange())), this._register(this._bufferService.onScroll(() => {
       this._onScroll.fire({ position: this._bufferService.buffer.ydisp }), this._inputHandler.markRangeDirty(this._bufferService.buffer.scrollTop, this._bufferService.buffer.scrollBottom);
     })), this._writeBuffer = this._register(new Za((t, i) => this._inputHandler.parse(t, i))), this._register(ne.forward(this._writeBuffer.onWriteParsed, this._onWriteParsed));
   }
@@ -6757,7 +6757,7 @@ function th(e, t, i, s) {
 }
 var V = 0, ih = class {
   constructor(e) {
-    this._getKey = e, this._array = [], this._insertedValues = [], this._flushInsertedTask = new Yt(), this._isFlushingInserted = !1, this._deletedIndices = [], this._flushDeletedTask = new Yt(), this._isFlushingDeleted = !1;
+    this._getKey = e, this._array = [], this._insertedValues = [], this._flushInsertedTask = new Xt(), this._isFlushingInserted = !1, this._deletedIndices = [], this._flushDeletedTask = new Xt(), this._isFlushingDeleted = !1;
   }
   clear() {
     this._array.length = 0, this._insertedValues.length = 0, this._flushInsertedTask.clear(), this._isFlushingInserted = !1, this._deletedIndices.length = 0, this._flushDeletedTask.clear(), this._isFlushingDeleted = !1;
@@ -6817,7 +6817,7 @@ var V = 0, ih = class {
     }
     return t;
   }
-}, fi = 0, ir = 0, sh = class extends L {
+}, pi = 0, ir = 0, sh = class extends L {
   constructor() {
     super(), this._decorations = new ih((e) => e?.marker.line), this._onDecorationRegistered = this._register(new m()), this.onDecorationRegistered = this._onDecorationRegistered.event, this._onDecorationRemoved = this._register(new m()), this.onDecorationRemoved = this._onDecorationRemoved.event, this._register(z(() => this.reset()));
   }
@@ -6845,7 +6845,7 @@ var V = 0, ih = class {
   }
   forEachDecorationAtCell(e, t, i, s) {
     this._decorations.forEachByKey(t, (r) => {
-      fi = r.options.x ?? 0, ir = fi + (r.options.width ?? 1), e >= fi && e < ir && (!i || (r.options.layer ?? "bottom") === i) && s(r);
+      pi = r.options.x ?? 0, ir = pi + (r.options.width ?? 1), e >= pi && e < ir && (!i || (r.options.layer ?? "bottom") === i) && s(r);
     });
   }
 }, rh = class extends qe {
@@ -6884,7 +6884,7 @@ var V = 0, ih = class {
     let e = Math.max(this._rowStart, 0), t = Math.min(this._rowEnd, this._rowCount - 1);
     this._rowStart = void 0, this._rowEnd = void 0, this._renderCallback(e, t);
   }
-}, sr = 20, Xt = class extends L {
+}, sr = 20, jt = class extends L {
   constructor(e, t, i, s) {
     super(), this._terminal = e, this._coreBrowserService = i, this._renderService = s, this._rowColumns = /* @__PURE__ */ new WeakMap(), this._liveRegionLineCount = 0, this._charsToConsume = [], this._charsToAnnounce = "";
     let r = this._coreBrowserService.mainDocument;
@@ -6901,7 +6901,7 @@ var V = 0, ih = class {
   }
   _handleChar(e) {
     this._liveRegionLineCount < sr + 1 && (this._charsToConsume.length > 0 ? this._charsToConsume.shift() !== e && (this._charsToAnnounce += e) : this._charsToAnnounce += e, e === `
-` && (this._liveRegionLineCount++, this._liveRegionLineCount === sr + 1 && (this._liveRegion.textContent += mi.get())));
+` && (this._liveRegionLineCount++, this._liveRegionLineCount === sr + 1 && (this._liveRegion.textContent += Si.get())));
   }
   _clearLiveRegion() {
     this._liveRegion.textContent = "", this._liveRegionLineCount = 0;
@@ -6992,8 +6992,8 @@ var V = 0, ih = class {
     e.style.transform = `scaleX(${s / t})`;
   }
 };
-Xt = q([S(1, ts), S(2, Oe), S(3, Ie)], Xt);
-var Qi = class extends L {
+jt = q([S(1, ts), S(2, Oe), S(3, Ie)], jt);
+var es = class extends L {
   constructor(e, t, i, s, r) {
     super(), this._element = e, this._mouseService = t, this._renderService = i, this._bufferService = s, this._linkProviderService = r, this._linkCacheDisposables = [], this._isMouseOut = !0, this._wasResized = !1, this._activeLine = -1, this._onShowLinkUnderline = this._register(new m()), this.onShowLinkUnderline = this._onShowLinkUnderline.event, this._onHideLinkUnderline = this._register(new m()), this.onHideLinkUnderline = this._onHideLinkUnderline.event, this._register(z(() => {
       Ze(this._linkCacheDisposables), this._linkCacheDisposables.length = 0, this._lastMouseEvent = void 0, this._activeProviderReplies?.clear();
@@ -7121,13 +7121,13 @@ var Qi = class extends L {
     return { x1: e, y1: t, x2: i, y2: s, cols: this._bufferService.cols, fg: r };
   }
 };
-Qi = q([S(1, is), S(2, Ie), S(3, he), S(4, Sr)], Qi);
+es = q([S(1, is), S(2, Ie), S(3, he), S(4, Sr)], es);
 function ah(e, t) {
   return e.text === t.text && e.range.start.x === t.range.start.x && e.range.start.y === t.range.start.y && e.range.end.x === t.range.end.x && e.range.end.y === t.range.end.y;
 }
 var hh = class extends Qa {
   constructor(e = {}) {
-    super(e), this._linkifier = this._register(new nt()), this.browser = Hr, this._keyDownHandled = !1, this._keyDownSeen = !1, this._keyPressHandled = !1, this._unprocessedDeadKey = !1, this._accessibilityManager = this._register(new nt()), this._onCursorMove = this._register(new m()), this.onCursorMove = this._onCursorMove.event, this._onKey = this._register(new m()), this.onKey = this._onKey.event, this._onRender = this._register(new m()), this.onRender = this._onRender.event, this._onSelectionChange = this._register(new m()), this.onSelectionChange = this._onSelectionChange.event, this._onTitleChange = this._register(new m()), this.onTitleChange = this._onTitleChange.event, this._onBell = this._register(new m()), this.onBell = this._onBell.event, this._onFocus = this._register(new m()), this._onBlur = this._register(new m()), this._onA11yCharEmitter = this._register(new m()), this._onA11yTabEmitter = this._register(new m()), this._onWillOpen = this._register(new m()), this._setup(), this._decorationService = this._instantiationService.createInstance(sh), this._instantiationService.setService(Et, this._decorationService), this._linkProviderService = this._instantiationService.createInstance(Jo), this._instantiationService.setService(Sr, this._linkProviderService), this._linkProviderService.registerLinkProvider(this._instantiationService.createInstance(wi)), this._register(this._inputHandler.onRequestBell(() => this._onBell.fire())), this._register(this._inputHandler.onRequestRefreshRows((t) => this.refresh(t?.start ?? 0, t?.end ?? this.rows - 1))), this._register(this._inputHandler.onRequestSendFocus(() => this._reportFocus())), this._register(this._inputHandler.onRequestReset(() => this.reset())), this._register(this._inputHandler.onRequestWindowsOptionsReport((t) => this._reportWindowsOptions(t))), this._register(this._inputHandler.onColor((t) => this._handleColorEvent(t))), this._register(ne.forward(this._inputHandler.onCursorMove, this._onCursorMove)), this._register(ne.forward(this._inputHandler.onTitleChange, this._onTitleChange)), this._register(ne.forward(this._inputHandler.onA11yChar, this._onA11yCharEmitter)), this._register(ne.forward(this._inputHandler.onA11yTab, this._onA11yTabEmitter)), this._register(this._bufferService.onResize((t) => this._afterResize(t.cols, t.rows))), this._register(z(() => {
+    super(e), this._linkifier = this._register(new nt()), this.browser = Hr, this._keyDownHandled = !1, this._keyDownSeen = !1, this._keyPressHandled = !1, this._unprocessedDeadKey = !1, this._accessibilityManager = this._register(new nt()), this._onCursorMove = this._register(new m()), this.onCursorMove = this._onCursorMove.event, this._onKey = this._register(new m()), this.onKey = this._onKey.event, this._onRender = this._register(new m()), this.onRender = this._onRender.event, this._onSelectionChange = this._register(new m()), this.onSelectionChange = this._onSelectionChange.event, this._onTitleChange = this._register(new m()), this.onTitleChange = this._onTitleChange.event, this._onBell = this._register(new m()), this.onBell = this._onBell.event, this._onFocus = this._register(new m()), this._onBlur = this._register(new m()), this._onA11yCharEmitter = this._register(new m()), this._onA11yTabEmitter = this._register(new m()), this._onWillOpen = this._register(new m()), this._setup(), this._decorationService = this._instantiationService.createInstance(sh), this._instantiationService.setService(Et, this._decorationService), this._linkProviderService = this._instantiationService.createInstance(Jo), this._instantiationService.setService(Sr, this._linkProviderService), this._linkProviderService.registerLinkProvider(this._instantiationService.createInstance(bi)), this._register(this._inputHandler.onRequestBell(() => this._onBell.fire())), this._register(this._inputHandler.onRequestRefreshRows((t) => this.refresh(t?.start ?? 0, t?.end ?? this.rows - 1))), this._register(this._inputHandler.onRequestSendFocus(() => this._reportFocus())), this._register(this._inputHandler.onRequestReset(() => this.reset())), this._register(this._inputHandler.onRequestWindowsOptionsReport((t) => this._reportWindowsOptions(t))), this._register(this._inputHandler.onColor((t) => this._handleColorEvent(t))), this._register(ne.forward(this._inputHandler.onCursorMove, this._onCursorMove)), this._register(ne.forward(this._inputHandler.onTitleChange, this._onTitleChange)), this._register(ne.forward(this._inputHandler.onA11yChar, this._onA11yCharEmitter)), this._register(ne.forward(this._inputHandler.onA11yTab, this._onA11yTabEmitter)), this._register(this._bufferService.onResize((t) => this._afterResize(t.cols, t.rows))), this._register(z(() => {
       this._customKeyEventHandler = void 0, this.element?.parentNode?.removeChild(this.element);
     }));
   }
@@ -7193,7 +7193,7 @@ var hh = class extends Qa {
     this.textarea && this.textarea.focus({ preventScroll: !0 });
   }
   _handleScreenReaderModeOptionChange(e) {
-    e ? !this._accessibilityManager.value && this._renderService && (this._accessibilityManager.value = this._instantiationService.createInstance(Xt, this)) : this._accessibilityManager.clear();
+    e ? !this._accessibilityManager.value && this._renderService && (this._accessibilityManager.value = this._instantiationService.createInstance(jt, this)) : this._accessibilityManager.clear();
   }
   _handleTextAreaFocus(e) {
     this.coreService.decPrivateModes.sendFocus && this.coreService.triggerDataEvent(g.ESC + "[I"), this.element.classList.add("focus"), this._showCursor(), this._onFocus.fire();
@@ -7237,8 +7237,8 @@ var hh = class extends Qa {
     let t = this._document.createDocumentFragment();
     this._viewportElement = this._document.createElement("div"), this._viewportElement.classList.add("xterm-viewport"), t.appendChild(this._viewportElement), this.screenElement = this._document.createElement("div"), this.screenElement.classList.add("xterm-screen"), this._register(D(this.screenElement, "mousemove", (r) => this.updateCursorStyle(r))), this._helperContainer = this._document.createElement("div"), this._helperContainer.classList.add("xterm-helpers"), this.screenElement.appendChild(this._helperContainer), t.appendChild(this.screenElement);
     let i = this.textarea = this._document.createElement("textarea");
-    this.textarea.classList.add("xterm-helper-textarea"), this.textarea.setAttribute("aria-label", vi.get()), $r || this.textarea.setAttribute("aria-multiline", "false"), this.textarea.setAttribute("autocorrect", "off"), this.textarea.setAttribute("autocapitalize", "off"), this.textarea.setAttribute("spellcheck", "false"), this.textarea.tabIndex = 0, this._register(this.optionsService.onSpecificOptionChange("disableStdin", () => i.readOnly = this.optionsService.rawOptions.disableStdin)), this.textarea.readOnly = this.optionsService.rawOptions.disableStdin, this._coreBrowserService = this._register(this._instantiationService.createInstance(jo, this.textarea, e.ownerDocument.defaultView ?? window, this._document ?? typeof window < "u" ? window.document : null)), this._instantiationService.setService(Oe, this._coreBrowserService), this._register(D(this.textarea, "focus", (r) => this._handleTextAreaFocus(r))), this._register(D(this.textarea, "blur", () => this._handleTextAreaBlur())), this._helperContainer.appendChild(this.textarea), this._charSizeService = this._instantiationService.createInstance(Fi, this._document, this._helperContainer), this._instantiationService.setService(Jt, this._charSizeService), this._themeService = this._instantiationService.createInstance(qi), this._instantiationService.setService(ot, this._themeService), this._characterJoinerService = this._instantiationService.createInstance(qt), this._instantiationService.setService(mr, this._characterJoinerService), this._renderService = this._register(this._instantiationService.createInstance(Ki, this.rows, this.screenElement)), this._instantiationService.setService(Ie, this._renderService), this._register(this._renderService.onRenderedViewportChange((r) => this._onRender.fire(r))), this.onResize((r) => this._renderService.resize(r.cols, r.rows)), this._compositionView = this._document.createElement("div"), this._compositionView.classList.add("composition-view"), this._compositionHelper = this._instantiationService.createInstance(Hi, this.textarea, this._compositionView), this._helperContainer.appendChild(this._compositionView), this._mouseService = this._instantiationService.createInstance($i), this._instantiationService.setService(is, this._mouseService);
-    let s = this._linkifier.value = this._register(this._instantiationService.createInstance(Qi, this.screenElement));
+    this.textarea.classList.add("xterm-helper-textarea"), this.textarea.setAttribute("aria-label", mi.get()), $r || this.textarea.setAttribute("aria-multiline", "false"), this.textarea.setAttribute("autocorrect", "off"), this.textarea.setAttribute("autocapitalize", "off"), this.textarea.setAttribute("spellcheck", "false"), this.textarea.tabIndex = 0, this._register(this.optionsService.onSpecificOptionChange("disableStdin", () => i.readOnly = this.optionsService.rawOptions.disableStdin)), this.textarea.readOnly = this.optionsService.rawOptions.disableStdin, this._coreBrowserService = this._register(this._instantiationService.createInstance(jo, this.textarea, e.ownerDocument.defaultView ?? window, this._document ?? typeof window < "u" ? window.document : null)), this._instantiationService.setService(Oe, this._coreBrowserService), this._register(D(this.textarea, "focus", (r) => this._handleTextAreaFocus(r))), this._register(D(this.textarea, "blur", () => this._handleTextAreaBlur())), this._helperContainer.appendChild(this.textarea), this._charSizeService = this._instantiationService.createInstance($i, this._document, this._helperContainer), this._instantiationService.setService(Zt, this._charSizeService), this._themeService = this._instantiationService.createInstance(Vi), this._instantiationService.setService(ot, this._themeService), this._characterJoinerService = this._instantiationService.createInstance(Vt), this._instantiationService.setService(mr, this._characterJoinerService), this._renderService = this._register(this._instantiationService.createInstance(Ui, this.rows, this.screenElement)), this._instantiationService.setService(Ie, this._renderService), this._register(this._renderService.onRenderedViewportChange((r) => this._onRender.fire(r))), this.onResize((r) => this._renderService.resize(r.cols, r.rows)), this._compositionView = this._document.createElement("div"), this._compositionView.classList.add("composition-view"), this._compositionHelper = this._instantiationService.createInstance(Wi, this.textarea, this._compositionView), this._helperContainer.appendChild(this._compositionView), this._mouseService = this._instantiationService.createInstance(Ki), this._instantiationService.setService(is, this._mouseService);
+    let s = this._linkifier.value = this._register(this._instantiationService.createInstance(es, this.screenElement));
     this.element.appendChild(t);
     try {
       this._onWillOpen.fire(this.element);
@@ -7246,18 +7246,18 @@ var hh = class extends Qa {
     }
     this._renderService.hasRenderer() || this._renderService.setRenderer(this._createRenderer()), this._register(this.onCursorMove(() => {
       this._renderService.handleCursorMove(), this._syncTextArea();
-    })), this._register(this.onResize(() => this._renderService.handleResize(this.cols, this.rows))), this._register(this.onBlur(() => this._renderService.handleBlur())), this._register(this.onFocus(() => this._renderService.handleFocus())), this._viewport = this._register(this._instantiationService.createInstance(Ii, this.element, this.screenElement)), this._register(this._viewport.onRequestScrollLines((r) => {
+    })), this._register(this.onResize(() => this._renderService.handleResize(this.cols, this.rows))), this._register(this.onBlur(() => this._renderService.handleBlur())), this._register(this.onFocus(() => this._renderService.handleFocus())), this._viewport = this._register(this._instantiationService.createInstance(Ni, this.element, this.screenElement)), this._register(this._viewport.onRequestScrollLines((r) => {
       super.scrollLines(r, !1), this.refresh(0, this.rows - 1);
-    })), this._selectionService = this._register(this._instantiationService.createInstance(Ui, this.element, this.screenElement, s)), this._instantiationService.setService(wn, this._selectionService), this._register(this._selectionService.onRequestScrollLines((r) => this.scrollLines(r.amount, r.suppressScrollEvent))), this._register(this._selectionService.onSelectionChange(() => this._onSelectionChange.fire())), this._register(this._selectionService.onRequestRedraw((r) => this._renderService.handleSelectionChanged(r.start, r.end, r.columnSelectMode))), this._register(this._selectionService.onLinuxMouseSelection((r) => {
+    })), this._selectionService = this._register(this._instantiationService.createInstance(qi, this.element, this.screenElement, s)), this._instantiationService.setService(wn, this._selectionService), this._register(this._selectionService.onRequestScrollLines((r) => this.scrollLines(r.amount, r.suppressScrollEvent))), this._register(this._selectionService.onSelectionChange(() => this._onSelectionChange.fire())), this._register(this._selectionService.onRequestRedraw((r) => this._renderService.handleSelectionChanged(r.start, r.end, r.columnSelectMode))), this._register(this._selectionService.onLinuxMouseSelection((r) => {
       this.textarea.value = r, this.textarea.focus(), this.textarea.select();
     })), this._register(ne.any(this._onScroll.event, this._inputHandler.onScroll)(() => {
       this._selectionService.refresh(), this._viewport?.queueSync();
-    })), this._register(this._instantiationService.createInstance(Ni, this.screenElement)), this._register(D(this.element, "mousedown", (r) => this._selectionService.handleMouseDown(r))), this.coreMouseService.areMouseEventsActive ? (this._selectionService.disable(), this.element.classList.add("enable-mouse-events")) : this._selectionService.enable(), this.options.screenReaderMode && (this._accessibilityManager.value = this._instantiationService.createInstance(Xt, this)), this._register(this.optionsService.onSpecificOptionChange("screenReaderMode", (r) => this._handleScreenReaderModeOptionChange(r))), this.options.overviewRuler.width && (this._overviewRulerRenderer = this._register(this._instantiationService.createInstance(Ut, this._viewportElement, this.screenElement))), this.optionsService.onSpecificOptionChange("overviewRuler", (r) => {
-      !this._overviewRulerRenderer && r && this._viewportElement && this.screenElement && (this._overviewRulerRenderer = this._register(this._instantiationService.createInstance(Ut, this._viewportElement, this.screenElement)));
+    })), this._register(this._instantiationService.createInstance(Hi, this.screenElement)), this._register(D(this.element, "mousedown", (r) => this._selectionService.handleMouseDown(r))), this.coreMouseService.areMouseEventsActive ? (this._selectionService.disable(), this.element.classList.add("enable-mouse-events")) : this._selectionService.enable(), this.options.screenReaderMode && (this._accessibilityManager.value = this._instantiationService.createInstance(jt, this)), this._register(this.optionsService.onSpecificOptionChange("screenReaderMode", (r) => this._handleScreenReaderModeOptionChange(r))), this.options.overviewRuler.width && (this._overviewRulerRenderer = this._register(this._instantiationService.createInstance(qt, this._viewportElement, this.screenElement))), this.optionsService.onSpecificOptionChange("overviewRuler", (r) => {
+      !this._overviewRulerRenderer && r && this._viewportElement && this.screenElement && (this._overviewRulerRenderer = this._register(this._instantiationService.createInstance(qt, this._viewportElement, this.screenElement)));
     }), this._charSizeService.measure(), this.refresh(0, this.rows - 1), this._initGlobal(), this.bindMouse();
   }
   _createRenderer() {
-    return this._instantiationService.createInstance(zi, this, this._document, this.element, this.screenElement, this._viewportElement, this._helperContainer, this.linkifier);
+    return this._instantiationService.createInstance(Fi, this, this._document, this.element, this.screenElement, this._viewportElement, this._helperContainer, this.linkifier);
   }
   bindMouse() {
     let e = this, t = this.element;
@@ -7798,13 +7798,13 @@ var ch = class {
   }
   static get strings() {
     return { get promptLabel() {
-      return vi.get();
-    }, set promptLabel(e) {
-      vi.set(e);
-    }, get tooMuchOutput() {
       return mi.get();
-    }, set tooMuchOutput(e) {
+    }, set promptLabel(e) {
       mi.set(e);
+    }, get tooMuchOutput() {
+      return Si.get();
+    }, set tooMuchOutput(e) {
+      Si.set(e);
     } };
   }
   _verifyIntegers(...e) {
@@ -7815,7 +7815,7 @@ var ch = class {
   }
 };
 const vh = "/about/runtime-manifest.json", Zr = "/about/node-claude.webc", mh = "wss://wisp.mercurywork.shop/", Sh = "0.11.0", wh = 512 * 1024 * 1024, nr = /^[0-9a-f]{64}$/;
-function jt(e) {
+function Gt(e) {
   return new Error(`Invalid runtime manifest: ${e}`);
 }
 function bh(e) {
@@ -7824,7 +7824,7 @@ function bh(e) {
 function yh(e) {
   const t = new URL(e);
   if (t.protocol !== "https:" || t.hostname !== "asplos.dev" || t.port !== "" || t.pathname !== vh || t.search !== "" || t.hash !== "")
-    throw jt("unexpected manifest URL");
+    throw Gt("unexpected manifest URL");
   return t;
 }
 function Ch(e) {
@@ -7832,16 +7832,16 @@ function Ch(e) {
 }
 function Qr(e) {
   if (!e || typeof e != "object" || Array.isArray(e))
-    throw jt("expected an object");
+    throw Gt("expected an object");
   if (e.schema !== 1 || e.url !== Zr || !Number.isSafeInteger(e.size) || e.size < 1 || e.size > wh || !nr.test(e.sha256) || !nr.test(e.nodeSha256) || e.sdkVersion !== Sh || typeof e.nodeVersion != "string" || e.nodeVersion.length === 0 || typeof e.claudeVersion != "string" || e.claudeVersion.length === 0 || e.command !== "node" || !Array.isArray(e.args) || e.args.length !== 1 || e.args[0] !== "/app/claude-debug.mjs")
-    throw jt("contract mismatch");
+    throw Gt("contract mismatch");
   return e;
 }
 async function kh(e, t = {}) {
   Qr(e);
   const i = new URL(t.baseUrl ?? globalThis.location.href), s = new URL(e.url, i);
   if (s.origin !== i.origin || s.pathname !== Zr)
-    throw jt("artifact must be same-origin");
+    throw Gt("artifact must be same-origin");
   const n = await (t.fetchImpl ?? fetch)(s.href, {
     cache: "force-cache",
     credentials: "omit"
@@ -8020,9 +8020,14 @@ class Bh {
     }), await or(i, s, r), t === this.generation && (this.state = "idle");
   }
 }
-const Dh = "/api/claude/session", Rh = "/api/claude/config", pi = "claude-coi-reload", Mh = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-function gi() {
+const Dh = "/api/claude/session", Rh = "/api/claude/config", gi = "claude-coi-reload", Mh = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+function vi() {
   return new DOMException("Runtime startup was cancelled", "AbortError");
+}
+function Lh(e) {
+  if (e?.name === "AbortError") return "Startup cancelled";
+  const t = typeof e?.message == "string" ? e.message : "";
+  return t ? t.replace(/[\r\n\t]+/g, " ").replace(/(authorization|bearer|capability|token)(\s*[:=]\s*)([^\s,;]+)/gi, "$1$2[redacted]").slice(0, 240) : "The browser runtime could not start";
 }
 function en(e) {
   const t = new URL(e).origin;
@@ -8030,7 +8035,7 @@ function en(e) {
     throw new Error("Claude runtime requires https://asplos.dev");
   return t;
 }
-async function Lh({
+async function Ph({
   fetchImpl: e = globalThis.fetch,
   pageOrigin: t = globalThis.location?.origin
 } = {}) {
@@ -8044,7 +8049,7 @@ async function Lh({
     throw new Error("Runtime configuration is invalid");
   return Object.freeze({ turnstileSiteKey: r.turnstileSiteKey });
 }
-async function Ph(e, {
+async function Th(e, {
   fetchImpl: t = globalThis.fetch,
   pageOrigin: i = globalThis.location?.origin
 } = {}) {
@@ -8063,21 +8068,28 @@ async function Ph(e, {
     throw new Error("Session authorization returned invalid data");
   return { capability: n.capability, expiresIn: n.expiresIn };
 }
-async function Th({
+async function Ah({
   isolated: e = globalThis.crossOriginIsolated,
   navigatorImpl: t = globalThis.navigator,
   locationImpl: i = globalThis.location,
   storage: s = globalThis.sessionStorage
 } = {}) {
-  if (e)
-    return s?.removeItem(pi), !0;
+  if (e) {
+    s?.removeItem(gi);
+    try {
+      const r = await t?.serviceWorker?.getRegistrations?.() ?? [];
+      await Promise.allSettled(r.map((n) => n.unregister()));
+    } catch {
+    }
+    return !0;
+  }
   if (!t?.serviceWorker || !i)
     throw new Error("This browser cannot create an isolated WebAssembly runtime");
-  if (s?.getItem(pi) === "1")
+  if (s?.getItem(gi) === "1")
     throw new Error("Cross-origin isolation could not be enabled");
-  return await t.serviceWorker.register("./coi-serviceworker.js", { scope: "./" }), await t.serviceWorker.ready, s?.setItem(pi, "1"), i.reload(), !1;
+  return await t.serviceWorker.register("./coi-serviceworker.js", { scope: "./" }), await t.serviceWorker.ready, s?.setItem(gi, "1"), i.reload(), !1;
 }
-function Ah({
+function Oh({
   globalImpl: e = globalThis,
   documentImpl: t = globalThis.document,
   src: i = Mh
@@ -8089,7 +8101,7 @@ function Ah({
     o.addEventListener("load", h, { once: !0 }), o.addEventListener("error", l, { once: !0 }), n || (o.src = i, o.async = !0, o.defer = !0, t.head.append(o));
   }) : Promise.reject(new Error("Security challenge failed to load"));
 }
-class Oh {
+class Ih {
   constructor({ runtime: t, terminal: i, challenge: s, requestSession: r, onState: n = () => {
   }, setTimer: o = globalThis.setTimeout, clearTimer: h = globalThis.clearTimeout }) {
     this.runtime = t, this.terminal = i, this.challenge = s, this.requestSession = r, this.onState = n, this.setTimer = o, this.clearTimer = h, this.state = "idle", this.generation = 0, this.expiryTimer = null;
@@ -8103,12 +8115,12 @@ class Oh {
     try {
       this.setState("challenge");
       const i = await this.challenge.execute();
-      if (t !== this.generation) throw gi();
+      if (t !== this.generation) throw vi();
       this.setState("starting");
       const { capability: s, expiresIn: r } = await this.requestSession(i);
-      if (t !== this.generation) throw gi();
+      if (t !== this.generation) throw vi();
       if (this.challenge.reset(), await this.runtime.start(s, this.terminal), t !== this.generation)
-        throw await this.runtime.stop(), gi();
+        throw await this.runtime.stop(), vi();
       this.setState("running"), this.expiryTimer = this.setTimer(() => {
         this.stop();
       }, r * 1e3), this.expiryTimer?.unref?.();
@@ -8126,13 +8138,13 @@ class Oh {
     }
   }
 }
-const Ih = "wss://wisp.mercurywork.shop/", Nh = "https://asplos.dev/about/runtime-manifest.json", Se = (e) => document.querySelector(e), Hh = Se("#status-text"), Wh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), zh = Se("#progress-fill");
+const Nh = "wss://wisp.mercurywork.shop/", Hh = "https://asplos.dev/about/runtime-manifest.json", Se = (e) => document.querySelector(e), Wh = Se("#status-text"), zh = Se("#status-dot"), tn = Se("#start-runtime"), sn = Se("#stop-runtime"), ar = Se("#runtime-progress"), Fh = Se("#progress-fill");
 function st(e, t) {
   const i = Math.max(0, Math.min(100, Math.round(e || 0)));
-  ar.setAttribute("aria-valuenow", String(i)), ar.textContent = t, zh.style.width = `${i}%`;
+  ar.setAttribute("aria-valuenow", String(i)), ar.textContent = t, Fh.style.width = `${i}%`;
 }
 function wt(e) {
-  document.body.dataset.state = e, Wh.className = e;
+  document.body.dataset.state = e, zh.className = e;
   const t = ["challenge", "starting", "running", "stopping"].includes(e);
   tn.disabled = t, sn.disabled = !t;
   const i = {
@@ -8144,10 +8156,10 @@ function wt(e) {
     exited: "process exited",
     failed: "runtime failed"
   };
-  Hh.textContent = i[e] || e;
+  Wh.textContent = i[e] || e;
 }
-async function Fh(e) {
-  const t = await Ah();
+async function $h(e) {
+  const t = await Oh();
   let i = null, s = null;
   const r = t.render("#turnstile", {
     sitekey: e,
@@ -8178,20 +8190,12 @@ async function Fh(e) {
     }
   };
 }
-function es(e) {
-  return e?.name === "AbortError" ? "Startup cancelled." : [
-    "Runtime configuration is unavailable",
-    "Runtime configuration is invalid",
-    "Session authorization failed",
-    "Security challenge failed to load",
-    "Security challenge was not completed",
-    "Security challenge expired",
-    "Cross-origin isolation could not be enabled",
-    "This browser cannot create an isolated WebAssembly runtime"
-  ].includes(e?.message) ? `${e.message}.` : "The browser runtime could not start. Check memory and network access.";
+function Kt(e) {
+  const t = Lh(e);
+  return t.endsWith(".") ? t : `${t}.`;
 }
-async function $h() {
-  if (!await Th()) return;
+async function Kh() {
+  if (!await Ah()) return;
   const e = new gh({
     convertEol: !0,
     cursorBlink: !0,
@@ -8222,7 +8226,7 @@ async function $h() {
   const r = {
     async execute() {
       if (!i) {
-        s ||= Lh().then((a) => Fh(a.turnstileSiteKey));
+        s ||= Ph().then((a) => $h(a.turnstileSiteKey));
         try {
           i = await s;
         } catch (a) {
@@ -8235,8 +8239,8 @@ async function $h() {
       i?.reset();
     }
   }, n = new Bh({
-    manifestUrl: Nh,
-    wispUrl: Ih,
+    manifestUrl: Hh,
+    wispUrl: Nh,
     onProgress(a, d) {
       const c = typeof a == "object" ? a : { loaded: a, total: d }, _ = c.total ? c.loaded / c.total * 100 : 0;
       st(_, `Downloading runtime · ${Math.round(_)}%`);
@@ -8245,15 +8249,15 @@ async function $h() {
       e.writeln(`\r
 \x1B[38;2;137;146;129mProcess exited (${a?.exitCode ?? "unknown"}).\x1B[0m`), wt("exited");
     },
-    onError() {
-      e.writeln(`\r
-\x1B[38;2;255;118;87mRuntime stream failed.\x1B[0m`), wt("failed");
+    onError(a) {
+      console.error("Browser runtime stream failed", a), e.writeln(`\r
+\x1B[38;2;255;118;87mRuntime stream failed: ${Kt(a)}\x1B[0m`), wt("failed");
     }
-  }), o = new Oh({
+  }), o = new Ih({
     runtime: n,
     terminal: e,
     challenge: r,
-    requestSession: (a) => Ph(a),
+    requestSession: (a) => Th(a),
     onState: wt
   });
   tn.addEventListener("click", async () => {
@@ -8261,8 +8265,8 @@ async function $h() {
     try {
       await o.start(), st(100, "Runtime verified and running"), e.focus();
     } catch (a) {
-      a?.name !== "AbortError" && e.writeln(`\r
-\x1B[38;2;255;118;87m${es(a)}\x1B[0m`), st(0, es(a));
+      console.error("Browser runtime startup failed", a), a?.name !== "AbortError" && e.writeln(`\r
+\x1B[38;2;255;118;87m${Kt(a)}\x1B[0m`), st(0, Kt(a));
     }
   }), sn.addEventListener("click", async () => {
     await o.stop(), st(0, "Runtime stopped");
@@ -8279,6 +8283,6 @@ async function $h() {
     o.stop();
   }, { once: !0 }), wt("idle");
 }
-$h().catch((e) => {
-  wt("failed"), st(0, es(e));
+Kh().catch((e) => {
+  console.error("Browser runtime boot failed", e), wt("failed"), st(0, Kt(e));
 });
