@@ -1,5 +1,5 @@
 
-import { parse as wasmerNapiParse } from './acorn.mjs';
+import { parse as wasmerNapiParse } from './acorn.js';
 
 export function wasmer_napi_make_callback(dispatch) {
   return function (...args) {

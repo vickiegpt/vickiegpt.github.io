@@ -1,5 +1,14 @@
 import { resolve } from "node:path";
-import { copyFileSync, cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { defineConfig } from "vite";
 
 const root = import.meta.dirname;
@@ -55,6 +64,19 @@ async function drainMessages() {
       }
       writeFileSync(workerPath, worker.replace(source, replacement));
       cpSync(resolve(sdkRoot, "pkg"), resolve(sdkOutput, "pkg"), { recursive: true });
+      const snippets = resolve(sdkOutput, "pkg", "snippets");
+      for (const entry of readdirSync(snippets)) {
+        const directory = resolve(snippets, entry);
+        const acornMjs = resolve(directory, "acorn.mjs");
+        if (!existsSync(acornMjs)) continue;
+        const acornJs = resolve(directory, "acorn.js");
+        renameSync(acornMjs, acornJs);
+        const inline = resolve(directory, "inline0.js");
+        writeFileSync(
+          inline,
+          readFileSync(inline, "utf8").replace("./acorn.mjs", "./acorn.js"),
+        );
+      }
     },
   };
 }
