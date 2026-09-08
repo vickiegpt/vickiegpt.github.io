@@ -8196,7 +8196,7 @@ function wt(e) {
 async function Uh(e) {
   const t = await Nh();
   let i = null, s = null;
-  const r = t.render("#turnstile", {
+  const r = t.render("#turnstile-widget", {
     sitekey: e,
     action: "claude-session",
     execution: "execute",

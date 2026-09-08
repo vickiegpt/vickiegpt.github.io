@@ -53,7 +53,7 @@ async function createChallenge(siteKey) {
   const turnstile = await loadTurnstileApi();
   let resolveToken = null;
   let rejectToken = null;
-  const widget = turnstile.render("#turnstile", {
+  const widget = turnstile.render("#turnstile-widget", {
     sitekey: siteKey,
     action: "claude-session",
     execution: "execute",

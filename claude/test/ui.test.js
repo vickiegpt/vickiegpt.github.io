@@ -112,11 +112,12 @@ describe("browser Claude terminal UI", () => {
       "clear-terminal",
       "runtime-progress",
       "terminal",
-      "turnstile",
+      "turnstile-widget",
     ]) {
       assert.match(html, new RegExp(`id=["']${id}["']`));
     }
     assert.doesNotMatch(html, /id=["'](?:editor|api-key|endpoint)["']/);
+    assert.doesNotMatch(html, /id=["']turnstile["']/);
     assert.match(html, /\.\/assets\/app\.js/);
   });
 
@@ -130,6 +131,8 @@ describe("browser Claude terminal UI", () => {
   it("uses a compact challenge that cannot widen the launch sidebar", async () => {
     const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
 
+    assert.match(source, /turnstile\.render\(["']#turnstile-widget["']/);
+    assert.doesNotMatch(source, /turnstile\.render\(["']#turnstile["']/);
     assert.match(source, /size:\s*["']compact["']/);
     assert.match(source, /appearance:\s*["']always["']/);
     assert.doesNotMatch(source, /size:\s*["']flexible["']/);
@@ -250,7 +253,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-7/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-8/);
   assertVersionedEntry.match(html, /\.\/assets\/styles\.css\?v=20260908-7/);
 });
 
