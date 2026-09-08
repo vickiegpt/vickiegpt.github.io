@@ -6,7 +6,7 @@ const CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",
-  "connect-src 'self' https://challenges.cloudflare.com wss://wisp.mercurywork.shop",
+  "connect-src 'self' data: https://challenges.cloudflare.com wss://wisp.mercurywork.shop",
   "worker-src 'self' blob:",
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",

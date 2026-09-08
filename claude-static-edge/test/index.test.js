@@ -36,7 +36,7 @@ test('proxies only Claude static files with native isolation headers', async () 
   assert.doesNotMatch(policy, /sandbox|default-src 'none'/);
   assert.match(policy, /script-src 'self' 'wasm-unsafe-eval' https:\/\/challenges\.cloudflare\.com/);
   assert.match(policy, /worker-src 'self' blob:/);
-  assert.match(policy, /connect-src 'self' https:\/\/challenges\.cloudflare\.com wss:\/\/wisp\.mercurywork\.shop/);
+  assert.match(policy, /connect-src 'self' data: https:\/\/challenges\.cloudflare\.com wss:\/\/wisp\.mercurywork\.shop/);
 });
 
 test('rejects requests outside the Claude static prefix', async () => {
