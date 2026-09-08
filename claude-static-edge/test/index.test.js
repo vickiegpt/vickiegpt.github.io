@@ -34,7 +34,7 @@ test('proxies only Claude static files with native isolation headers', async () 
   assert.equal(response.headers.get('Cache-Control'), 'no-store, no-transform');
   const policy = response.headers.get('Content-Security-Policy');
   assert.doesNotMatch(policy, /sandbox|default-src 'none'/);
-  assert.match(policy, /script-src 'self' 'wasm-unsafe-eval' https:\/\/challenges\.cloudflare\.com/);
+  assert.match(policy, /script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https:\/\/challenges\.cloudflare\.com/);
   assert.match(policy, /worker-src 'self' blob: data:/);
   assert.match(policy, /connect-src 'self' data: https:\/\/challenges\.cloudflare\.com wss:\/\/wisp\.mercurywork\.shop/);
 });

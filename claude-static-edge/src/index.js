@@ -2,7 +2,7 @@ const STATIC_ROOT = 'https://raw.githubusercontent.com/vickiegpt/vickiegpt.githu
 const STATIC_PREFIX = '/claude/';
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",
