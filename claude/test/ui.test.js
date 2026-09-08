@@ -139,3 +139,12 @@ describe("browser Claude terminal UI", () => {
     assert.equal(states.at(-1), "idle");
   });
 });
+import { test as versionedEntryTest } from 'node:test';
+import { readFile as readVersionedEntry } from 'node:fs/promises';
+import assertVersionedEntry from 'node:assert/strict';
+
+versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
+  const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
+
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-1/);
+});
