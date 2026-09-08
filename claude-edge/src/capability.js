@@ -38,43 +38,32 @@ async function hmacKey(secret) {
   );
 }
 
-async function ipHash(key, ip) {
-  if (typeof ip !== "string" || ip.length === 0 || ip.length > 128) {
-    throw new Error("Invalid capability");
-  }
-  const digest = new Uint8Array(
-    await crypto.subtle.sign("HMAC", key, encoder.encode(`ip:${ip}`)),
-  );
-  return encodeBase64Url(digest.subarray(0, 18));
-}
-
-export async function createCapability({ secret, sessionId, ip, now }) {
+export async function createCapability({ secret, sessionId, now }) {
   if (!UUID.test(sessionId) || !Number.isFinite(now)) {
     throw new Error("Invalid capability claims");
   }
   const key = await hmacKey(secret);
   const issuedAt = Math.floor(now / 1000);
   const payload = {
-    v: 1,
+    v: 2,
     sid: sessionId,
-    iph: await ipHash(key, ip),
     iat: issuedAt,
     exp: issuedAt + Math.floor(CAPABILITY_TTL_MS / 1000),
   };
   const encodedPayload = encodeBase64Url(encoder.encode(JSON.stringify(payload)));
-  const signedValue = `v1.${encodedPayload}`;
+  const signedValue = `v2.${encodedPayload}`;
   const signature = new Uint8Array(
     await crypto.subtle.sign("HMAC", key, encoder.encode(signedValue)),
   );
   return `${signedValue}.${encodeBase64Url(signature)}`;
 }
 
-export async function verifyCapability(token, { secret, ip, now }) {
+export async function verifyCapability(token, { secret, now }) {
   if (typeof token !== "string" || token.length > 4096) {
     throw new Error("Invalid capability");
   }
   const parts = token.split(".");
-  if (parts.length !== 3 || parts[0] !== "v1") {
+  if (parts.length !== 3 || parts[0] !== "v2") {
     throw new Error("Invalid capability");
   }
 
@@ -95,9 +84,8 @@ export async function verifyCapability(token, { secret, ip, now }) {
   }
   const current = Math.floor(now / 1000);
   if (
-    claims?.v !== 1 ||
+    claims?.v !== 2 ||
     !UUID.test(claims.sid) ||
-    typeof claims.iph !== "string" ||
     !Number.isInteger(claims.iat) ||
     !Number.isInteger(claims.exp) ||
     claims.exp - claims.iat !== Math.floor(CAPABILITY_TTL_MS / 1000) ||
@@ -106,6 +94,5 @@ export async function verifyCapability(token, { secret, ip, now }) {
     throw new Error("Invalid capability");
   }
   if (claims.exp < current) throw new Error("Expired capability");
-  if (claims.iph !== await ipHash(key, ip)) throw new Error("Invalid capability");
   return claims;
 }

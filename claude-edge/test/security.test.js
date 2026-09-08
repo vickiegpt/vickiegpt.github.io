@@ -8,40 +8,30 @@ import { handleSession } from "../src/session.js";
 import { handleRelay } from "../src/relay.js";
 
 const SECRET = "test-signing-key-with-at-least-32-bytes";
-const IP = "203.0.113.8";
 const NOW = 1_788_825_600_000;
 
 async function capability() {
   return createCapability({
     secret: SECRET,
     sessionId: "5b355de8-42b1-4d9c-a9bd-a8c2a11925fd",
-    ip: IP,
     now: NOW,
   });
 }
 
 describe("relay security", () => {
-  it("binds a signed capability to its IP and five-minute lifetime", async () => {
+  it("binds a signed capability to its session and five-minute lifetime", async () => {
     const token = await capability();
     const claims = await verifyCapability(token, {
       secret: SECRET,
-      ip: IP,
       now: NOW + 299_000,
     });
 
+    assert.equal(claims.v, 2);
     assert.equal(claims.sid, "5b355de8-42b1-4d9c-a9bd-a8c2a11925fd");
+    assert.equal("iph" in claims, false);
     await assert.rejects(
       verifyCapability(token, {
         secret: SECRET,
-        ip: "203.0.113.9",
-        now: NOW,
-      }),
-      /Invalid capability/,
-    );
-    await assert.rejects(
-      verifyCapability(token, {
-        secret: SECRET,
-        ip: IP,
         now: NOW + 301_000,
       }),
       /Expired capability/,
@@ -52,7 +42,6 @@ describe("relay security", () => {
     const request = new Request("https://asplos.dev/api/claude/session", {
       method: "POST",
       headers: {
-        "CF-Connecting-IP": IP,
         "Content-Type": "application/json",
         Origin: "https://asplos.dev",
       },
@@ -75,7 +64,7 @@ describe("relay security", () => {
           const body = JSON.parse(init.body);
           assert.equal(body.secret, "turnstile-secret");
           assert.equal(body.response, "turnstile-token");
-          assert.equal(body.remoteip, IP);
+          assert.equal(body.remoteip, undefined);
           return Response.json({
             success: true,
             hostname: "asplos.dev",
@@ -90,7 +79,6 @@ describe("relay security", () => {
     assert.equal(result.expiresIn, 300);
     const claims = await verifyCapability(result.capability, {
       secret: SECRET,
-      ip: IP,
       now: NOW,
     });
     assert.equal(claims.sid, "5b355de8-42b1-4d9c-a9bd-a8c2a11925fd");
@@ -101,7 +89,6 @@ describe("relay security", () => {
       new Request("https://asplos.dev/api/claude/session", {
         method: "POST",
         headers: {
-          "CF-Connecting-IP": IP,
           "Content-Type": "application/json",
           Origin: "https://asplos.dev",
         },
@@ -142,7 +129,7 @@ describe("relay security", () => {
       ZHIPU_API_KEY: "server-only-zhipu-key",
       RELAY_QUOTA: {
         getByName(name) {
-          assert.match(name, /^[A-Za-z0-9_-]+$/);
+          assert.equal(name, "5b355de8-42b1-4d9c-a9bd-a8c2a11925fd");
           return stub;
         },
       },
@@ -152,7 +139,6 @@ describe("relay security", () => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "CF-Connecting-IP": IP,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -193,7 +179,6 @@ describe("relay security", () => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "CF-Connecting-IP": IP,
           "Content-Length": "1048577",
           "Content-Type": "application/json",
         },

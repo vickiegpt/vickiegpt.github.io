@@ -54,9 +54,8 @@ export async function handleRelay(request, env, ctx = {}, options = {}) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405, { Allow: "POST" });
   }
-  const ip = request.headers.get("CF-Connecting-IP");
   const token = capabilityFrom(request);
-  if (!ip || !token || !env.RELAY_SIGNING_KEY) {
+  if (!token || !env.RELAY_SIGNING_KEY) {
     return jsonResponse({ error: "Unauthorized" }, 401);
   }
 
@@ -65,7 +64,6 @@ export async function handleRelay(request, env, ctx = {}, options = {}) {
   try {
     claims = await verifyCapability(token, {
       secret: env.RELAY_SIGNING_KEY,
-      ip,
       now,
     });
   } catch {
@@ -95,7 +93,7 @@ export async function handleRelay(request, env, ctx = {}, options = {}) {
     max_tokens: Math.min(requestedMax, 8192),
   });
 
-  const stub = env.RELAY_QUOTA.getByName(claims.iph);
+  const stub = env.RELAY_QUOTA.getByName(claims.sid);
   let lease;
   try {
     lease = await stub.acquire({

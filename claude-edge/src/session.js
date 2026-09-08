@@ -18,7 +18,7 @@ export async function handleSession(request, env, options = {}) {
     return jsonResponse({ error: "Forbidden" }, 403);
   }
   const ip = request.headers.get("CF-Connecting-IP");
-  if (!ip || !env.TURNSTILE_SECRET || !env.RELAY_SIGNING_KEY) {
+  if (!env.TURNSTILE_SECRET || !env.RELAY_SIGNING_KEY) {
     return jsonResponse({ error: "Service unavailable" }, 503);
   }
 
@@ -40,15 +40,16 @@ export async function handleSession(request, env, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
   let verification;
   try {
+    const verificationPayload = {
+      secret: env.TURNSTILE_SECRET,
+      response: input.token,
+      idempotency_key: randomUUID(),
+    };
+    if (ip) verificationPayload.remoteip = ip;
     const response = await fetchImpl(SITEVERIFY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret: env.TURNSTILE_SECRET,
-        response: input.token,
-        remoteip: ip,
-        idempotency_key: randomUUID(),
-      }),
+      body: JSON.stringify(verificationPayload),
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) throw new Error("Siteverify failed");
@@ -69,7 +70,6 @@ export async function handleSession(request, env, options = {}) {
   const capability = await createCapability({
     secret: env.RELAY_SIGNING_KEY,
     sessionId,
-    ip,
     now,
   });
   return jsonResponse({
