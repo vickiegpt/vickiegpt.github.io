@@ -10,7 +10,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { min-height: 100%; }
+html, body { width: 100%; max-width: 100%; min-height: 100%; overflow-x: hidden; }
 body {
   margin: 0;
   min-height: 100vh;
@@ -48,8 +48,8 @@ button:focus-visible, a:focus-visible, #terminal:focus-visible { outline: 2px so
 #status-dot.failed { background: var(--ember); box-shadow: 0 0 12px var(--ember); }
 .source-link { justify-self: end; color: var(--muted); text-underline-offset: 4px; }
 
-.runtime-shell { height: calc(100vh - 62px); display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); gap: 12px; padding: 12px; }
-.intro-panel, .terminal-panel { position: relative; z-index: 1; min-height: 0; border: 1px solid var(--line); background: var(--panel); box-shadow: 0 22px 70px rgba(0, 0, 0, .25); }
+.runtime-shell { width: 100%; max-width: 100%; min-width: 0; height: calc(100vh - 62px); display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); gap: 12px; padding: 12px; }
+.intro-panel, .terminal-panel { position: relative; z-index: 1; min-width: 0; max-width: 100%; min-height: 0; border: 1px solid var(--line); background: var(--panel); box-shadow: 0 22px 70px rgba(0, 0, 0, .25); }
 .intro-panel { display: flex; flex-direction: column; gap: 26px; padding: 28px; overflow-y: auto; }
 .kicker { margin: 0 0 16px; color: var(--acid); font-size: 9px; letter-spacing: .16em; }
 h1 { margin: 0; font: 700 clamp(33px, 4vw, 56px)/.93 "Space Grotesk", "Avenir Next", sans-serif; letter-spacing: -.065em; }
@@ -61,7 +61,7 @@ h1 em { color: var(--muted); font-weight: 500; }
 .launch-row strong, .launch-row small { display: block; }
 .launch-row strong { font-size: 11px; }
 .launch-row small { margin-top: 3px; color: var(--muted); font-size: 9px; }
-.turnstile-slot { min-height: 2px; margin: 12px 0 18px 36px; overflow: hidden; }
+.turnstile-slot { max-width: 100%; min-height: 2px; margin: 12px 0 18px 36px; overflow: hidden; }
 .progress-track { height: 2px; margin: 15px 0 8px 36px; background: #252b21; }
 #progress-fill { display: block; width: 0; height: 100%; background: var(--acid); box-shadow: 0 0 9px rgba(199, 255, 74, .5); transition: width .2s ease; }
 #runtime-progress { margin-left: 36px; color: var(--muted); font-size: 9px; }
@@ -72,8 +72,8 @@ h1 em { color: var(--muted); font-weight: 500; }
 .terminal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; padding: 0 13px 0 18px; border-bottom: 1px solid var(--line); }
 .terminal-title { display: flex; gap: 10px; min-width: 0; color: #adb6a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .prompt-mark { color: var(--acid); }
-.terminal-actions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; }
-.control { border: 1px solid var(--line); padding: 7px 11px; color: var(--ink); background: transparent; cursor: pointer; }
+.terminal-actions { display: flex; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 7px; min-width: 0; max-width: 100%; }
+.control { min-width: 0; overflow: hidden; border: 1px solid var(--line); padding: 7px 11px; color: var(--ink); background: transparent; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
 .control:hover:not(:disabled) { border-color: #637054; }
 .control:disabled { opacity: .38; cursor: not-allowed; }
 .control-start { border-color: var(--acid); color: #11150d; background: var(--acid); font-weight: 700; }
@@ -86,7 +86,7 @@ h1 em { color: var(--muted); font-weight: 500; }
 noscript { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--ground); }
 
 @media (max-width: 900px) {
-  body { overflow: auto; }
+  body { overflow-x: hidden; overflow-y: auto; }
   .runtime-shell { height: auto; min-height: calc(100vh - 62px); grid-template-columns: 1fr; grid-template-rows: auto minmax(68vh, 760px); }
   .intro-panel { display: grid; grid-template-columns: 1fr 1fr; }
   .privacy-note { grid-column: 1 / -1; }

@@ -31,7 +31,7 @@ test('proxies only Claude static files with native isolation headers', async () 
   assert.equal(response.headers.get('Cross-Origin-Opener-Policy'), 'same-origin');
   assert.equal(response.headers.get('Cross-Origin-Embedder-Policy'), 'credentialless');
   assert.equal(response.headers.get('Cross-Origin-Resource-Policy'), 'same-origin');
-  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  assert.equal(response.headers.get('Cache-Control'), 'no-store, no-transform');
   const policy = response.headers.get('Content-Security-Policy');
   assert.doesNotMatch(policy, /sandbox|default-src 'none'/);
   assert.match(policy, /script-src 'self' 'wasm-unsafe-eval' https:\/\/challenges\.cloudflare\.com/);

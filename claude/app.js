@@ -58,7 +58,7 @@ async function createChallenge(siteKey) {
     action: "claude-session",
     execution: "execute",
     appearance: "interaction-only",
-    size: "flexible",
+    size: "compact",
     callback(token) {
       resolveToken?.(token);
       resolveToken = null;

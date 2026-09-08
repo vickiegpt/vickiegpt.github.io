@@ -40,7 +40,7 @@ export async function handleRequest(request, fetchImpl = fetch) {
   const upstreamUrl = new URL(`${STATIC_ROOT}${pathname}${url.search}`);
   const upstream = await fetchImpl(new Request(upstreamUrl, request));
   const headers = new Headers(upstream.headers);
-  headers.set('Cache-Control', 'no-store');
+  headers.set('Cache-Control', 'no-store, no-transform');
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
   headers.set('Cross-Origin-Resource-Policy', 'same-origin');

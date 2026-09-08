@@ -90,6 +90,22 @@ describe("browser Claude terminal UI", () => {
     assert.match(html, /\.\/assets\/app\.js/);
   });
 
+  it("loads the official explicit Turnstile API before the application module", async () => {
+    const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+    const turnstile = html.indexOf("https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit");
+    const application = html.indexOf("./assets/app.js");
+
+    assert.notEqual(turnstile, -1);
+    assert.ok(turnstile < application);
+  });
+
+  it("uses a compact challenge that cannot widen the launch sidebar", async () => {
+    const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
+
+    assert.match(source, /size:\s*["']compact["']/);
+    assert.doesNotMatch(source, /size:\s*["']flexible["']/);
+  });
+
   it("exchanges a one-time challenge using the fixed same-origin endpoint", async () => {
     const calls = [];
     const result = await requestCapability("challenge-token", {
@@ -196,7 +212,7 @@ import assertVersionedEntry from 'node:assert/strict';
 versionedEntryTest('loads the browser runtime through a versioned entry URL', async () => {
   const html = await readVersionedEntry(new URL('../index.html', import.meta.url), 'utf8');
 
-  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-4/);
+  assertVersionedEntry.match(html, /\.\/assets\/app\.js\?v=20260908-5/);
 });
 
 versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens', async () => {
@@ -204,5 +220,7 @@ versionedEntryTest('keeps terminal actions inside the toolbar on narrow screens'
 
   assertVersionedEntry.match(css, /\.terminal-toolbar\s*\{[^}]*min-width:\s*0/s);
   assertVersionedEntry.match(css, /\.terminal-actions\s*\{[^}]*flex-wrap:\s*wrap/s);
+  assertVersionedEntry.match(css, /\.terminal-actions\s*\{[^}]*max-width:\s*100%/s);
+  assertVersionedEntry.match(css, /\.runtime-shell\s*\{[^}]*min-width:\s*0/s);
   assertVersionedEntry.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*\.terminal-actions\s*\{[^}]*width:\s*100%/s);
 });

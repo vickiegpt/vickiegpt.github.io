@@ -8176,7 +8176,7 @@ async function $h(e) {
     action: "claude-session",
     execution: "execute",
     appearance: "interaction-only",
-    size: "flexible",
+    size: "compact",
     callback(n) {
       i?.(n), i = null, s = null;
     },
