@@ -66,6 +66,33 @@ test('serves the runtime manifest from GitHub with no-store headers', async () =
   assert.deepEqual(await response.json(), { schema: 1 });
 });
 
+test('serves the manifest-pinned WEBC from its immutable R2 key', async () => {
+  const digest = 'a'.repeat(64);
+  const response = await implementation.handleRequest(
+    new Request(`https://asplos.dev/about/node-claude.webc?sha256=${digest}`),
+    async () => { throw new Error('Artifacts must not use the static origin'); },
+    { ARTIFACTS: { async get(key) {
+      assert.equal(key, `artifacts/${digest}/node-claude.webc`);
+      return { body: new Response('webc').body, size: 4 };
+    } } },
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Content-Length'), '4');
+  assert.equal(response.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
+  assert.equal(await response.text(), 'webc');
+});
+
+test('rejects malformed or duplicate artifact hashes before accessing R2', async () => {
+  for (const query of ['sha256=invalid', `sha256=${'a'.repeat(64)}&sha256=${'b'.repeat(64)}`]) {
+    const response = await implementation.handleRequest(
+      new Request(`https://asplos.dev/about/node-claude.webc?${query}`),
+      async () => { throw new Error('Unexpected origin access'); },
+      { ARTIFACTS: { get() { throw new Error('Unexpected R2 access'); } } },
+    );
+    assert.equal(response.status, 404);
+  }
+});
+
 for (const pathname of ['/claude/', '/claude/assets/wasmer-sdk/dist/browser-worker.js']) {
   test(`allows SDK DNS-over-HTTPS under the CSP served for ${pathname}`, async () => {
     const response = await implementation.handleRequest(

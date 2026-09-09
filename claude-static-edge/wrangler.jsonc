@@ -4,6 +4,12 @@
   "main": "src/index.js",
   "compatibility_date": "2026-09-08",
   "workers_dev": false,
+  "r2_buckets": [
+    {
+      "binding": "ARTIFACTS",
+      "bucket_name": "asplos-claude-artifacts"
+    }
+  ],
   "routes": [
     {
       "pattern": "asplos.dev/claude/*",
@@ -11,6 +17,14 @@
     },
     {
       "pattern": "asplos.dev/about/runtime-manifest.json",
+      "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/about/node-claude.webc*",
+      "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/about/node.wasm*",
       "zone_name": "asplos.dev"
     }
   ]

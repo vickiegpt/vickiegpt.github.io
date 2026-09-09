@@ -1,3 +1,5 @@
+import { handleArtifact } from '../../claude-edge/src/artifacts.js';
+
 const STATIC_ROOT = 'https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main';
 const STATIC_PREFIX = '/claude/';
 const RUNTIME_MANIFEST_PATH = '/about/runtime-manifest.json';
@@ -31,7 +33,9 @@ function contentType(pathname, fallback) {
   return fallback;
 }
 
-export async function handleRequest(request, fetchImpl = fetch) {
+export async function handleRequest(request, fetchImpl = fetch, env = {}) {
+  const artifact = await handleArtifact(request, env);
+  if (artifact) return artifact;
   const url = new URL(request.url);
   if ((request.method !== 'GET' && request.method !== 'HEAD') ||
       (!url.pathname.startsWith(STATIC_PREFIX) && url.pathname !== RUNTIME_MANIFEST_PATH)) {
@@ -58,7 +62,7 @@ export async function handleRequest(request, fetchImpl = fetch) {
 }
 
 export default {
-  fetch(request) {
-    return handleRequest(request);
+  fetch(request, env) {
+    return handleRequest(request, fetch, env);
   },
 };

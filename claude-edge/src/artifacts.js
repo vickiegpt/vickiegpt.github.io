@@ -33,8 +33,16 @@ function validRangeHeader(value) {
 
 export function artifactDescriptor(request) {
   const url = new URL(request.url);
-  if (url.search || url.hash) return null;
-  return ARTIFACTS.get(url.pathname) ?? null;
+  const descriptor = ARTIFACTS.get(url.pathname);
+  if (!descriptor || url.hash) return null;
+  if (!url.search) return descriptor;
+  const version = /^\?sha256=([a-f0-9]{64})$/.exec(url.search);
+  if (!version) return null;
+  return {
+    ...descriptor,
+    key: descriptor.key.replace('current/', `artifacts/${version[1]}/`),
+    immutable: true,
+  };
 }
 
 export async function handleArtifact(request, env) {
@@ -62,6 +70,9 @@ export async function handleArtifact(request, env) {
 
   const headers = new Headers(BASE_HEADERS);
   object.writeHttpMetadata?.(headers);
+  if (descriptor.immutable) {
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  }
   headers.set("Content-Type", descriptor.type);
   if (object.httpEtag) headers.set("ETag", object.httpEtag);
   headers.set("Accept-Ranges", "bytes");
