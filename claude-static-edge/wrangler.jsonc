@@ -8,6 +8,10 @@
     {
       "pattern": "asplos.dev/claude/*",
       "zone_name": "asplos.dev"
+    },
+    {
+      "pattern": "asplos.dev/about/runtime-manifest.json",
+      "zone_name": "asplos.dev"
     }
   ]
 }

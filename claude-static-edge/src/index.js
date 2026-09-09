@@ -1,5 +1,6 @@
 const STATIC_ROOT = 'https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main';
 const STATIC_PREFIX = '/claude/';
+const RUNTIME_MANIFEST_PATH = '/about/runtime-manifest.json';
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://challenges.cloudflare.com",
@@ -32,7 +33,8 @@ function contentType(pathname, fallback) {
 
 export async function handleRequest(request, fetchImpl = fetch) {
   const url = new URL(request.url);
-  if ((request.method !== 'GET' && request.method !== 'HEAD') || !url.pathname.startsWith(STATIC_PREFIX)) {
+  if ((request.method !== 'GET' && request.method !== 'HEAD') ||
+      (!url.pathname.startsWith(STATIC_PREFIX) && url.pathname !== RUNTIME_MANIFEST_PATH)) {
     return new Response('Not found', { status: 404 });
   }
 

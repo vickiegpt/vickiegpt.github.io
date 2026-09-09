@@ -49,6 +49,23 @@ test('rejects requests outside the Claude static prefix', async () => {
   assert.equal(response.status, 404);
 });
 
+test('serves the runtime manifest from GitHub with no-store headers', async () => {
+  const response = await implementation.handleRequest(
+    new Request('https://asplos.dev/about/runtime-manifest.json'),
+    async (request) => {
+      assert.equal(request.url,
+        'https://raw.githubusercontent.com/vickiegpt/vickiegpt.github.io/main/about/runtime-manifest.json');
+      return new Response('{"schema":1}', {
+        headers: { 'content-type': 'text/plain', 'cache-control': 'max-age=14400' },
+      });
+    },
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+  assert.equal(response.headers.get('Cache-Control'), 'no-store, no-transform');
+  assert.deepEqual(await response.json(), { schema: 1 });
+});
+
 for (const pathname of ['/claude/', '/claude/assets/wasmer-sdk/dist/browser-worker.js']) {
   test(`allows SDK DNS-over-HTTPS under the CSP served for ${pathname}`, async () => {
     const response = await implementation.handleRequest(
