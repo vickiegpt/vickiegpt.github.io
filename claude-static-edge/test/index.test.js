@@ -48,3 +48,19 @@ test('rejects requests outside the Claude static prefix', async () => {
 
   assert.equal(response.status, 404);
 });
+
+for (const pathname of ['/claude/', '/claude/assets/wasmer-sdk/dist/browser-worker.js']) {
+  test(`allows SDK DNS-over-HTTPS under the CSP served for ${pathname}`, async () => {
+    const response = await implementation.handleRequest(
+      new Request(`https://asplos.dev${pathname}`),
+      async () => new Response('runtime'),
+    );
+    const policy = response.headers.get('Content-Security-Policy');
+    const connect = policy.split(';').map((value) => value.trim())
+      .find((value) => value.startsWith('connect-src ')).split(/\s+/).slice(1);
+    // WISP transports TCP, but its SDK resolves hostnames using browser fetch.
+    const dnsUrl = new URL('https://cloudflare-dns.com/dns-query?name=asplos.dev&type=A');
+    assert.ok(connect.includes(dnsUrl.origin), 'SDK DNS must pass document and worker CSP');
+    assert.ok(!connect.includes('*') && !connect.includes('https:'), 'keep the network allowlist scoped');
+  });
+}
