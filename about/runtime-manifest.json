@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "url": "/about/node-claude.webc?sha256=f51cc4ab892767965634b9fa914fecf112ffd97ef68a858267e3652d5e32454d",
-  "size": 93125632,
-  "sha256": "f51cc4ab892767965634b9fa914fecf112ffd97ef68a858267e3652d5e32454d",
-  "nodeSha256": "585d6bc520a60b33ea06bc708babde1bede0dc4f516f6b629c0542954c2a5d43",
+  "url": "/about/node-claude.webc?sha256=1acc5a21ff269e4d424d4242e03d2946dbe369f24fc172db8d1656e799307290",
+  "size": 93126715,
+  "sha256": "1acc5a21ff269e4d424d4242e03d2946dbe369f24fc172db8d1656e799307290",
+  "nodeSha256": "b464505ee6f3d63e0d586887fd2a2c6a038e1d972ac29ed6d2e33305db1c5712",
   "sdkVersion": "0.11.0",
   "nodeVersion": "25.0.0-pre",
   "claudeVersion": "2.0.0",
