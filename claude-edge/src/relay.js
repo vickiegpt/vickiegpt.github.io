@@ -122,15 +122,35 @@ export async function handleRelay(request, env, ctx = {}, options = {}) {
 
   const fetchImpl = options.fetchImpl ?? fetch;
   let upstream;
+  let upstreamStage = "headers";
+  const upstreamStartedAt = Date.now();
   try {
+    const headers = upstreamHeaders(request, env.ZHIPU_API_KEY);
+    upstreamStage = "fetch";
     upstream = await fetchImpl(ZHIPU_MESSAGES_URL, {
       method: "POST",
-      headers: upstreamHeaders(request, env.ZHIPU_API_KEY),
+      headers,
       body,
-      redirect: "error",
+      redirect: "manual",
       signal: controller.signal,
     });
-  } catch {
+    if (upstream.status >= 300 && upstream.status < 400) {
+      await upstream.body?.cancel();
+      throw new Error("Upstream redirects are not allowed");
+    }
+  } catch (error) {
+    // Log transport failures without recording credentials or request bodies.
+    const message = String(error?.message ?? "Unknown upstream error")
+      .split(env.ZHIPU_API_KEY).join("[redacted]")
+      .split(token).join("[redacted]")
+      .slice(0, 300);
+    console.error("claude-relay-upstream", JSON.stringify({
+      stage: upstreamStage,
+      aborted: controller.signal.aborted,
+      elapsedMs: Date.now() - upstreamStartedAt,
+      name: error?.name ?? "Error",
+      message: upstreamStage === "headers" ? "Invalid upstream headers" : message,
+    }));
     clearTimeout(timer);
     await releaseLease(stub, lease.leaseId);
     return jsonResponse({ error: "Upstream unavailable" }, 502);

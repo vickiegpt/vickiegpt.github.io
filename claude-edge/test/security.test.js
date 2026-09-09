@@ -154,6 +154,7 @@ describe("relay security", () => {
         now: () => NOW,
         fetchImpl: async (url, init) => {
           assert.equal(url, "https://api.z.ai/api/anthropic/v1/messages");
+          assert.equal(init.redirect, "manual");
           assert.equal(init.headers.get("Authorization"), "Bearer server-only-zhipu-key");
           const body = JSON.parse(init.body);
           assert.equal(body.model, "glm-4.7");
@@ -169,6 +170,45 @@ describe("relay security", () => {
     assert.equal(await response.text(), "data: OK\n\n");
     await Promise.all(pending);
     assert.deepEqual(releases, ["lease-1"]);
+  });
+
+  it("rejects upstream redirects without following them and releases the lease", async () => {
+    const token = await capability();
+    let calls = 0;
+    let canceled = false;
+    const releases = [];
+    const response = await handleRelay(
+      new Request("https://asplos.dev/api/anthropic/v1/messages?beta=true", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ messages: [{ role: "user", content: "Hello" }] }),
+      }),
+      {
+        RELAY_SIGNING_KEY: SECRET,
+        ZHIPU_API_KEY: "server-only-zhipu-key",
+        RELAY_QUOTA: { getByName() { return {
+          async acquire() { return { ok: true, leaseId: "redirect-lease" }; },
+          async release(id) { releases.push(id); },
+        }; } },
+      },
+      {},
+      {
+        now: () => NOW,
+        fetchImpl: async (url, init) => {
+          calls++;
+          assert.equal(url, "https://api.z.ai/api/anthropic/v1/messages");
+          assert.equal(init.redirect, "manual");
+          return new Response(new ReadableStream({
+            cancel() { canceled = true; },
+          }), { status: 302, headers: { Location: "https://other.example/messages" } });
+        },
+      },
+    );
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), { error: "Upstream unavailable" });
+    assert.equal(calls, 1);
+    assert.equal(canceled, true);
+    assert.deepEqual(releases, ["redirect-lease"]);
   });
 
   it("rejects oversized request bodies before quota or upstream work", async () => {
